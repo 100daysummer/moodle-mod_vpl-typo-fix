@@ -14,7 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with VPL for Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_vpl\similarity;
 use mod_vpl\similarity\file_pair;
+use html_table;
+use html_writer;
 
 /**
  * Class to find and show clusters of similar files
@@ -24,7 +27,7 @@ use mod_vpl\similarity\file_pair;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author Juan Carlos Rodríguez-del-Pino <jcrodriguez@dis.ulpgc.es>
  */
-class vpl_clusters {
+class clusters {
     /**
      * @var array Clusters of similar files.
      *

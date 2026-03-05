@@ -14,15 +14,32 @@
 // You should have received a copy of the GNU General Public License
 // along with VPL for Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use mod_vpl\similarity\similarity_factory;
-
 /**
- * Similarity object factory classes
+ * TypeScript language similarity class
  *
  * @package mod_vpl
- * @copyright 2012 Juan Carlos Rodríguez-del-Pino
+ * @copyright 2026 Juan Carlos Rodríguez-del-Pino
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author Juan Carlos Rodríguez-del-Pino <jcrodriguez@dis.ulpgc.es>
  */
-class vpl_similarity_factory extends similarity_factory {
+namespace mod_vpl\similarity;
+
+/**
+ * TypeScript language similarity class.
+ *
+ * TypeScript is a superset of JavaScript and shares the same tokenizer,
+ * so all operator and reserved-word normalisations are inherited from
+ * similarity_javascript. Only the language name (used by the tokenizer
+ * selector) differs.
+ *
+ * @codeCoverageIgnore
+ */
+class similarity_typescript extends similarity_javascript {
+    /**
+     * Constructor for the TypeScript similarity.
+     */
+    public function __construct() {
+        // Skip similarity_javascript constructor; call generic directly with 'typescript'.
+        similarity_generic::__construct('typescript');
+    }
 }

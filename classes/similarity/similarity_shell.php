@@ -14,70 +14,69 @@
 // You should have received a copy of the GNU General Public License
 // along with VPL for Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use mod_vpl\similarity\similarity_base;
-use mod_vpl\tokenizer\token_type;
-use mod_vpl\tokenizer\tokenizer_factory;
-
 /**
- * M (Octave) language similarity class
+ * Shell/Bash language similarity class
  *
  * @package mod_vpl
- * @copyright 2012 Juan Carlos Rodríguez-del-Pino
+ * @copyright 2026 Juan Carlos Rodríguez-del-Pino
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author Juan Carlos Rodríguez-del-Pino <jcrodriguez@dis.ulpgc.es>
  */
-class vpl_similarity_matlab extends similarity_base {
+namespace mod_vpl\similarity;
+
+use mod_vpl\tokenizer\token_type;
+
+/**
+ * Shell/Bash language similarity class.
+ * @codeCoverageIgnore
+ */
+class similarity_shell extends similarity_generic {
     /**
-     * Returns the type of similarity.
-     *
-     * @return int The type of similarity, which is 9 for M (Octave).
+     * Constructor for the Shell similarity.
      */
-    public function get_type() {
-        return 9;
+    public function __construct() {
+        parent::__construct('shell');
     }
 
     /**
      * Normalizes the syntax of the given tokens.
+     * Operator transformations:
+     *   - Open brackets/parens [(, [) dropped (only closers kept)
+     * Reserved-word normalisations:
+     *   - Loop keywords  for / until  → canonical "while"
+     *   - Exit keyword   continue  → canonical "break"
      *
      * @param array $tokens The tokens to normalize.
      * @return array The normalized tokens.
      */
-    public function sintax_normalize(&$tokens) {
+    public function sintax_normalize(&$tokens): array {
         $ret = [];
         foreach ($tokens as $token) {
             if ($token->type == token_type::OPERATOR) {
                 switch ($token->value) {
-                    case '[':
-                        // Only add ].
-                        break;
                     case '(':
-                        // Only add ).
-                        break;
-                    case '{':
-                        break;
-                    case '<': // Replace < by >.
-                        $token->value = '>';
-                        $ret[] = $token;
-                        break;
-                    case '<=': // Replace < by >.
-                        $token->value = '>=';
-                        $ret[] = $token;
+                    case '[':
+                        // Drop open brackets; only closers kept.
                         break;
                     default:
                         $ret[] = $token;
                 }
+            } else if ($token->type == token_type::RESERVED) {
+                switch ($token->value) {
+                    case 'for':
+                    case 'until':
+                        $token->value = 'while';
+                        break;
+                    case 'continue':
+                        $token->value = 'break';
+                        break;
+                }
+                $ret[] = $token;
+            } else {
+                $ret[] = $token;
             }
-            // TODO remove "(p)" .
         }
+        $tokens = $ret;
         return $ret;
-    }
-
-    /**
-     * Returns the tokenizer for the Octave language.
-     *
-     * @return vpl_tokenizer The tokenizer instance for Octave.
-     */
-    public function get_tokenizer() {
-        return tokenizer_factory::get('matlab');
     }
 }

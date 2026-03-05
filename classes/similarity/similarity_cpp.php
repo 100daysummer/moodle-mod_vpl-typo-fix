@@ -15,43 +15,26 @@
 // along with VPL for Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Programing language tokenizer base class
+ * C++ language similarity class
  *
  * @package mod_vpl
  * @copyright 2012 Juan Carlos Rodríguez-del-Pino
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author Juan Carlos Rodríguez-del-Pino <jcrodriguez@dis.ulpgc.es>
  */
-
-use mod_vpl\tokenizer\token;
-use mod_vpl\tokenizer\token_type;
+namespace mod_vpl\similarity;
 
 /**
- * Base class for tokenizers in VPL.
+ * C++ language similarity class.
+ * Inherits C normalisation — only the language name differs.
+ * @codeCoverageIgnore
  */
-class vpl_tokenizer_base {
+class similarity_cpp extends similarity_c {
     /**
-     * @var string CR The carriage return character used for new lines in the source code.
+     * Constructor for the C++ similarity.
      */
-    const CR = "\r";
-
-    /**
-     * @var string LF The line feed character used for new lines in the source code.
-     */
-    const LF = "\n";
-
-    /**
-     * @var string TAB The tab character used for indentation in the source code.
-     */
-    const TAB = "\t";
-
-    /**
-     * @var array $reserved Reserved keywords for the programming language.
-     */
-    protected $reserved = [];
-
-    /**
-     * @var int $linenumber The current line number in the source code being tokenized.
-     */
-    protected $linenumber;
+    public function __construct() {
+        // Skip similarity_c constructor; call generic directly with 'cpp'.
+        similarity_generic::__construct('cpp');
+    }
 }

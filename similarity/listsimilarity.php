@@ -27,9 +27,7 @@ require_once(dirname(__FILE__) . '/../../../config.php');
 require_once(dirname(__FILE__) . '/../locallib.php');
 require_once(dirname(__FILE__) . '/../vpl.class.php');
 require_once(dirname(__FILE__) . '/../vpl_submission.class.php');
-require_once(dirname(__FILE__) . '/similarity_factory.class.php');
 require_once(dirname(__FILE__) . '/similarity_form.class.php');
-require_once(dirname(__FILE__) . '/clusters.class.php');
 
 use mod_vpl\similarity\utility;
 
@@ -152,7 +150,7 @@ if (count($selected)) {
             '60',
             '60',
     ];
-    $clusters = new vpl_clusters($selected);
+    $clusters = new mod_vpl\similarity\clusters($selected);
     $usernumber = 0;
     foreach ($selected as $case) {
         $table->data[] = [

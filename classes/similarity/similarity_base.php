@@ -141,6 +141,18 @@ abstract class similarity_base {
     }
 
     /**
+     * Get the token types used for fingerprinting.
+     * By default, OPERATOR and RESERVED tokens are used.
+     * Override in subclasses to restrict or expand the set of token types
+     * that contribute to the similarity fingerprint.
+     *
+     * @return array Array of token_type constants to include in the fingerprint
+     */
+    protected function get_fingerprint_types(): array {
+        return [token_type::OPERATOR, token_type::RESERVED];
+    }
+
+    /**
      * @var int HASH_SIZE This value is used to calculate the hash table.
      */
     const HASH_SIZE = 4;
@@ -179,8 +191,9 @@ abstract class similarity_base {
 
         // Process tokens to get vector of frecuencies, size
         // and values for the hash table.
+        $fingerprinttypes = $this->get_fingerprint_types();
         foreach ($tokens as $token) {
-            if ($token->type == token_type::OPERATOR) {
+            if (in_array($token->type, $fingerprinttypes)) {
                 // Calculate hashes table.
                 for ($i = 0; $i < self::HASH_SIZE - 1; $i++) {
                     $last[$i] = $last[$i + 1];

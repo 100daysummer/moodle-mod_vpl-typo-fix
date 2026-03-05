@@ -24,8 +24,8 @@
  */
 namespace mod_vpl\similarity;
 
-use Exception;
 use mod_vpl\similarity\similarity_generic;
+use mod_vpl\util\languages;
 
 /**
  * Class similarity_factory
@@ -35,54 +35,35 @@ use mod_vpl\similarity\similarity_generic;
  */
 class similarity_factory {
     /**
-     * @var string[] $ext2typearray Relates file extension to file type.
-     */
-    private static array $ext2typearray = [
-        'h' => 'cpp',
-        'hxx' => 'cpp',
-        'c' => 'c',
-        'js' => 'c', // JavaScript as C.
-        'cc' => 'cpp',
-        'C' => 'cpp',
-        'cpp' => 'cpp',
-        'cs' => 'cpp', // C# as C++.
-        'php' => 'cpp', // PHP as C++.
-        'ads' => 'ada',
-        'adb' => 'ada',
-        'ada' => 'ada',
-        'java' => 'java',
-        'Java' => 'java',
-        'scm' => 'scheme',
-        'pl' => 'prolog',
-        'scala' => 'scala',
-        'py' => 'python',
-        'm' => 'matlab',
-        'html' => 'html',
-        'htm' => 'html',
-    ];
-
-    /**
      * Get all available languages for similarity
      *
      * @return array
      * @codeCoverageIgnore
      */
     protected static function get_available_languages(): array {
-        return array_unique(array_values(self::$ext2typearray));
+        $languages = languages::LANGUAGES2EXTENSION;
+        $ext2typearray = [];
+        foreach ($languages as $language => $extensions) {
+            if (self::get_object($language) !== null) {
+                $ext2typearray[] = $language;
+            }
+        }
+        return array_unique(array_values($ext2typearray));
     }
 
     /**
-     * Returns the file type of a file extension.
+     * Returns the language name of a file based on its extension.
      *
-     * @param string $ext File extesion
-     * @return string|false File type or false if not found
+     * @param string $ext File extension
+     * @return string|false Language name or false if not found
      */
     public static function ext2type(string $ext) {
-        if (isset(self::$ext2typearray[$ext])) {
-            return self::$ext2typearray[$ext];
-        } else {
+        $language = languages::EXTENSION2LANGUAGE[$ext] ?? false;
+        // Check if the language has a similarity class available.
+        if ($language !== false && self::get_object($language) === null) {
             return false;
         }
+        return $language;
     }
 
     /**
@@ -91,19 +72,20 @@ class similarity_factory {
     private static array $classloaded = [];
 
     /**
-     * Returns an object of a class derived from similarity_base to process a file of a type.
+     * Returns an object of a class derived from similarity_base to process
+     * files of a specific language.
      *
-     * @param string $type File type
+     * @param string $langname Language name
      * @return object Object of a class derived from similarity_base
      */
-    private static function get_object(string $type) {
-        $similarityclass = self::get_with_similarity_class($type);
+    private static function get_object(string $langname) {
+        $similarityclass = self::get_with_similarity_class($langname);
 
         if (!isset($similarityclass)) {
-            $similarityclass = self::get_with_generic($type);
+            $similarityclass = self::get_with_generic($langname);
 
             if (!isset($similarityclass)) {
-                $similarityclass = self::get_with_old_similarity_class($type);
+                $similarityclass = self::get_with_old_similarity_class($langname);
             }
         }
 
@@ -114,11 +96,11 @@ class similarity_factory {
      * Returns an object of a class derived from similarity_base to process a file of a type.
      * This method is used for classes that follow the new naming convention.
      *
-     * @param string $type File type
+     * @param string $langname Language name
      * @return object|null Object of a class derived from similarity_base or null if not found
      */
-    private static function get_with_similarity_class(string $type) {
-        $similarityclass = '\mod_vpl\similarity\similarity_' . $type;
+    private static function get_with_similarity_class(string $langname) {
+        $similarityclass = '\mod_vpl\similarity\similarity_' . $langname;
 
         if (class_exists($similarityclass) === true) {
             return new $similarityclass();
@@ -131,15 +113,15 @@ class similarity_factory {
      * Returns an object of a class derived from similarity_generic to process a file of a type.
      * This method is used for generic similarity classes that follow the new naming convention.
      *
-     * @param string $type File type
+     * @param string $langname Language name
      * @return object|null Object of a class derived from similarity_generic or null if not found
      */
-    private static function get_with_generic(string $type) {
+    private static function get_with_generic(string $langname) {
         $tokenizerrule = dirname(__FILE__) . '/../../similarity/tokenizer_rules/';
-        $tokenizerrule .= $type . '_tokenizer_rules.json';
+        $tokenizerrule .= $langname . '_tokenizer_rules.json';
 
         if (file_exists($tokenizerrule) === true) {
-            return new similarity_generic($type);
+            return new similarity_generic($langname);
         } else {
             return null;
         }
@@ -149,17 +131,19 @@ class similarity_factory {
      * Returns an object of a class derived from similarity_base to process a file of a type.
      * This method is used for legacy classes that do not follow the new naming convention.
      *
-     * @param string $type File type
+     * @param string $langname Language name
      * @return object|null Object of a class derived from similarity_base or null if not found
      */
-    private static function get_with_old_similarity_class(string $type) {
-        if (!isset(self::$classloaded[$type])) {
+    private static function get_with_old_similarity_class(string $langname) {
+        if (!isset(self::$classloaded[$langname])) {
             $include = dirname(__FILE__) . '/../../similarity/similarity_';
-            $include .= $type . '.class.php';
-
+            $include .= $langname . '.class.php';
+            if (!file_exists($include)) {
+                return null;
+            }
             try {
                 require_once($include);
-                self::$classloaded[$type] = true;
+                self::$classloaded[$langname] = true;
                 // @codeCoverageIgnoreStart
             } catch (\Throwable $exe) {
                 return null;
@@ -167,7 +151,7 @@ class similarity_factory {
             // @codeCoverageIgnoreEnd
         }
 
-        $similarityclass = '\vpl_similarity_' . $type;
+        $similarityclass = '\vpl_similarity_' . $langname;
         return new $similarityclass();
     }
 
@@ -179,10 +163,10 @@ class similarity_factory {
      */
     public static function get(string $filename) {
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
-        $type = self::ext2type($ext);
+        $langname = self::ext2type($ext);
 
-        if ($type != false) {
-            return self::get_object($type);
+        if ($langname != false) {
+            return self::get_object($langname);
         } else {
             return null;
         }

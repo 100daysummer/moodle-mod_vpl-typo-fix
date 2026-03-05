@@ -25,14 +25,15 @@
 
 use mod_vpl\similarity\file_pair;
 use mod_vpl\similarity\utility;
+use html_table;
+use html_writer;
 
 require_once(dirname(__FILE__) . '/../../../config.php');
 require_once(dirname(__FILE__) . '/../locallib.php');
 require_once(dirname(__FILE__) . '/../vpl.class.php');
 require_once(dirname(__FILE__) . '/../vpl_submission.class.php');
-require_once(dirname(__FILE__) . '/similarity_factory.class.php');
 require_once(dirname(__FILE__) . '/similarity_form.class.php');
-require_once(dirname(__FILE__) . '/clusters.class.php');
+
 ini_set('memory_limit', '256M');
 
 require_login();
@@ -73,7 +74,7 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading(fullname($user));
 echo '<h2>' . $strtitle . '</h2>';
 
-// TODO creato own log type.
+// TODO create own log type.
 
 $ovpls = get_all_instances_in_course(VPL, $course);
 $timenow = time();
@@ -89,20 +90,12 @@ foreach ($ovpls as $ovpl) {
     if ($instance->example) {
         continue;
     }
-    // Open and limited => NO.
-    if (
-        $timenow >= $vpl->get_effective_setting('startdate', $user->id)
-        && $timenow <= $vpl->get_effective_setting('duedate', $user->id)
-    ) {
-        continue;
-    }
-    // Can be graded => NO.
+    // Cannot be graded => NO.
     if ($vpl->get_grade() == 0) {
         continue;
     }
     $vpls[] = $vpl;
 }
-
 @set_time_limit($timelimit);
 // Prepare table construction.
 $firstname = get_string('firstname');
@@ -145,9 +138,7 @@ $outputsize = [
         3,
         3,
 ];
-// Process every activity selected.
-
-
+// Process the activities selected.
 $bars = [];
 $relatedusers = [];
 foreach ($vpls as $vpl) {

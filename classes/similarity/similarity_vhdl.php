@@ -14,43 +14,53 @@
 // You should have received a copy of the GNU General Public License
 // along with VPL for Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use mod_vpl\similarity\similarity_base;
-use mod_vpl\tokenizer\tokenizer_factory;
-
 /**
- * HTML similarity class
+ * VHDL language similarity class
  *
  * @package mod_vpl
- * @copyright 2012 onwards Juan Carlos Rodríguez-del-Pino
+ * @copyright 2026 Juan Carlos Rodríguez-del-Pino
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author Juan Carlos Rodríguez-del-Pino <jcrodriguez@dis.ulpgc.es>
  */
-class vpl_similarity_html extends similarity_base {
+namespace mod_vpl\similarity;
+
+use mod_vpl\tokenizer\token_type;
+
+/**
+ * VHDL language similarity class.
+ * @codeCoverageIgnore
+ */
+class similarity_vhdl extends similarity_generic {
     /**
-     * Returns the type of similarity.
-     *
-     * @return int The type of similarity, which is 9 for HTML.
+     * Constructor for the VHDL similarity.
      */
-    public function get_type() {
-        return 9;
+    public function __construct() {
+        parent::__construct('vhdl');
     }
 
     /**
      * Normalizes the syntax of the given tokens.
+     * Reserved-word normalisations (case-insensitive):
+     *   - Loop keyword  for  → canonical "while"
+     *   - Exit keywords  next (≡ continue) / exit (≡ break)  → canonical "break"
      *
      * @param array $tokens The tokens to normalize.
      * @return array The normalized tokens.
      */
-    public function sintax_normalize(&$tokens) {
+    public function sintax_normalize(&$tokens): array {
+        foreach ($tokens as $token) {
+            if ($token->type == token_type::RESERVED) {
+                switch (strtolower($token->value)) {
+                    case 'for':
+                        $token->value = 'while';
+                        break;
+                    case 'next':
+                    case 'exit':
+                        $token->value = 'break';
+                        break;
+                }
+            }
+        }
         return $tokens;
-    }
-
-    /**
-     * Returns the tokenizer for the HTML language.
-     *
-     * @return vpl_tokenizer The tokenizer instance for HTML.
-     */
-    public function get_tokenizer() {
-        return tokenizer_factory::get('html');
     }
 }

@@ -19,7 +19,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__FILE__) . '/../locallib.php');
 require_once(dirname(__FILE__) . '/../vpl.class.php');
 require_once(dirname(__FILE__) . '/../vpl_submission.class.php');
-require_once(dirname(__FILE__) . '/similarity_factory.class.php');
 
 /**
  * Class to show two files diff

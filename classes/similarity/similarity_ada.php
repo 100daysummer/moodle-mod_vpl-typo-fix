@@ -14,30 +14,54 @@
 // You should have received a copy of the GNU General Public License
 // along with VPL for Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_vpl\similarity;
+
 use mod_vpl\similarity\similarity_base;
 use mod_vpl\tokenizer\token_type;
 use mod_vpl\tokenizer\tokenizer_factory;
 
 /**
- * Ada language similarity class
+ * Ada similarity class based on a tokenizer
  *
  * @package mod_vpl
- * @copyright 2012 Juan Carlos Rodríguez-del-Pino
+ * @copyright 2026 Juan Carlos Rodríguez-del-Pino
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author Juan Carlos Rodríguez-del-Pino <jcrodriguez@dis.ulpgc.es>
  */
-class vpl_similarity_ada extends similarity_base {
+
+/**
+ * Ada language similarity class.
+ * @codeCoverageIgnore
+ */
+class similarity_ada extends similarity_generic {
     /**
-     * Returns the type of similarity.
-     *
-     * @return int The type of similarity, which is 4 for Ada.
+     * Constructor for the Ada similarity.
      */
-    public function get_type() {
-        return 4;
+    public function __construct() {
+        parent::__construct('ada');
     }
+    /**
+     * Get the token types used for fingerprinting.
+     * Ada uses RESERVED (keywords) and OPERATOR (operators)
+     * since the structure is defined by keywords and operators.
+     *
+     * @return array Array of token_type constants
+     */
+    protected function get_fingerprint_types(): array {
+        return [token_type::OPERATOR, token_type::RESERVED];
+    }
+
 
     /**
      * Normalizes the syntax of the given tokens.
+     * Expands identifier-list declarations (e.g. "a, b, c : Integer") into
+     * separate declarations, and drops open-bracket tokens.
+     * Reserved-word normalisations:
+     *   - Loop keywords  for / loop  → canonical "while"
+     *   - Exit keyword  exit  → canonical "break"
+     *   - Conditional variant  elsif  → canonical "if"
+     * Non-operator and non-reserved tokens are passed through unchanged;
+     * type-based filtering is left to get_fingerprint_types.
      *
      * @param array $tokens The tokens to normalize.
      * @return array The normalized tokens.
@@ -107,15 +131,36 @@ class vpl_similarity_ada extends similarity_base {
                     default:
                         $ret[] = $token;
                 }
+            } else if ($token->type == token_type::RESERVED) {
+                $lower = strtolower($token->value);
+                if ($lower == 'is') {
+                    $identifierlist = true;
+                    $identifierdefpos = 0;
+                    $nidentifiers = 0;
+                }
+                // Normalise semantically interchangeable reserved words so that
+                // superficial rewrites (e.g. for → while) do not reduce similarity.
+                switch ($lower) {
+                    case 'for':
+                    case 'loop':
+                        // All loop constructs → canonical "while".
+                        $token->value = 'while';
+                        break;
+                    case 'exit':
+                        // Ada's break equivalent → canonical "break".
+                        $token->value = 'break';
+                        break;
+                    case 'elsif':
+                        // Conditional variant → canonical "if".
+                        $token->value = 'if';
+                        break;
+                }
+                $ret[] = $token;
+            } else {
+                $ret[] = $token;
             }
         }
+        $tokens = $ret;
         return $ret;
-    }
-
-    /**
-     * Returns the tokenizer for the Ada language.
-     */
-    public function get_tokenizer() {
-        return tokenizer_factory::get('ada');
     }
 }

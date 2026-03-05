@@ -14,48 +14,50 @@
 // You should have received a copy of the GNU General Public License
 // along with VPL for Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use mod_vpl\similarity\similarity_base;
-use mod_vpl\tokenizer\token_type;
-use mod_vpl\tokenizer\tokenizer_factory;
-
 /**
- * Scheme language similarity class
+ * Verilog language similarity class
  *
  * @package mod_vpl
- * @copyright 2012 Juan Carlos Rodríguez-del-Pino
+ * @copyright 2026 Juan Carlos Rodríguez-del-Pino
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author Juan Carlos Rodríguez-del-Pino <jcrodriguez@dis.ulpgc.es>
  */
-class vpl_similarity_scheme extends similarity_base {
+namespace mod_vpl\similarity;
+
+use mod_vpl\tokenizer\token_type;
+
+/**
+ * Verilog language similarity class.
+ * @codeCoverageIgnore
+ */
+class similarity_verilog extends similarity_generic {
     /**
-     * Returns the type of similarity.
-     *
-     * @return int The type of similarity, which is 5 for Scheme.
+     * Constructor for the Verilog similarity.
      */
-    public function get_type() {
-        return 5;
+    public function __construct() {
+        parent::__construct('verilog');
     }
 
     /**
      * Normalizes the syntax of the given tokens.
+     * Reserved-word normalisations:
+     *   - Loop keywords  for / repeat / forever  → canonical "while"
      *
-     * @param array $tokens The array of tokens to normalize.
-     * @return array The normalized tokens, which only include operators.
+     * @param array $tokens The tokens to normalize.
+     * @return array The normalized tokens.
      */
-    public function sintax_normalize(&$tokens) {
-        $ret = [];
+    public function sintax_normalize(&$tokens): array {
         foreach ($tokens as $token) {
-            if ($token->type == token_type::OPERATOR) {
-                $ret[] = $token;
+            if ($token->type == token_type::RESERVED) {
+                switch ($token->value) {
+                    case 'for':
+                    case 'repeat':
+                    case 'forever':
+                        $token->value = 'while';
+                        break;
+                }
             }
         }
-        return $ret;
-    }
-
-    /**
-     * Returns the tokenizer for the scheme language.
-     */
-    public function get_tokenizer() {
-        return tokenizer_factory::get('scheme');
+        return $tokens;
     }
 }
