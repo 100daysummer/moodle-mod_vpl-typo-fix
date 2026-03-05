@@ -212,9 +212,6 @@ final class tokenizer_test extends \advanced_testcase {
                     $tokenizer = tokenizer_factory::get($namelang, true);
                     $extensions = testable_tokenizer::get_extensions($tokenizer);
                     self::get_behat($tokenizer, $extensions, true);
-
-                    $tokenizer = tokenizer_factory::get($namelang, false);
-                    self::get_behat($tokenizer, $extensions, false);
                 }
             }
         } catch (\Throwable $exe) {
@@ -667,13 +664,13 @@ final class tokenizer_test extends \advanced_testcase {
         self::$preparetestcases = [
             self::gettestpath() . 'valid/prepare/prepare_with_one_state_tokenizer_rules.json' => (
                 [
-                    "regexprs" => [ "start" => "/(\/\/)|(\/\*)|($)/" ],
+                    "regexprs" => [ "start" => "\x01(\/\/)|(\/\*)|($)\x01" ],
                     "matchmappings" => [ "start" => [ "default_token" => "text", 0 => 0, 1 => 1 ] ],
                 ]
             ),
             self::gettestpath() . 'valid/prepare/prepare_with_two_states_tokenizer_rules.json' => (
                 [
-                    "regexprs" => [ "start" => "/(\/\/)|(\/\*)|($)/", "another_start" => "/(\/\/)|(\/\*)|($)/" ],
+                    "regexprs" => [ "start" => "\x01(\/\/)|(\/\*)|($)\x01", "another_start" => "\x01(\/\/)|(\/\*)|($)\x01" ],
                     "matchmappings" => [
                         "start" => [ "default_token" => "text", 0 => 0, 1 => 1 ],
                         "another_start" => [ "default_token" => "text", 0 => 0, 1 => 1 ],
@@ -682,16 +679,16 @@ final class tokenizer_test extends \advanced_testcase {
             ),
             self::gettestpath() . 'valid/prepare/prepare_with_groups_tokenizer_rules.json' => (
                 [
-                    "regexprs" => [ "start" => "/(\/\/)|((?:.*)(?:b))|($)/" ],
+                    "regexprs" => [ "start" => "\x01(\/\/)|((?:.*)(?:b))|($)\x01" ],
                     "matchmappings" => [ "start" => [ "default_token" => "comment", 0 => 0, 1 => 1 ] ],
                 ]
             ),
             self::gettestpath() . 'valid/prepare/prepare_with_more_rules_tokenizer_rules.json' => (
                 [
                     "regexprs" => [
-                        "start" => "/(\/\/)|((?:void)(?:[a-z]+(?:[a-zA-Z0-9]|_)*)(?:\()(?:\)))|($)/",
-                        "statement" => "/(([a-z]+([a-zA-Z0-9]|_)*))|($)/",
-                        "comment" => "/(\/\/)|($)/",
+                        "start" => "\x01(\/\/)|((?:void)(?:[a-z]+(?:[a-zA-Z0-9]|_)*)(?:\()(?:\)))|($)\x01",
+                        "statement" => "\x01(([a-z]+([a-zA-Z0-9]|_)*))|($)\x01",
+                        "comment" => "\x01(\/\/)|($)\x01",
                     ],
                     "matchmappings" => [
                         "start" => [ "default_token" => "comment.line.double-slash", 0 => 0, 1 => 1 ],
@@ -704,10 +701,10 @@ final class tokenizer_test extends \advanced_testcase {
                 [
                     "regexprs" => [
                         "start" =>
-                            "/([+-]?\d[\d_]*(?:(?:\.[\d_]*)?(?:[eE][+-]?[[0-9]_]+)?)?[LlSsDdFfYy]?\b)|((?:true|false)\b)|" .
-                            "((?:open(?:\s+))?module(?=\s*\w))|($)/",
-                        "body-module" => "/({)|(\s+)|(\w+)|(\.)|(\s+)|($)/",
-                        "end-module" => "/(})|(\b(?:requires|transitive|exports|opens|to|uses|provides|with)\b)|($)/",
+                            "\x01([+-]?\d[\d_]*(?:(?:\.[\d_]*)?(?:[eE][+-]?[[0-9]_]+)?)?[LlSsDdFfYy]?\b)|((?:true|false)\b)|" .
+                            "((?:open(?:\s+))?module(?=\s*\w))|($)\x01",
+                        "body-module" => "\x01({)|(\s+)|(\w+)|(\.)|(\s+)|($)\x01",
+                        "end-module" => "\x01(})|(\b(?:requires|transitive|exports|opens|to|uses|provides|with)\b)|($)\x01",
                     ],
                     "matchmappings" => [
                         "start" => [ "default_token" => "text", 0 => 0, 1 => 1, 2 => 2 ],
@@ -718,19 +715,19 @@ final class tokenizer_test extends \advanced_testcase {
             ),
             self::gettestpath() . 'valid/prepare/prepare_with_one_group_tokenizer_rules.json' => (
                 [
-                    "regexprs" => [ "start" => "/((?:\/\/))|($)/" ],
+                    "regexprs" => [ "start" => "\x01((?:\/\/))|($)\x01" ],
                     "matchmappings" => [ "start" => [ "default_token" => "text", 0 => 0 ] ],
                 ]
             ),
             self::gettestpath() . 'valid/prepare/prepare_not_enough_groups_at_regex_tokenizer_rules.json' => (
                 [
-                    "regexprs" => [ "start" => "/((?:int))|($)/"],
+                    "regexprs" => [ "start" => "\x01((?:int))|($)\x01"],
                     "matchmappings" => [ "start" => [ "default_token" => "text", 0 => 0 ] ],
                 ]
             ),
             self::gettestpath() . 'valid/prepare/prepare_with_number_ref_tokenizer_rules.json' => (
                 [
-                    "regexprs" => [ "start" => "/((a)(b)\\2\\3)|($)/" ],
+                    "regexprs" => [ "start" => "\x01((a)(b)\\2\\3)|($)\x01" ],
                     "matchmappings" => [ "start" => [ "default_token" => "text", 0 => 0 ] ],
                 ]
             ),
@@ -754,7 +751,7 @@ final class tokenizer_test extends \advanced_testcase {
                     'output' => [
                         0 => [
                             'state' => 'start',
-                            'tokens' => [ new token('comment.line', '// This is an example', 0) ],
+                            'tokens' => [ new token('comment.line', '// This is an example', 1) ],
                         ],
                     ],
                 ]
@@ -765,13 +762,13 @@ final class tokenizer_test extends \advanced_testcase {
                     'output' => [
                         0 => [
                             'state' => 'comment',
-                            'tokens' => [ new token('comment', '/*', 0) ],
+                            'tokens' => [ new token('comment', '/*', 1) ],
                         ],
                         1 => [
                             'state' => 'start',
                             'tokens' => [
-                                new token('comment', '    This is a comment ', 1),
-                                new token('comment', '*/', 1),
+                                new token('comment', '    This is a comment ', 2),
+                                new token('comment', '*/', 2),
                             ],
                         ],
                     ],
@@ -784,107 +781,107 @@ final class tokenizer_test extends \advanced_testcase {
                         0 => [
                             'state' => 'start',
                             'tokens' => [
-                                new token('keyword', '#include', 0),
-                                new token('constant.other', ' <stdio.h>', 0),
+                                new token('keyword', '#include', 1),
+                                new token('constant.other', ' <stdio.h>', 1),
                             ],
                         ],
                         1 => [ 'state' => 'start', 'tokens' => [ ] ],
                         2 => [
                             'state' => 'start',
                             'tokens' => [
-                                new token('storage.type', 'int', 2), new token('text', ' ', 2),
-                                new token('identifier', 'main', 2), new token('paren.lparen', '(', 2),
-                                new token('storage.type', 'int', 2), new token('text', ' ', 2),
-                                new token('identifier', 'nargc', 2), new token('punctuation.operator', ',', 2),
-                                new token('text', ' ', 2), new token('storage.type', 'char', 2),
-                                new token('text', ' ', 2), new token('keyword.operator', '*', 2),
-                                new token('identifier', 'argv', 2), new token('paren.lparen', '[', 2),
-                                new token('paren.rparen', ']', 2), new token('paren.rparen', ')', 2),
+                                new token('storage.type', 'int', 3), new token('text', ' ', 3),
+                                new token('identifier', 'main', 3), new token('paren.lparen', '(', 3),
+                                new token('storage.type', 'int', 3), new token('text', ' ', 3),
+                                new token('identifier', 'nargc', 3), new token('punctuation.operator', ',', 3),
+                                new token('text', ' ', 3), new token('storage.type', 'char', 3),
+                                new token('text', ' ', 3), new token('keyword.operator', '*', 3),
+                                new token('identifier', 'argv', 3), new token('paren.lparen', '[', 3),
+                                new token('paren.rparen', ']', 3), new token('paren.rparen', ')', 3),
                             ],
                         ],
-                        3 => [ 'state' => 'start', 'tokens' => [ new token('paren.lparen', '{', 3) ] ],
+                        3 => [ 'state' => 'start', 'tokens' => [ new token('paren.lparen', '{', 4) ] ],
                         4 => [
                             'state' => 'start',
                             'tokens' => [
-                                new token('text', '    ', 4), new token('keyword.control', 'if', 4),
-                                new token('text', ' ', 4), new token('paren.lparen', '(', 4),
-                                new token('identifier', 'nargc', 4), new token('text', ' ', 4),
-                                new token('keyword.operator', '>', 4), new token('text', ' ', 4),
-                                new token('constant.numeric', '1', 4), new token('paren.rparen', ')', 4),
+                                new token('text', '    ', 5), new token('keyword.control', 'if', 5),
+                                new token('text', ' ', 5), new token('paren.lparen', '(', 5),
+                                new token('identifier', 'nargc', 5), new token('text', ' ', 5),
+                                new token('keyword.operator', '>', 5), new token('text', ' ', 5),
+                                new token('constant.numeric', '1', 5), new token('paren.rparen', ')', 5),
                             ],
                             ],
                         5 => [
                             'state' => 'start',
-                            'tokens' => [ new token('text', '    ', 5), new token('paren.lparen', '{', 5) ],
+                            'tokens' => [ new token('text', '    ', 6), new token('paren.lparen', '{', 6) ],
                         ],
                         6 => [
                             'state' => 'start',
                             'tokens' => [
-                                new token('text', '        ', 6), new token('keyword.control', 'for', 6),
-                                new token('text', ' ', 6), new token('paren.lparen', '(', 6),
-                                new token('storage.type', 'int', 6), new token('text', ' ', 6), new token('identifier', 'i', 6),
-                                new token('text', ' ', 6), new token('keyword.operator', '=', 6),
-                                new token('text', ' ', 6), new token('constant.numeric', '0', 6),
-                                new token('punctuation.operator', ';', 6), new token('text', ' ', 6),
-                                new token('identifier', 'i', 6), new token('text', ' ', 6),
-                                new token('keyword.operator', '<', 6), new token('text', ' ', 6),
-                                new token('identifier', 'nargc', 6), new token('punctuation.operator', ';', 6),
-                                new token('text', ' ', 6), new token('identifier', 'i', 6),
-                                new token('keyword.operator', '++', 6), new token('paren.rparen', ')', 6),
+                                new token('text', '        ', 7), new token('keyword.control', 'for', 7),
+                                new token('text', ' ', 7), new token('paren.lparen', '(', 7),
+                                new token('storage.type', 'int', 7), new token('text', ' ', 7), new token('identifier', 'i', 7),
+                                new token('text', ' ', 7), new token('keyword.operator', '=', 7),
+                                new token('text', ' ', 7), new token('constant.numeric', '0', 7),
+                                new token('punctuation.operator', ';', 7), new token('text', ' ', 7),
+                                new token('identifier', 'i', 7), new token('text', ' ', 7),
+                                new token('keyword.operator', '<', 7), new token('text', ' ', 7),
+                                new token('identifier', 'nargc', 7), new token('punctuation.operator', ';', 7),
+                                new token('text', ' ', 7), new token('identifier', 'i', 7),
+                                new token('keyword.operator', '++', 7), new token('paren.rparen', ')', 7),
                             ],
                         ],
                         7 => [
                             'state' => 'start',
-                            'tokens' => [ new token('text', '        ', 7), new token('paren.lparen', '{', 7) ],
+                            'tokens' => [ new token('text', '        ', 8), new token('paren.lparen', '{', 8) ],
                         ],
                         8 => [
                             'state' => 'start',
                             'tokens' => [
-                                new token('text', '            ', 8), new token('support.function', 'printf', 8),
-                                new token('paren.lparen', '(', 8), new token('string.start', '"', 8),
-                                new token('constant.language.escape', '%d', 8), new token('constant.language.escape', '\n', 8),
-                                new token('string.end', '"', 8), new token('punctuation.operator', ',', 8),
-                                new token('text', ' ', 8), new token('identifier', 'i', 8),
-                                new token('paren.rparen', ')', 8), new token('punctuation.operator', ';', 8),
+                                new token('text', '            ', 9), new token('support.function', 'printf', 9),
+                                new token('paren.lparen', '(', 9), new token('string.start', '"', 9),
+                                new token('constant.language.escape', '%d', 9), new token('constant.language.escape', '\n', 9),
+                                new token('string.end', '"', 9), new token('punctuation.operator', ',', 9),
+                                new token('text', ' ', 9), new token('identifier', 'i', 9),
+                                new token('paren.rparen', ')', 9), new token('punctuation.operator', ';', 9),
                             ],
                         ],
                         9 => [ 'state' => 'start', 'tokens' => [ ] ],
                         10 => [
                             'state' => 'start',
                             'tokens' => [
-                                new token('text', '            ', 10),
-                                new token('comment', '// This is just a comment', 10),
+                                new token('text', '            ', 11),
+                                new token('comment', '// This is just a comment', 11),
                             ],
                         ],
                         11 => [
                             'state' => 'start',
                             'tokens' => [
-                                new token('text', '            ', 11), new token('storage.type', 'char', 11),
-                                new token('text', ' ', 11), new token('keyword.operator', '*', 11),
-                                new token('identifier', 'str', 11), new token('text', ' ', 11),
-                                new token('keyword.operator', '=', 11), new token('text', ' ', 11),
-                                new token('string.start', '"', 11), new token('string', 'Hello world', 11),
-                                new token('string.end', '"', 11), new token('punctuation.operator', ';', 11),
+                                new token('text', '            ', 12), new token('storage.type', 'char', 12),
+                                new token('text', ' ', 12), new token('keyword.operator', '*', 12),
+                                new token('identifier', 'str', 12), new token('text', ' ', 12),
+                                new token('keyword.operator', '=', 12), new token('text', ' ', 12),
+                                new token('string.start', '"', 12), new token('string', 'Hello world', 12),
+                                new token('string.end', '"', 12), new token('punctuation.operator', ';', 12),
                             ],
                         ],
                         12 => [
                             'state' => 'start',
-                            'tokens' => [ new token('text', '        ', 12), new token('paren.rparen', '}', 12) ],
+                            'tokens' => [ new token('text', '        ', 13), new token('paren.rparen', '}', 13) ],
                         ],
                         13 => [
                             'state' => 'start',
-                            'tokens' => [ new token('text', '    ', 13), new token('paren.rparen', '}', 13) ],
+                            'tokens' => [ new token('text', '    ', 14), new token('paren.rparen', '}', 14) ],
                         ],
                         14 => [ 'state' => 'start', 'tokens' => [ ] ],
                         15 => [
                             'state' => 'start',
                             'tokens' => [
-                                new token('text', '    ', 15), new token('keyword.control', 'return', 15),
-                                new token('text', ' ', 15), new token('constant.numeric', '0', 15),
-                                new token('punctuation.operator', ';', 15),
+                                new token('text', '    ', 16), new token('keyword.control', 'return', 16),
+                                new token('text', ' ', 16), new token('constant.numeric', '0', 16),
+                                new token('punctuation.operator', ';', 16),
                             ],
                         ],
-                        16 => [ 'state' => 'start', 'tokens' => [ new token('paren.rparen', '}', 16) ] ],
+                        16 => [ 'state' => 'start', 'tokens' => [ new token('paren.rparen', '}', 17) ] ],
                     ],
                 ]
             ),
@@ -1054,66 +1051,66 @@ final class tokenizer_test extends \advanced_testcase {
                 [
                     'input' => self::gettestpath() . 'valid/parse/more_lines.c',
                     'output' => [
-                        new token(token_type::RESERVED, '#include', 0),
-                        new token(token_type::LITERAL, '<stdio.h>', 0),
-                        new token(token_type::RESERVED, 'int', 2),
-                        new token(token_type::IDENTIFIER, 'main', 2),
-                        new token(token_type::OPERATOR, '(', 2),
-                        new token(token_type::RESERVED, 'int', 2),
-                        new token(token_type::IDENTIFIER, 'nargc', 2),
-                        new token(token_type::OPERATOR, ',', 2),
-                        new token(token_type::RESERVED, 'char', 2),
-                        new token(token_type::OPERATOR, '*', 2),
-                        new token(token_type::IDENTIFIER, 'argv', 2),
-                        new token(token_type::OPERATOR, '[', 2),
-                        new token(token_type::OPERATOR, ']', 2),
-                        new token(token_type::OPERATOR, ')', 2),
-                        new token(token_type::OPERATOR, '{', 3),
-                        new token(token_type::RESERVED, 'if', 4),
-                        new token(token_type::OPERATOR, '(', 4),
-                        new token(token_type::IDENTIFIER, 'nargc', 4),
-                        new token(token_type::OPERATOR, '>', 4),
-                        new token(token_type::LITERAL, '1', 4),
-                        new token(token_type::OPERATOR, ')', 4),
-                        new token(token_type::OPERATOR, '{', 5),
-                        new token(token_type::RESERVED, 'for', 6),
-                        new token(token_type::OPERATOR, '(', 6),
-                        new token(token_type::RESERVED, 'int', 6),
-                        new token(token_type::IDENTIFIER, 'i', 6),
-                        new token(token_type::OPERATOR, '=', 6),
-                        new token(token_type::LITERAL, '0', 6),
-                        new token(token_type::OPERATOR, ';', 6),
-                        new token(token_type::IDENTIFIER, 'i', 6),
-                        new token(token_type::OPERATOR, '<', 6),
-                        new token(token_type::IDENTIFIER, 'nargc', 6),
-                        new token(token_type::OPERATOR, ';', 6),
-                        new token(token_type::IDENTIFIER, 'i', 6),
-                        new token(token_type::OPERATOR, '++', 6),
-                        new token(token_type::OPERATOR, ')', 6),
-                        new token(token_type::OPERATOR, '{', 7),
-                        new token(token_type::RESERVED, 'printf', 8),
-                        new token(token_type::OPERATOR, '(', 8),
-                        new token(token_type::LITERAL, '"', 8),
-                        new token(token_type::LITERAL, '%d', 8),
-                        new token(token_type::LITERAL, '\n', 8),
-                        new token(token_type::LITERAL, '"', 8),
-                        new token(token_type::OPERATOR, ',', 8),
-                        new token(token_type::IDENTIFIER, 'i', 8),
-                        new token(token_type::OPERATOR, ')', 8),
-                        new token(token_type::OPERATOR, ';', 8),
-                        new token(token_type::RESERVED, 'char', 11),
-                        new token(token_type::OPERATOR, '*', 11),
-                        new token(token_type::IDENTIFIER, 'str', 11),
-                        new token(token_type::OPERATOR, '=', 11),
-                        new token(token_type::LITERAL, '"Hello world', 11),
-                        new token(token_type::LITERAL, '"', 11),
-                        new token(token_type::OPERATOR, ';', 11),
-                        new token(token_type::OPERATOR, '}', 12),
+                        new token(token_type::RESERVED, '#include', 1),
+                        new token(token_type::LITERAL, '<stdio.h>', 1),
+                        new token(token_type::RESERVED, 'int', 3),
+                        new token(token_type::IDENTIFIER, 'main', 3),
+                        new token(token_type::OPERATOR, '(', 3),
+                        new token(token_type::RESERVED, 'int', 3),
+                        new token(token_type::IDENTIFIER, 'nargc', 3),
+                        new token(token_type::OPERATOR, ',', 3),
+                        new token(token_type::RESERVED, 'char', 3),
+                        new token(token_type::OPERATOR, '*', 3),
+                        new token(token_type::IDENTIFIER, 'argv', 3),
+                        new token(token_type::OPERATOR, '[', 3),
+                        new token(token_type::OPERATOR, ']', 3),
+                        new token(token_type::OPERATOR, ')', 3),
+                        new token(token_type::OPERATOR, '{', 4),
+                        new token(token_type::RESERVED, 'if', 5),
+                        new token(token_type::OPERATOR, '(', 5),
+                        new token(token_type::IDENTIFIER, 'nargc', 5),
+                        new token(token_type::OPERATOR, '>', 5),
+                        new token(token_type::LITERAL, '1', 5),
+                        new token(token_type::OPERATOR, ')', 5),
+                        new token(token_type::OPERATOR, '{', 6),
+                        new token(token_type::RESERVED, 'for', 7),
+                        new token(token_type::OPERATOR, '(', 7),
+                        new token(token_type::RESERVED, 'int', 7),
+                        new token(token_type::IDENTIFIER, 'i', 7),
+                        new token(token_type::OPERATOR, '=', 7),
+                        new token(token_type::LITERAL, '0', 7),
+                        new token(token_type::OPERATOR, ';', 7),
+                        new token(token_type::IDENTIFIER, 'i', 7),
+                        new token(token_type::OPERATOR, '<', 7),
+                        new token(token_type::IDENTIFIER, 'nargc', 7),
+                        new token(token_type::OPERATOR, ';', 7),
+                        new token(token_type::IDENTIFIER, 'i', 7),
+                        new token(token_type::OPERATOR, '++', 7),
+                        new token(token_type::OPERATOR, ')', 7),
+                        new token(token_type::OPERATOR, '{', 8),
+                        new token(token_type::RESERVED, 'printf', 9),
+                        new token(token_type::OPERATOR, '(', 9),
+                        new token(token_type::LITERAL, '"', 9),
+                        new token(token_type::LITERAL, '%d', 9),
+                        new token(token_type::LITERAL, '\n', 9),
+                        new token(token_type::LITERAL, '"', 9),
+                        new token(token_type::OPERATOR, ',', 9),
+                        new token(token_type::IDENTIFIER, 'i', 9),
+                        new token(token_type::OPERATOR, ')', 9),
+                        new token(token_type::OPERATOR, ';', 9),
+                        new token(token_type::RESERVED, 'char', 12),
+                        new token(token_type::OPERATOR, '*', 12),
+                        new token(token_type::IDENTIFIER, 'str', 12),
+                        new token(token_type::OPERATOR, '=', 12),
+                        new token(token_type::LITERAL, '"Hello world', 12),
+                        new token(token_type::LITERAL, '"', 12),
+                        new token(token_type::OPERATOR, ';', 12),
                         new token(token_type::OPERATOR, '}', 13),
-                        new token(token_type::RESERVED, 'return', 15),
-                        new token(token_type::LITERAL, '0', 15),
-                        new token(token_type::OPERATOR, ';', 15),
-                        new token(token_type::OPERATOR, '}', 16),
+                        new token(token_type::OPERATOR, '}', 14),
+                        new token(token_type::RESERVED, 'return', 16),
+                        new token(token_type::LITERAL, '0', 16),
+                        new token(token_type::OPERATOR, ';', 16),
+                        new token(token_type::OPERATOR, '}', 17),
                     ],
                 ]
             ),

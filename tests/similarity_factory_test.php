@@ -15,7 +15,7 @@
 // along with VPL for Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for mod_vpl\similarity\similarity_factory and vpl_similarity_factory.class
+ * Unit tests for mod_vpl\similarity\similarity_factory
  *
  * @package mod_vpl
  * @copyright David Parreño Barbuzano
@@ -27,10 +27,8 @@ namespace mod_vpl;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/mod/vpl/similarity/similarity_factory.class.php');
 
 use mod_vpl\similarity\similarity_factory;
-use vpl_similarity_factory;
 use mod_vpl\tests\testable_similarity_factory;
 
 
@@ -51,13 +49,7 @@ final class similarity_factory_test extends \advanced_testcase {
         $validext = similarity_factory::ext2type('java');
         $this->assertSame('java', $validext);
 
-        $validext = vpl_similarity_factory::ext2type('java');
-        $this->assertSame('java', $validext);
-
         $invalidext = similarity_factory::ext2type('unexisted_extension');
-        $this->assertFalse($invalidext);
-
-        $invalidext = vpl_similarity_factory::ext2type('unexisted_extension');
         $this->assertFalse($invalidext);
     }
 
@@ -66,9 +58,6 @@ final class similarity_factory_test extends \advanced_testcase {
      */
     public function test_invalid_ext_get(): void {
         $invalidext = similarity_factory::get('unexisted_extension');
-        $this->assertTrue(is_null($invalidext));
-
-        $invalidext = vpl_similarity_factory::get('unexisted_extension');
         $this->assertTrue(is_null($invalidext));
     }
 
@@ -81,58 +70,10 @@ final class similarity_factory_test extends \advanced_testcase {
         foreach ($tokenizerlangs as $namelang) {
             if (similarity_factory::ext2type($namelang) !== false) {
                 $filelang = 'test_file.' . $namelang;
-
                 $similarityclass = similarity_factory::get($filelang);
-                $this->check_similarity($similarityclass, $namelang);
-
-                $similarityclass = similarity_factory::get($filelang);
-                $this->check_similarity($similarityclass, $namelang);
-
-                $similarityclass = vpl_similarity_factory::get($filelang);
-                $this->check_similarity($similarityclass, $namelang);
-
-                $similarityclass = vpl_similarity_factory::get($filelang);
                 $this->check_similarity($similarityclass, $namelang);
             }
         }
-    }
-
-    /**
-     * Method to test similarity_factory::get when generic_similarity is used
-     */
-    public function test_get_with_generic_similarity(): void {
-        $filelang = 'test_file.java';
-
-        $similarityclass = similarity_factory::get($filelang, 1);
-        $this->check_similarity($similarityclass, 'java', 1);
-
-        $similarityclass = similarity_factory::get($filelang, 1);
-        $this->check_similarity($similarityclass, 'java', 1);
-
-        $similarityclass = vpl_similarity_factory::get($filelang, 1);
-        $this->check_similarity($similarityclass, 'java', 1);
-
-        $similarityclass = vpl_similarity_factory::get($filelang, 1);
-        $this->check_similarity($similarityclass, 'java', 1);
-    }
-
-    /**
-     * Method to test similarity_factory::get when old similarity is used
-     */
-    public function test_get_with_old_similarity(): void {
-        $filelang = 'test_file.pl';
-
-        $similarityclass = similarity_factory::get($filelang);
-        $this->check_similarity($similarityclass, 'prolog', 2);
-
-        $similarityclass = similarity_factory::get($filelang);
-        $this->check_similarity($similarityclass, 'prolog', 2);
-
-        $similarityclass = vpl_similarity_factory::get($filelang);
-        $this->check_similarity($similarityclass, 'prolog', 2);
-
-        $similarityclass = vpl_similarity_factory::get($filelang);
-        $this->check_similarity($similarityclass, 'prolog', 2);
     }
 
     /**
@@ -148,7 +89,6 @@ final class similarity_factory_test extends \advanced_testcase {
         $similarityclasses = [
             'mod_vpl\similarity\similarity_' . $namelang,
             'mod_vpl\similarity\similarity_generic',
-            'vpl_similarity_' . $namelang,
         ];
 
         if (!is_numeric($similaritytype)) {

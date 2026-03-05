@@ -54,14 +54,6 @@ final class tokenizer_factory_test extends \advanced_testcase {
     }
 
     /**
-     * Method to test tokenizer_factory::get when old tokenizer is used
-     */
-    public function test_old_tokenizer(): void {
-        $tokenizer = tokenizer_factory::get('prolog');
-        $this->check_tokenizer($tokenizer, 'prolog', false);
-    }
-
-    /**
      * Method to test tokenizer_factory::get when new tokenizer is used
      */
     public function test_new_tokenizer(): void {
@@ -84,5 +76,21 @@ final class tokenizer_factory_test extends \advanced_testcase {
         $this->assertTrue(isset($tokenizer) === true);
         $classname = $newtokenizer === false ? 'vpl_tokenizer_' . $namelang : 'mod_vpl\tokenizer\tokenizer';
         $this->assertSame($classname, get_class($tokenizer));
+    }
+
+    /**
+     * Prepare test cases before the execution.
+     */
+    public static function setUpBeforeClass(): void {
+        parent::setUpBeforeClass();
+        assertf::set_enable();
+    }
+
+    /**
+     * Clean up after the execution of test cases.
+     */
+    public static function tearDownAfterClass(): void {
+        assertf::set_disable();
+        parent::tearDownAfterClass();
     }
 }
