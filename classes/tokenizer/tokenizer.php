@@ -206,6 +206,8 @@ class tokenizer extends tokenizer_base {
         "string.unquoted" => token_type::LITERAL,
         "string.interpolated" => token_type::LITERAL,
         "string.regexp" => token_type::LITERAL,
+        "string.double" => token_type::LITERAL,
+        "string.single" => token_type::LITERAL,
         "string.other" => token_type::LITERAL,
         "support" => null,
         "support.function" => token_type::RESERVED,
@@ -297,7 +299,12 @@ class tokenizer extends tokenizer_base {
         $this->init_extension($rulefilename, $jsonobj);
         $this->init_states($rulefilename, $jsonobj);
 
-        $restoptions = get_object_vars($jsonobj);
+        // Ignore options starting with vpl_doc_ as documentation.
+        $restoptions = array_filter(
+            get_object_vars($jsonobj),
+            fn($key) => !str_starts_with($key, 'vpl_doc_'),
+            ARRAY_FILTER_USE_KEY
+        );
         $areinvalidoptions = count($restoptions) != 0;
 
         if ($areinvalidoptions == true) {
@@ -383,7 +390,7 @@ class tokenizer extends tokenizer_base {
     public function get_all_tokens(string $code): array {
         $infolines = [];
         $state = 'start';
-        $numline = 0;
+        $numline = 1;
         $code = str_replace("\r\n", "\n", $code); // Sanitize new line code.
         $lines = explode("\n", $code);
         foreach ($lines as $textperline) {
@@ -536,9 +543,7 @@ class tokenizer extends tokenizer_base {
             $ruleregexpr = [];
             $matchtotal = 0;
 
-            $this->matchmappings[$statename] = [ "default_token" => "text" ];
-            $mapping = $this->matchmappings[$statename];
-
+            $mapping = [ "default_token" => "text" ];
             for ($i = 0; $i < count($rules); $i++) {
                 $rule = $rules[$i];
 
@@ -551,8 +556,9 @@ class tokenizer extends tokenizer_base {
                 }
 
                 $adjustedregex = $rule->regex;
-                preg_match("/(?:(" . $adjustedregex . ")|(.))/", "a", $matches);
-                $matchcount = count($matches) >= 3 ? count($matches) - 2 : 1;
+                $umod = (strpos($adjustedregex, '\x{') !== false) ? 'u' : '';
+                $result = preg_match("\x01(?:(" . $adjustedregex . ")|(.))\x01" . $umod, "a", $matches);
+                $matchcount = ($result !== false && count($matches) >= 3) ? count($matches) - 2 : 1;
 
                 if (is_array($rule->token)) {
                     if (count($rule->token) == 1 || $matchcount == 1) {
@@ -595,7 +601,11 @@ class tokenizer extends tokenizer_base {
             }
 
             $this->matchmappings[$statename] = $mapping;
-            $this->regexprs[$statename] = "/(" . join(")|(", $ruleregexpr) . ")|($)/";
+            $combined = "\x01(" . join(")|(", $ruleregexpr) . ")|($)\x01";
+            if (strpos($combined, '\x{') !== false) {
+                $combined .= 'u';
+            }
+            $this->regexprs[$statename] = $combined;
         }
     }
 
@@ -629,13 +639,19 @@ class tokenizer extends tokenizer_base {
      */
     private static function load_json(string $filename): object {
         $data = file_get_contents($filename);
+        assertf::assert($data !== false, $filename, 'file ' . $filename . ' could not be read');
 
-        // Discard C-style comments and blank lines.
-        $content = preg_replace('#(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|([\s\t]//.*)|(^//.*)#', '', $data);
-        $content = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $content);
+        // Discard C-style block comments and standalone // line comments (lines with no other content).
+        $content = preg_replace('#(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|(^\s*//.*)#m', '', $data) ?? $data;
+        $content = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $content) ?? $content;
+
+        if (trim($content) === '') {
+            assertf::assert(false, $filename, 'file ' . $filename . ' is empty');
+        }
 
         $jsonobj = json_decode($content, null, 512, JSON_INVALID_UTF8_SUBSTITUTE);
-        assertf::assert(isset($jsonobj), $filename, 'file ' . $filename . ' is empty');
+        $errmsg = "JSON parse file '$filename' error: " . json_last_error_msg();
+        assertf::assert(isset($jsonobj), $filename, $errmsg);
         return $jsonobj;
     }
 

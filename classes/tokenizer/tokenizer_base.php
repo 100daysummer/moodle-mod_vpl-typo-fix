@@ -218,7 +218,7 @@ class tokenizer_base {
      * @return string
      */
     protected static function remove_capturing_groups(string $src): string {
-        $regex = preg_replace_callback("/\\.|\[(?:\\.|[^\\\]])*|\(\?[:=!<]|(\()/", function ($value) {
+        $regex = preg_replace_callback("/\\.|\[(?:\\.|[^\\\]])*|\(\?[:=!<imsxUJ-]|(\()/", function ($value) {
             return strcmp($value[0], "(") == 0 ? "(?:" : $value[0];
         }, $src);
 
@@ -245,7 +245,9 @@ class tokenizer_base {
                 for ($i = 0; $i < count($matches[0]); $i++) {
                     if ($i != count($matches[0]) - 1) {
                         $length = $matches[0][$i + 1][1] - $offset;
-                        $regexi = "/" . substr($regex, $offset, $length) . "/";
+                        $sub = substr($regex, $offset, $length);
+                        $umod = (strpos($sub, '\x{') !== false) ? 'u' : '';
+                        $regexi = "\x01" . $sub . "\x01" . $umod;
                         $offset = $matches[0][$i + 1][1];
 
                         preg_match($regexi, $restvalue, $matchesvalue);
@@ -253,7 +255,9 @@ class tokenizer_base {
                         $restvalue = substr($restvalue, strlen($matchesvalue[0]));
                     } else {
                         $length = strlen($value) - $offset;
-                        $regexi = "/" . substr($regex, $offset, $length) . "/";
+                        $sub = substr($regex, $offset, $length);
+                        $umod = (strpos($sub, '\x{') !== false) ? 'u' : '';
+                        $regexi = "\x01" . $sub . "\x01" . $umod;
                         $tokenarray[] = new token($type[$i], $restvalue, $numline);
                     }
                 }
