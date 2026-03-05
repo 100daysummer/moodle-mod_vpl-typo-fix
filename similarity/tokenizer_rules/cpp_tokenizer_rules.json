@@ -1,6 +1,7 @@
-// Highlighter rules based on Ace Editor <https://github.com/ajaxorg/ace/blob/master/lib/ace/mode/c_cpp_highlight_rules.js>
-// made by David Parreño Barbuzano <david.parreno101@alu.ulpgc.es>
 {
+    "vpl_doc_01": "Rules derived from Ace Editor's highlighter for C++",
+    "vpl_doc_02": "https://github.com/ajaxorg/ace/blob/master/lib/ace/mode/c_cpp_highlight_rules.js",
+    "vpl_doc_03": "Made by David Parreño Barbuzano <david.parreno101@alu.ulpgc.es>",
     "name": "cpp-tokenizer",
     "extension": [ ".cpp", ".cc", ".C", ".c++", ".hxx", ".H" ],
     "check_rules": false,
@@ -30,7 +31,11 @@
             },
             {
                 "token": "keyword.operator",
-                "regex": "(?:and|and_eq|bitand|bitor|compl|not|not_eq|or|or_eq|typeid|xor|xor_eq|const_cast|dynamic_cast|reinterpret_cast|static_cast|sizeof|namespace)\\b"
+                "regex": "(?:and|and_eq|bitand|bitor|compl|not|not_eq|or|or_eq|typeid|xor|xor_eq|const_cast|dynamic_cast|reinterpret_cast|static_cast|sizeof)\\b"
+            },
+            {
+                "token": "keyword",
+                "regex": "(?:namespace)\\b"
             },
             {
                 "token": "variable.language",

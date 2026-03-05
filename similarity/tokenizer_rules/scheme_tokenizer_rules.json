@@ -1,16 +1,26 @@
-// Highlighter rules based on Ace Editor <https://github.com/ajaxorg/ace/blob/master/lib/ace/mode/scheme_highlight_rules.js>
-// made by David Parreño Barbuzano <david.parreno101@alu.ulpgc.es>
 {
+    "vpl_doc_01": "Rules derived from Ace Editor's highlighter for Scheme",
+    "vpl_doc_02": "https://github.com/ajaxorg/ace/blob/master/lib/ace/mode/scheme_highlight_rules.js",
+    "vpl_doc_03": "Made by David Parreño Barbuzano <david.parreno101@alu.ulpgc.es>",
     "name": "scheme-tokenizer",
     "extension": [ ".scm", ".ss" ],
     "check_rules": false,
     "override_tokens": {
-        "storage.type.function-type.scheme": "storage.type",
-        "entity.name.function.scheme": "entity.name.function",
+        "storage.type.function-type.scheme": "vpl_reserved",
+        "entity.name.function.scheme": "vpl_identifier",
         "punctuation.definition.constant.character.scheme": "vpl_literal",
         "punctuation.definition.variable.scheme": "vpl_identifier",
         "variable.other.global.scheme": "vpl_identifier",
-        "constant.character.escape.scheme": "constant.character.escape"
+        "constant.character.escape.scheme": "vpl_literal",
+        "constant.numeric": "vpl_literal",
+        "keyword.control": "vpl_reserved",
+        "keyword.operator": "vpl_operator",
+        "constant.language": "vpl_literal",
+        "support.function": "vpl_reserved",
+        "identifier": "vpl_identifier",
+        "string": "vpl_literal",
+        "comment": "vpl_null",
+        "text": "vpl_null"
     },
     "states": {
         "start": [
@@ -44,7 +54,7 @@
             },
             {
                 "token": "keyword.operator",
-                "regex": "eq?|eqv?|equal?|and|or|not|null?"
+                "regex": "eq\\?|eqv\\?|equal\\?|and|or|not|null\\?"
             },
             {
                 "token": "constant.language",
@@ -52,7 +62,7 @@
             },
             {
                 "token": "support.function",
-                "regex": "cons|car|cdr|cond|lambda|lambda*|syntax-rules|format|set!|quote|eval|append|list|list?|member?|load"
+                "regex": "cons|car|cdr|cond|lambda\\*|lambda|syntax-rules|format|set!|quote|eval|append|list\\?|list|member\\?|load"
             },
             {
                 "token": "identifier",
