@@ -1068,9 +1068,9 @@ class mod_vpl {
      * @param int $userid (optional) Check for given user, current user if null.
      * @return bool
      */
-    public function is_visible($userid = false) {
+    public function is_visible($userid = null) {
         global $USER;
-        if (empty($userid)) {
+        if ($userid === null) {
             $userid = $USER->id;
         }
         $cm = $this->get_course_module();
@@ -1092,8 +1092,7 @@ class mod_vpl {
      */
     public function is_submit_able($userid = null) {
         $cm = $this->get_course_module();
-        $modinfo = get_fast_modinfo($cm->course);
-        $instance = $this->get_instance();
+        $modinfo = get_fast_modinfo($cm->course, $userid);
         $ret = true;
         $ret = $ret && $this->has_capability(VPL_SUBMIT_CAPABILITY);
         $ret = $ret && $this->is_submission_period($userid);
@@ -2081,7 +2080,7 @@ class mod_vpl {
     public function print_submission_restriction($userid = null) {
         echo $this->str_submission_restriction($userid);
     }
-    
+
     /**
      * Get overriden/exception summary in the activity description
      * @return string HTML
@@ -2516,28 +2515,36 @@ class mod_vpl {
                         FROM {vpl_assigned_overrides} ao
                         JOIN {vpl_overrides} o ON ao.override = o.id
                         WHERE o.vpl = :vplid AND (ao.userid = :userid OR ao.groupid IS NOT NULL)
-                        ORDER BY ao.override DESC';
+                        ORDER BY aoid DESC';
+            // Get all overrides for this user and any group, ordered by most recent.
+            // User overrides will have precedence over group overrides.
+            // The most recent will have precedence over previous ones.
             $overrides = $DB->get_records_sql($sql, ['vplid' => $this->instance->id, 'userid' => $userid]);
-
+            $useroverrides = false;
             foreach ($overrides as $override) {
                 if (!empty($override->userid)) {
                     // Found record for user.
                     foreach ($fields as $field) {
                         self::$overridensettings[$this->cm->id][$userid]->$field = $override->$field;
                     }
-                    break; // User overrides take priority, do not search further.
+                    $useroverrides = true;
+                    break;
                 }
-
-                if (groups_is_member($override->groupid, $userid)) {
-                    foreach ($fields as $field) {
-                        self::$overridensettings[$this->cm->id][$userid]->$field = $override->$field;
+            }
+            if (! $useroverrides) {
+                foreach ($overrides as $override) {
+                    if (!empty($override->groupid) && groups_is_member($override->groupid, $userid)) {
+                        foreach ($fields as $field) {
+                            self::$overridensettings[$this->cm->id][$userid]->$field = $override->$field;
+                        }
+                        break;
                     }
                 }
             }
         }
         if (
             isset(self::$overridensettings[$this->cm->id][$userid]->$setting) &&
-                self::$overridensettings[$this->cm->id][$userid]->$setting !== null
+            self::$overridensettings[$this->cm->id][$userid]->$setting !== null
         ) {
             return self::$overridensettings[$this->cm->id][$userid]->$setting;
         } else {
