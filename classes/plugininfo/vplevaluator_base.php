@@ -190,4 +190,22 @@ class vplevaluator_base {
         }
         return $strlist;
     }
+
+    /**
+     * Evaluator has effect on different actions.
+     * @param string $action the action to check the effect on. Possible values: 'run', 'debug'.
+     * @return true if the evaluator affect the actions
+     */
+    public function has_effect_on($action): bool {
+        return false;
+    }
+
+    /**
+     * Apply the effect of the evaluator on user actions.
+     * This method apply the effect on an action changing evaluationdata attribute.
+     * @param string $action the action to apply the effect on. Possible values: 'run', 'debug'.
+     */
+    public function apply_effect_on($action): void {
+        // By default, do nothing.
+    }
 }

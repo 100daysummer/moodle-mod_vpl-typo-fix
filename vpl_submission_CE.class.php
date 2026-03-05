@@ -572,25 +572,31 @@ class mod_vpl_submission_CE extends mod_vpl_submission {
         }
         if (!empty($data->evaluator)) {
             $evaluator = \mod_vpl\plugininfo\vplevaluator::get_evaluator($data->evaluator, $vpl, $data);
-            if ($data->type >= self::TEVALUATE && $evaluator !== null) {
-                foreach ($evaluator->get_execution_files() as $filename => $filedata) {
-                    $data->files[$filename] = $filedata;
-                    $data->filestodelete[$filename] = 1;
-                }
-                foreach ($evaluator->get_files_to_keep_when_running() as $filename) {
-                    unset($data->filestodelete[$filename]);
-                }
-                foreach ($evaluator->get_strings() as $varname => $value) {
-                    $varsenv['VPLEVALUATOR_STR_' . $varname] = $value;
-                }
-                if ($data->type == self::TTESTEVALUATE) {
-                    $varsenv['VPL_EVALUATION_SCRIPT'] = $evaluator->get_execution_script();
+            if ($evaluator != null) {
+                if ($data->type >= self::TEVALUATE) {
+                    foreach ($evaluator->get_execution_files() as $filename => $filedata) {
+                        $data->files[$filename] = $filedata;
+                        $data->filestodelete[$filename] = 1;
+                    }
+                    foreach ($evaluator->get_files_to_keep_when_running() as $filename) {
+                        unset($data->filestodelete[$filename]);
+                    }
+                    foreach ($evaluator->get_strings() as $varname => $value) {
+                        $varsenv['VPLEVALUATOR_STR_' . $varname] = $value;
+                    }
+                    if ($data->type == self::TTESTEVALUATE) {
+                        $varsenv['VPL_EVALUATION_SCRIPT'] = $evaluator->get_execution_script();
+                    } else {
+                        $data->execute = $evaluator->get_execution_script();
+                    }
                 } else {
-                    $data->execute = $evaluator->get_execution_script();
-                }
-            } else if ($evaluator !== null) {
-                foreach ($evaluator->get_files_to_exclude_when_not_evaluating() as $filename) {
-                    unset($data->files[$filename]);
+                    foreach ($evaluator->get_files_to_exclude_when_not_evaluating() as $filename) {
+                        unset($data->files[$filename]);
+                    }
+                    $action = $data->type == self::TRUN ? 'run' : 'debug';
+                    if ($evaluator->has_effect_on($action)) {
+                        $evaluator->apply_effect_on($action);
+                    }
                 }
             }
         }
