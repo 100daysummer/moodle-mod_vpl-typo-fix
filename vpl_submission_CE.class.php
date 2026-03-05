@@ -23,6 +23,8 @@
  * @author Juan Carlos Rodríguez-del-Pino <jcrodriguez@dis.ulpgc.es>
  */
 
+use mod_vpl\util\languages;
+
 defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__FILE__) . '/../../lib/gradelib.php');
 require_once(dirname(__FILE__) . '/vpl_submission.class.php');
@@ -37,90 +39,6 @@ require_once(dirname(__FILE__) . '/jail/running_processes.class.php');
  * specific to compilation and execution tasks.
  */
 class mod_vpl_submission_CE extends mod_vpl_submission {
-    /**
-     * Associative array for detecting the programming language based on a file's extension
-     * @var array
-     */
-    public const LANGUAGE_EXT = [
-        'ada' => 'ada',
-        'adb' => 'ada',
-        'ads' => 'ada',
-        'all' => 'all',
-        'asm' => 'asm',
-        'c' => 'c',
-        'cc' => 'cpp',
-        'cpp' => 'cpp',
-        'C' => 'cpp',
-        'c++' => 'cpp',
-        'cbl' => 'cobol',
-        'cob' => 'cobol',
-        'clj' => 'clojure',
-        'cs' => 'csharp',
-        'd' => 'd',
-        'erl' => 'erlang',
-        'go' => 'go',
-        'groovy' => 'groovy',
-        'java' => 'java',
-        'jl' => 'julia',
-        'js' => 'javascript',
-        'scala' => 'scala',
-        'sql' => 'sql',
-        'scm' => 'scheme',
-        's' => 'mips',
-        'kt' => 'kotlin',
-        'lisp' => 'lisp',
-        'lsp' => 'lisp',
-        'lua' => 'lua',
-        'sh' => 'shell',
-        'pas' => 'pascal',
-        'p' => 'pascal',
-        'f77' => 'fortran',
-        'f90' => 'fortran',
-        'f' => 'fortran',
-        'for' => 'fortran',
-        'fs' => 'fsharp',
-        'pl' => 'prolog',
-        'pro' => 'prolog',
-        'htm' => 'html',
-        'html' => 'html',
-        'hs' => 'haskell',
-        'm' => 'matlab',
-        'mzn' => 'minizinc',
-        'perl' => 'perl',
-        'prl' => 'perl',
-        'php' => 'php',
-        'py' => 'python',
-        'psc' => 'pseint',
-        'v' => 'verilog',
-        'vb' => 'visualbasic',
-        'vh' => 'verilog',
-        'vhd' => 'vhdl',
-        'vhdl' => 'vhdl',
-        'r' => 'r',
-        'R' => 'r',
-        'rb' => 'ruby',
-        'rs' => 'rust',
-        'ruby' => 'ruby',
-        'ts' => 'typescript',
-    ];
-
-    /**
-     * Associative array for detecting the build system based on the configuration file
-     * @var array
-     */
-    public const LANGUAGE_CONFIG = [
-        'Makefile' => 'make',
-        'makefile' => 'make',
-    ];
-    /*
-        Future config files.
-        CMakeLists.txt => cmake
-        build.ninja => ninja
-        build.xml => ant
-        build.gradle => gradle
-        pom.xml => maven
-    */
-
     /**
      * Associative array for detecting the action name based on the script name
      * @var array
@@ -208,18 +126,8 @@ class mod_vpl_submission_CE extends mod_vpl_submission {
      * @return string programming language name
      */
     public static function get_pln($filelist) {
-        foreach ($filelist as $checkfilename) {
-            if (isset(self::LANGUAGE_CONFIG[$checkfilename])) {
-                return self::LANGUAGE_CONFIG[$checkfilename];
-            }
-        }
-        foreach ($filelist as $checkfilename) {
-            $ext = pathinfo($checkfilename, PATHINFO_EXTENSION);
-            if (isset(self::LANGUAGE_EXT[$ext])) {
-                return self::LANGUAGE_EXT[$ext];
-            }
-        }
-        return 'default';
+        $language = languages::get_language_from_file_list($filelist);
+        return $language ? $language : 'default';
     }
 
     /**
