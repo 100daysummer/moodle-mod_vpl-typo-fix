@@ -542,6 +542,19 @@ $string['submissionview'] = 'Submission view';
 $string['submitarchive'] = 'Submit ZIP archive';
 $string['submitfiles'] = 'Submit files individually';
 $string['submitmethod'] = 'Submit method';
+$string['submitmethod_default'] = 'Default submission method';
+$string['submitmethod_default_auto'] = 'Automatic (based on maximum number of files)';
+$string['submitmethod_default_description'] = 'Default submission method by default when students open the submission form:
+"Automatic" selects individual files when the maximum number of files allowed is 3 or fewer, ZIP archive otherwise.
+"Submit files individually" always by default file by file in one submission form.
+"Submit ZIP archive" always by default ZIP submission.
+Note: students can change the submission method in the submission form.
+';
+$string['submitmethod_help'] = 'Choose how to submit your files:
+<ul>
+<li><b>Submit files individually</b>: upload each file separately in the same form.</li>
+<li><b>Submit ZIP archive</b>: upload a single ZIP file containing all the files.</li>
+</ul>';
 $string['submittedby'] = 'Submitted by {$a}';
 $string['submittedon'] = 'Submitted on';
 $string['submittedonp'] = 'Submitted on {$a}';

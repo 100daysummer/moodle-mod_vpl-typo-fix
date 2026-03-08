@@ -204,6 +204,20 @@ $settings->add(
     )
 );
 $settings->add(new admin_setting_heading('heading3', '', get_string('miscellaneous')));
+$defaultsubmitmethods = [
+    'auto' => get_string('submitmethod_default_auto', VPL),
+    'files' => get_string('submitfiles', VPL),
+    'archive' => get_string('archive', VPL),
+];
+$settings->add(
+    new admin_setting_configselect(
+        $prefix . 'defaultsubmitmethod',
+        get_string('submitmethod_default', VPL),
+        get_string('submitmethod_default_description', VPL),
+        'auto',
+        $defaultsubmitmethods
+    )
+);
 $settings->add(
     new admin_setting_configcheckbox(
         $prefix . 'use_watermarks',

@@ -89,15 +89,23 @@ class mod_vpl_submission_form extends moodleform {
         $firstsub = ($submission === false);
         $instance = $this->vpl->get_instance();
         $reqfiles = $this->vpl->get_required_files();
-
+        $submitmethosds = [
+            'files' => get_string('submitfiles', VPL),
+            'archive' => get_string('submitarchive', VPL),
+        ];
         $mform->addElement(
             'select',
             'submitmethod',
             get_string('submitmethod', VPL),
-            [ 'archive' => get_string('archive', VPL), 'files' => get_string('files') ]
+            $submitmethosds
         );
-        $mform->setDefault('submitmethod', count($reqfiles) == 1 ? 'files' : 'archive');
-
+        $defaultsubmitmethod = get_config('mod_vpl', 'defaultsubmitmethod');
+        $maxfiles = $this->vpl->get_instance()->maxfiles;
+        if (empty($defaultsubmitmethod) || $defaultsubmitmethod === 'auto') {
+            $defaultsubmitmethod = $maxfiles <= 3 ? 'files' : 'archive';
+        }
+        $mform->setDefault('submitmethod', $defaultsubmitmethod);
+        $mform->addHelpButton('submitmethod', 'submitmethod', VPL);
         $mform->addElement('header', 'headersubmitarchive', get_string('submitarchive', VPL));
 
         $filepickertitle = get_string('submitarchive', VPL);

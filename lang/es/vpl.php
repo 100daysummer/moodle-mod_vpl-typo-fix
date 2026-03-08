@@ -537,6 +537,18 @@ $string['submissionview'] = 'Ver entrega';
 $string['submitarchive'] = 'Entregar archivo ZIP';
 $string['submitfiles'] = 'Entregar archivos individualmente';
 $string['submitmethod'] = 'Método de entrega';
+$string['submitmethod_default'] = 'Método de entrega predeterminado';
+$string['submitmethod_default_auto'] = 'Automático (basado en el número máximo de ficheros)';
+$string['submitmethod_default_description'] = 'Método de entrega por defecto cuando los estudiantes abren el formulario de entrega:
+"Automático" selecciona ficheros individuales cuando el número máximo de ficheros permitido es 3 o menos, archivo ZIP en caso contrario.
+"Entregar archivos individualmente" preselecciona siempre la entrega fichero a fichero.
+"Entregar archivo ZIP" preselecciona siempre la entrega en ZIP.
+Nota: el estudiante puede cambiar el método de entrega en el formulario de entrega, independientemente del método preseleccionado.';
+$string['submitmethod_help'] = 'Elija cómo entregar sus ficheros:
+<ul>
+<li><b>Entregar archivos individualmente</b>: suba cada fichero por separado en el mismo formulario.</li>
+<li><b>Entregar archivo ZIP</b>: suba un único archivo ZIP con todos los ficheros.</li>
+</ul>';
 $string['submittedby'] = 'Entregada por {$a}';
 $string['submittedon'] = 'Entregada el';
 $string['submittedonp'] = 'Entregada el {$a}';
