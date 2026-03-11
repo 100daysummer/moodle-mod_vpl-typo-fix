@@ -415,7 +415,7 @@ if (! $groupmode) {
 }
 
 $allstudents = vpl_get_students($vpl);
-$filteredstudents = vpl_filter_by_initials($vpl, $allstudents, $tifirst, $tilast);
+$filteredstudents = vpl_filter_by_initials($vpl, $allstudents, $tilast, $tifirst);
 
 // Find if using variations.
 $vplinstance = $vpl->get_instance();
