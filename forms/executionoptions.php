@@ -259,6 +259,43 @@ class mod_vpl_executionoptions_form extends moodleform {
     }
 
     /**
+     * Returns a list of activities of the course for be used as based on selection.
+     *
+     * This method retrieves the list of activities in the course.
+     *
+     * @return array An associative array of activities with their names.
+     */
+    protected function get_basedonlist() {
+        // Two levels of activities first the one used as based on and then the rest of activities.
+
+        $courseid = $this->vpl->get_course()->id;
+        $listcm = get_coursemodules_in_course(VPL, $courseid);
+        $usedbasedonlist = [];
+        $allactivities = [];
+        foreach ($listcm as $aux) {
+            $vpl = new mod_vpl($aux->id);
+            $instance = $vpl->get_instance();
+            $allactivities[$instance->id] = $vpl->get_printable_name();
+            $usedbasedonlist[$instance->basedon] = 1;
+        }
+        // remove current activity
+        unset($allactivities[$this->vpl->get_instance()->id]);
+        $basedonlist = [];
+        $otherslist = [];
+        foreach ($allactivities as $id => $name) {
+            if (isset($usedbasedonlist[$id])) {
+                $basedonlist[$id] = '↳ ' . $name;
+            } else {
+                $otherslist[$id] = $name;
+            }
+        }
+
+        asort($basedonlist);
+        asort($otherslist);
+        return [0 => get_string('select')] + $basedonlist + $otherslist;
+    }
+
+    /**
      * Defines the form elements for execution options.
      *
      * This method sets up the form fields for configuring execution options
@@ -274,19 +311,8 @@ class mod_vpl_executionoptions_form extends moodleform {
         $strbasedon = get_string('basedon', VPL);
         $basedonlist = [];
         $basedonlist[0] = '';
-        $courseid = $this->vpl->get_course()->id;
-        $listcm = get_coursemodules_in_course(VPL, $courseid);
         $instance = $this->vpl->get_instance();
-        $vplid = $instance->id;
-        foreach ($listcm as $aux) {
-            if ($aux->instance != $vplid) {
-                $vpl = new mod_vpl($aux->id);
-                $basedonlist[$aux->instance] = $vpl->get_printable_name();
-            }
-        }
-        asort($basedonlist);
-        $basedonlist[0] = get_string('select');
-        $mform->addElement('select', 'basedon', $strbasedon, $basedonlist);
+        $mform->addElement('select', 'basedon', $strbasedon, $this->get_basedonlist());
         $mform->setDefault('basedon', $instance->basedon);
         $mform->addHelpButton('basedon', 'basedon', VPL);
         $customized = $this->vpl->get_customized_scripts();
