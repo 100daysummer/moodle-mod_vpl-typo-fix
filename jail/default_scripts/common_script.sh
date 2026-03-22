@@ -10,13 +10,13 @@ if [ "$PROFILE_RAN" == "" ] ; then
 	if [ -f /etc/profile ] ; then
 		cp /etc/profile .localvplprofile
 		chmod +x .localvplprofile
-		. .localvplprofile 1>/dev/null 2>/dev/null
+		source .localvplprofile 1>/dev/null 2>/dev/null
 		rm .localvplprofile
 	fi
 fi
 
 # Load environment variables set by VPL
-. vpl_environment.sh
+source vpl_environment.sh
 
 #functions
 
@@ -49,6 +49,7 @@ function apply_run_mode {
 # Run original vpl_execution script in terminal emulator in GUI mode
 if command -v gnome-terminal &> /dev/null; then
 	gnome-terminal -- bash -c "./vpl_execution_in_gui; echo; read -p 'Press Enter to continue...'"
+	wait
 elif command -v xterm &> /dev/null; then
 	xterm -e bash -c "./vpl_execution_in_gui; echo; read -p 'Press Enter to continue...'"
 	wait
@@ -89,7 +90,7 @@ function wait_end {
 	local PSRESFILE
 	PSRESFILE=.vpl_temp_search_program
 	#wait start until 5s
-	for I in 1 .. 5
+	for I in {1..5}
 	do
 		sleep 1s
 		ps -f -u $USER > $PSRESFILE
@@ -117,7 +118,6 @@ function get_program_version {
 	local OUTPUTFILE
 	local ERRFILE
 	local nhl
-	echo $PROGRAM $1 $2
 	if [ "$2" == "" ] ; then
 		nhl=2
 	else
@@ -222,7 +222,7 @@ function generate_file_of_files {
 	if [ -f "$1" ] ; then
 		rm "$1"
 	fi
-	touch $1 
+	touch "$1"
 	local file_name
 	local SIFS=$IFS
 	IFS=$'\n'
@@ -271,7 +271,7 @@ function check_program {
 	local check
 	for check in "$@"
 	do
-		local PROPATH=$(command -v $check)
+		local PROPATH=$(command -v "$check")
 		if [ "$PROPATH" == "" ] ; then
 			continue
 		fi
@@ -283,7 +283,7 @@ function check_program {
 		return 1
 	fi
 	echo "The execution server needs to install \"$1\" to run this type of program"
-	exit 0;
+	exit 1;
 }
 
 # Compile 
