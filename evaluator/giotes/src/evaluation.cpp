@@ -369,6 +369,8 @@ void Evaluation::applyGradeReduction(TestCase &testCase, float defaultGradeReduc
 	else
 		testCase.setGradeReductionApplied(gr);
 	grade -= testCase.getGradeReductionApplied();
+	float gradeRange = grademax - grademin;
+	stopping = testCase.getGradeReductionApplied() >= 2 * gradeRange;
 	if (grade < grademin) {
 		grade = grademin;
 	}
@@ -401,7 +403,7 @@ void Evaluation::runTests() {
 		testCases[i].updateTimeLimit(defaultTestTimeLimit);
 	}
 	Timer globalTimer;
-	for (size_t i = 0; i < testCases.size(); i++) {
+	for (size_t i = 0; i < testCases.size() && !stopping; i++) {
 		printf("Testing %lu/%lu: %s\n", (unsigned long) i+1, (unsigned long)testCases.size(), testCases[i].getCaseDescription().c_str());
 		if (globalTimer.elapsedTime() >= maxtime) {
 			addFatalError(getString(str_global_timeout));
