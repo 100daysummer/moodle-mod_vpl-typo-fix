@@ -281,6 +281,7 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
         focus: function() {
             controlDialogSize();
             terminal.focus();
+            self.startBlinking();
         },
         classes: {
             "ui-dialog":  'vpl_ide vpl_vnc',
@@ -326,14 +327,14 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
     this.startBlinking = function() {
         if (!terminal.options.cursorBlink) {
             VPLUtil.log("Terminal: cursor start blinking");
-            terminal.options.cursorBlink = true;
         }
+        terminal.options.cursorBlink = true;
     };
     this.stopBlinking = function() {
         if (terminal.options.cursorBlink) {
             VPLUtil.log("Terminal: cursor stop blinking");
-            terminal.options.cursorBlink = false;
         }
+        terminal.options.cursorBlink = false;
     };
     this.init = async function() {
         // Load xterm.js library
