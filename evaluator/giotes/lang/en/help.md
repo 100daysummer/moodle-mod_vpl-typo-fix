@@ -256,11 +256,12 @@ There are different output types; the type is **inferred from the value’s form
 
 #### ➕ Statements to add pass conditions and penalties
 
-* **Grade reduction =** *value* | *percent%* — Overrides the default penalty `grade_range / number_of_cases`.
+* **Grade reduction =** *value* | *percent%* — Overrides the default penalty `grade_range / number_of_cases`. If grade reduction is greater than or equal to double of `grade_range` and the case fails the tests stop. This allows setting cases to stop the test process.
 
   Examples:
   >`Grade reduction = 1.5`  
-  >`Grade reduction = 5%`
+  >`Grade reduction = 5%`  
+  >`Grade reduction = 300%`
 
 * **Time limit =** *seconds* — Per-case execution time limit.
   Overrides the default `global_time_limit / number_of_cases`.

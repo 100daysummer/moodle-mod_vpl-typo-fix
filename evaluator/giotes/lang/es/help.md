@@ -254,11 +254,12 @@ Hay diferentes tipos de salida; el tipo se **infiere del formato del valor**:
 
 #### ➕ Declaraciones para añadir condiciones y penalizaciones
 
-* **Grade reduction =** *valor* | *porcentaje%* — Cambia la penalización globalmente o en el caso que se use. Note que el valor por defecto es `rango_calificación / número_de_casos`.
+* **Grade reduction =** *valor* | *porcentaje%* — Cambia la penalización predeterminada `rango_calificación / número_de_casos`. Si la reducción de calificación es mayor o igual al doble de `rango_calificación` y el caso falla, las pruebas se detienen. Esto permite definir casos para detener el proceso de evaluación.
 
   Ejemplos:
   >`Grade reduction = 1.5`  
-  >`Grade reduction = 5%`
+  >`Grade reduction = 5%`  
+  >`Grade reduction = 300%`
 
 * **Time limit =** *segundos* — Establece el límite de tiempo de ejecución por caso, globalmente o en el caso que se use. El valor por defecto es `límite_tiempo_global / número_de_casos`.
 
