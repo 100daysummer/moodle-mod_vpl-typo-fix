@@ -52,12 +52,12 @@ try {
             'action' => $action,
     ]));
     echo $OUTPUT->header(); // Send headers.
+    \mod_vpl\util\phpconfig::increase_memory_limit();
     $rawdata = file_get_contents("php://input");
     $rawdatasize = strlen($rawdata);
     if ($_SERVER['CONTENT_LENGTH'] != $rawdatasize) {
         throw new Exception("Ajax POST error: CONTENT_LENGTH expected " . $_SERVER['CONTENT_LENGTH'] . " found $rawdatasize)");
     }
-    \mod_vpl\util\phpconfig::increase_memory_limit();
     $actiondata = json_decode($rawdata, null, 512, JSON_INVALID_UTF8_SUBSTITUTE);
     if (! $vpl->is_submit_able()) {
         throw new Exception(get_string('notavailable'));
