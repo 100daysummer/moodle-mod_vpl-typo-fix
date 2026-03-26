@@ -1999,7 +1999,7 @@ class mod_vpl {
                     if (! $runscript) {
                         $inheritedrun = $this->get_closest_set_field_in_base_chain('runscript', '');
                         if ($inheritedrun) {
-                            $runscript = strtoupper($inheritedrun) . ' ' . get_string('inheritedfrombasedon', VPL);
+                            $runscript = get_string('inheritvalue', VPL, strtoupper($inheritedrun));
                         }
                     }
                 }
@@ -2016,7 +2016,7 @@ class mod_vpl {
                     if (! $debugscript) {
                         $inheriteddebug = $this->get_closest_set_field_in_base_chain('debugscript', '');
                         if ($inheriteddebug) {
-                            $debugscript = strtoupper($inheriteddebug) . ' ' . get_string('inheritedfrombasedon', VPL);
+                            $debugscript = get_string('inheritvalue', VPL, strtoupper($inheriteddebug));
                         }
                     }
                 }
@@ -2034,7 +2034,7 @@ class mod_vpl {
             if (! $evaluator) {
                 $inheritedevaluator = $this->get_closest_set_field_in_base_chain('evaluator', '');
                 if ($inheritedevaluator) {
-                    $evaluator = strtoupper($inheritedevaluator) . ' ' . get_string('inheritedfrombasedon', VPL);
+                    $evaluator = get_string('inheritvalue', VPL, strtoupper($inheritedevaluator));
                 }
             }
             if (! $evaluator && $customized['evaluate']) {
