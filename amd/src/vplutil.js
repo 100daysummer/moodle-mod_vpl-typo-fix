@@ -45,7 +45,7 @@ VPLUtil.setUserPreferences = function(pref) {
     $.ajax({
         async: true,
         type: "POST",
-        url: url.relativeUrl('/mod/vpl/editor/userpreferences.json.php'),
+        url: url.relativeUrl('/mod/vpl/editor/userpreferences.json.php') + '?sesskey=' + M.cfg.sesskey,
         'data': JSON.stringify(pref),
         contentType: "application/json; charset=utf-8",
         dataType: "json"
@@ -55,7 +55,7 @@ VPLUtil.getUserPreferences = function(func) {
     $.ajax({
         async: true,
         type: "POST",
-        url: url.relativeUrl('/mod/vpl/editor/userpreferences.json.php'),
+        url: url.relativeUrl('/mod/vpl/editor/userpreferences.json.php') + '?sesskey=' + M.cfg.sesskey,
         'data': JSON.stringify({getPreferences: true}),
         contentType: "application/json; charset=utf-8",
         dataType: "json"
@@ -65,7 +65,8 @@ VPLUtil.sanitizeHTML = function(t) {
     if (typeof t == 'undefined' || t.replace(/^\s+$/g, '') == '') {
         return '';
     }
-    return $('<div>' + t + '</div>').html();
+    var doc = new DOMParser().parseFromString(t, 'text/html');
+    return doc.body.innerHTML;
 };
 VPLUtil.sanitizeText = function(s) {
     if (typeof s == 'undefined' || s.replace(/^\s+$/g, '') == '') {
@@ -128,12 +129,15 @@ VPLUtil.String2ArrayBuffer = function(data) {
     };
 })();
 (function() {
-    var regExt = /\.([^.]*)$/;
+    var regExt = /.*\.([^.]+)$/;
     var regImg = /^(gif|jpg|jpeg|png|ico)$/i;
     var regAudio = /^(wav|aiff|pcm|mp3|aac|ogg|oga|wma|m4a|flac|alac|ape|wv|amr)$/i;
     var regVideo = /^(mp4|webm|ogv|avi|mov|wmv|flv|mkv|m4v|mpeg|mpg|3gp)$/i;
     var regBin = /^(zip|jar|pdf|tar|bin|7z|arj|deb|gzip|rar|rpm|dat|db|dll|rtf|doc|docx|odt|exe|com)$/i;
     var regBlk = /^blockly[0123]?$/;
+    var textBytesSet = new Set([7, 8, 9, 10, 12, 13, 27]
+                    .concat([...Array(0x5f).keys()].map(i => i + 0x20)) // Include [0x20 -> 0x7e].
+                    .concat([...Array(0x80).keys()].map(i => i + 0x80))); // Include [0x80 -> 0xff].
     VPLUtil.fileExtension = function(fileName) {
         var res = regExt.exec(fileName);
         return res !== null ? res[1] : '';
@@ -157,10 +161,6 @@ VPLUtil.String2ArrayBuffer = function(data) {
         if (typeof fileContents === 'undefined' || !fileContents) {
             return false;
         }
-        var textBytes = [7, 8, 9, 10, 12, 13, 27]
-                        .concat([...Array(0x5f).keys()].map(i => i + 0x20)) // Include [0x20 -> 0x7e].
-                        .concat([...Array(0x80).keys()].map(i => i + 0x80)); // Include [0x80 -> 0xff].
-        textBytes = Object.entries(textBytes).reduce((obj, [key, value]) => ({...obj, [value]: key}), {});
         var bytes = null;
         if (fileContents instanceof Uint8Array) {
             bytes = fileContents;
@@ -173,7 +173,7 @@ VPLUtil.String2ArrayBuffer = function(data) {
         }
         var sizechecked = Math.min(1024, bytes.length);
         for (var i = 0; i < sizechecked; i++) {
-            if (!textBytes.hasOwnProperty(bytes[i])) {
+            if (!textBytesSet.has(bytes[i])) {
                 // Byte is not a standard text byte, file is likely binary.
                 return true;
             }
@@ -183,7 +183,7 @@ VPLUtil.String2ArrayBuffer = function(data) {
     VPLUtil.isBlockly = function(fileName) {
         return regBlk.test(VPLUtil.fileExtension(fileName));
     };
-    var regInvalidFileName = /[\cA-\cZ]|[:-@]|[{-~]|\\|\[|\]|[/^`´]|^-|^ | $|\.\./;
+    var regInvalidFileName = /[\cA-\cZ]|[:-@]|[{-~]|\\|\[|\]|[\/^`´]|^-|^ | $|\.\./;
     VPLUtil.validFileName = function(fileName) {
         if (fileName.length < 1) {
             return false;
@@ -415,7 +415,7 @@ VPLUtil.dataFromURLData = function(data) {
         'perl': 'Perl', 'prl': 'Perl',
         'php': 'PHP',
         'pro': 'Prolog', 'pl': 'Prolog',
-        'psc': 'pseint',
+        'psc': 'PSeInt',
         'py': 'Python',
         'R': 'R', 'r': 'R',
         'rb': 'Ruby', 'ruby': 'Ruby',
@@ -436,7 +436,7 @@ VPLUtil.dataFromURLData = function(data) {
         'twig': 'Twig',
         'vb': 'VisualBasic',
         'vbproj': 'VisualBasic project',
-        'vbs': 'VBSscript',
+        'vbs': 'VBScript',
         'v': 'Verilog', 'vh': 'Verilog',
         'vhd': 'VHDL', 'vhdl': 'VHDL',
         'xml': 'XML',
@@ -679,7 +679,7 @@ VPLUtil.processResult = function(text, filenames, sh, noFormat, addLinks, foldin
      * @returns {string} result
      */
     function escReg(t) {
-        return t.replace(/[-[\]{}()*+?.,\\^$|#\s]/, "\\$&");
+        return t.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
     }
     var regtitgra = /\([-]?[\d]+[.]?[\d]*\)\s*$/;
     var regtit = /^-/;
@@ -755,9 +755,10 @@ VPLUtil.processResult = function(text, filenames, sh, noFormat, addLinks, foldin
                 anot.push(lastAnnotation);
                 var fileName = filenames[i];
                 var href = getHref(i);
-                var lt = VPLUtil.sanitizeText(fileName);
-                var data = 'data-file="' + fileName + '" data-line="' + match[3] + '"';
-                line = line.replace(reg, '$1<a ' + href + ' class="vpl_fl" ' + data + '>' + lt + '$2$3$4$5$6</a>');
+                var saniFilename = VPLUtil.sanitizeText(fileName);
+                var saniLine = VPLUtil.sanitizeText(match[3]);
+                var data = 'data-file="' + saniFilename + '" data-line="' + saniLine + '"';
+                line = line.replace(reg, '$1<a ' + href + ' class="vpl_fl" ' + data + '>' + saniFilename + '$2$3$4$5$6</a>');
                 sh[i].setAnnotations(anot);
             }
         }
