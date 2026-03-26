@@ -32,6 +32,7 @@ $result->error = '';
 $result->preferences = (object)[];
 try {
     require_login();
+    require_sesskey();
     $rawdata = file_get_contents("php://input");
     $actiondata = json_decode($rawdata, null, 512, JSON_INVALID_UTF8_SUBSTITUTE);
     if (isset($actiondata->fontSize)) {
