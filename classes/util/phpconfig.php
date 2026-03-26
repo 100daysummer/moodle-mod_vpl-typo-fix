@@ -34,22 +34,23 @@ class phpconfig {
      * @var array Key 'k', 'm', 'g' => value
      */
     const BYTECONVERTER = [ '' => 1,
-                                 'k' => 1024,
-                                 'm' => 1024 * 1024,
-                                 'g' => 1024 * 1024 * 1024, ];
+                            'k' => 1024,
+                            'm' => 1024 * 1024,
+                            'g' => 1024 * 1024 * 1024,
+                          ];
     /**
      * Returns number of bytes from string values in Kb, Mb or Gb
      *
      * @param string $value Value to convert e.g 2M, 1.5Gb, 32K
-     * @return int Nummer of bytes
+     * @return int Number of bytes
      */
     public static function get_bytes(string $value): int {
         $value = strtolower(trim($value));
-        $regexp = '/^[\s]*([0-9]+)[\s]*(:?k|m|g|)b?[ \t]*$/';
+        $regexp = '/^[\s]*([0-9]*\.?[0-9]+)[\s]*(k|m|g|)b?[ \t]*$/';
         if (preg_match($regexp, $value, $matches) == 1) {
             $number = (float) $matches[1];
             $unityvalue = self::BYTECONVERTER[$matches[2]];
-            if ($number < PHP_INT_MAX / $unityvalue) {
+            if ($number * $unityvalue < PHP_INT_MAX) {
                 $bytes = (int) ($number * $unityvalue);
             } else {
                 $bytes = PHP_INT_MAX;
@@ -61,27 +62,17 @@ class phpconfig {
     }
 
     /**
-     * Return the value of a ini paramater
+     * Return the value of a ini parameter
      *
      * @param string $param Name of the parameter
      * @return int Number of bytes
      */
     public static function get_ini_value($param): int {
-        return self::get_bytes(ini_get($param));
-    }
-
-    /**
-     * Return the post maximum size in bytes
-     *
-     * @param string $value Value to convert e.g 2M, 1.5Gb, 32K
-     * @return int Number of bytes
-     */
-    public static function get_post_max_size_internal($value): int {
-        $number = self::get_bytes($value);
-        if ($number <= 0) {
-            $number = PHP_INT_MAX;
+        $value = ini_get($param);
+        if ($value === false) {
+            return PHP_INT_MAX;
         }
-        return $number;
+        return self::get_bytes($value);
     }
 
     /**
@@ -90,7 +81,15 @@ class phpconfig {
      * @return int Number of bytes
      */
     public static function get_post_max_size(): int {
-        return self::get_post_max_size_internal(ini_get('post_max_size'));
+        $value = ini_get('post_max_size');
+        if ($value === false || $value === '') {
+            return PHP_INT_MAX;
+        }
+        $number = self::get_bytes($value);
+        if ($number <= 0 || $number > PHP_INT_MAX) {
+            $number = PHP_INT_MAX;
+        }
+        return $number;
     }
 
     /**
@@ -98,15 +97,17 @@ class phpconfig {
      */
     public static function increase_memory_limit(): void {
         gc_enable();
-        $maxpost = self::get_post_max_size();
-        if ($maxpost < PHP_INT_MAX / 3) {
-            $bytes = $maxpost * 3;
-        } else {
+        $maxpost = self::get_post_max_size() * 3.0 + memory_get_usage(true);
+        if ($maxpost > PHP_INT_MAX) {
             $bytes = PHP_INT_MAX;
+        } else {
+            $bytes = (int) $maxpost;
         }
-        if ($bytes > self::get_ini_value('memory_limit') && $bytes > memory_get_usage()) {
-            $newmemorylimit = (int) ($bytes / self::BYTECONVERTER['k']);
-            ini_set('memory_limit', $newmemorylimit . 'K');
+        if ($bytes > self::get_ini_value('memory_limit')) {
+            $newmemorylimit = (int) ($bytes / self::BYTECONVERTER['k']) . 'K';
+            if (ini_set('memory_limit', $newmemorylimit) === false) {
+                raise_memory_limit($newmemorylimit);
+            }
         }
     }
 
@@ -119,7 +120,8 @@ class phpconfig {
         $memoryused = memory_get_usage();
         $memorylimit = self::get_bytes(ini_get('memory_limit'));
         if ($memorylimit - $memoryused < $memoryneeded) {
-            self::increase_memory_limit();
+            $newmemorylimit = (int) (($memoryneeded + $memoryused) / self::BYTECONVERTER['k']) . 'K';
+            raise_memory_limit($newmemorylimit);
             $memorylimit = self::get_bytes(ini_get('memory_limit'));
             if ($memorylimit - $memoryused < $memoryneeded) {
                 throw new \Exception(get_string('outofmemory', 'vpl'));
