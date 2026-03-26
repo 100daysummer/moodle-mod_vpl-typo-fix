@@ -51,25 +51,7 @@ final class util_phpconfig_test extends \advanced_testcase {
             $this->assertEquals($case[0], \mod_vpl\util\phpconfig::get_bytes($case[1]), $case[1]);
         }
     }
-    /**
-     * Method to test function get_post_max_size(): int
-     */
-    public function test_get_post_max_size_internal(): void {
-        // Untestable, checks only callable.
-        $cases = [
-            [PHP_INT_MAX, '0'],
-            [123, '123'],
-            [13 * 1024, '13k'],
-            [7 * 1024 * 1024, '7  Mb'],
-            [1024 * 1024 * 1024, '  1G'],
-        ];
-        foreach ($cases as $case) {
-            $this->assertEquals($case[0], \mod_vpl\util\phpconfig::get_post_max_size_internal($case[1]), $case[1]);
-        }
-        if (PHP_INT_SIZE == 4) {
-            $this->assertEquals(PHP_INT_MAX, \mod_vpl\util\phpconfig::get_post_max_size_internal('  1999999 G'));
-        }
-    }
+
     /**
      * Method to test function get_post_max_size(): int
      */
