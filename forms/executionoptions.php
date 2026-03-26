@@ -278,7 +278,7 @@ class mod_vpl_executionoptions_form extends moodleform {
             $allactivities[$instance->id] = $vpl->get_printable_name();
             $usedbasedonlist[$instance->basedon] = 1;
         }
-        // remove current activity
+        // Remove current activity.
         unset($allactivities[$this->vpl->get_instance()->id]);
         $basedonlist = [];
         $otherslist = [];
