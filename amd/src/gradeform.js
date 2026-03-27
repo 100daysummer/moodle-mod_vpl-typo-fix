@@ -189,8 +189,8 @@ export const setupGetGradeCommentList = (id) => {
                 window.VPL.resizeSView();
                 setInterval(window.VPL.resizeSView, 5000);
             },
-            error: function() {
-                panel.html(M.util.get_string('error', 'moodle'));
+            error: function() {               
+                panel.text(M.util.get_string('error', 'moodle'));
             },
         });
     });
@@ -223,12 +223,15 @@ export const updateSubmissionsList = (submissionID, gradeData, nexturl) => {
     if (nexturl) {
         if (opener === null) {
             window.close();
+            return;
         }
         var nextrow = $(opener.document).find('#g' + submissionID).closest('tr').next();
         if (nextrow.length == 0) {
             window.close();
+            return;
         }
-        var nextid = nextrow.html().match(/user\/view\.php\?(.*?)id=([0-9]+)/)[2];
+        var nextidFound = nextrow.html().match(/user\/view\.php\?(.*?)id=([0-9]+)/);
+        var nextid = nextidFound ? nextidFound[2] : null;
         if (nextid) {
             location.replace(nexturl + nextid);
         } else {
@@ -268,7 +271,7 @@ export const highlightSubmission = (submissionID) => {
             return;
         }
         // Comment content removing last (-number) if any.
-        const cleanComment = comment.replace(/\(\s*-\s*\d(\.\d+)?\s*\)\s*$/, '');
+        const cleanComment = comment.replace(/\(\s*-\s*\d+(\.\d+)?\s*\)\s*$/, '');
         const formattedComment = '-' + comment + '\n';
         const currentText = field.value;
         // Prevent duplicates
