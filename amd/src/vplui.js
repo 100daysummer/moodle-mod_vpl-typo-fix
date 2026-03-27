@@ -131,7 +131,7 @@ VPLUI.readSelectedFiles = function(filesToRead, save, end) {
         if (sec >= filesToRead.length || pb.isClosed()) {
             end();
             pb.close();
-            if (errorsMessages > '') {
+            if (errorsMessages !== '') {
                 VPLUI.showErrorMessage(errorsMessages);
             }
             return;
@@ -283,11 +283,12 @@ VPLUI.setTitleBar = function(dialog, type, icon, buttons, handler) {
     var title = $(dialog).parent().find("span.ui-dialog-title");
     /**
      * Generate HTML for a button with icon
-     * @param {string} e name of botton.
+     * @param {string} e name of button.
      * @returns {string} Html tag <a> as a button.
      */
     function genButton(e) {
-        var html = "<a id='vpl_" + type + "_" + e + "' href='#' title='" + VPLUtil.str(e) + "'>";
+        var buttonI18n = VPLUtil.sanitizeText(VPLUtil.str(e));
+        var html = "<a id='vpl_" + type + "_" + e + "' href='#' title='" + buttonI18n + "'>";
         html += VPLUI.genIcon(e, 'fw') + "</a>";
         return html;
     }
@@ -379,7 +380,8 @@ VPLUI.showMessage = function(message, initialoptions) {
     var options = $.extend({}, VPLUI.dialogbaseOptions, initialoptions);
     var messageDialog = $('<div class="vpl_ide_dialog" style="display:none"></div>');
     var icon = '';
-    var contents = ' <span class="dmessage">' + message.replace(/\n/g, '<br>') + '</span>';
+    var saniMessage = VPLUtil.sanitizeText(message).replace(/\n/g, '<br>');
+    var contents = ' <span class="dmessage">' + saniMessage + '</span>';
     messageDialog.html(contents);
     if (typeof options.icon == 'undefined') {
         icon = 'info';
@@ -538,13 +540,10 @@ VPLUI.acceptCertificates = function(servers, getLastAction) {
         // Generate links dialog.
         var html = VPLUtil.str('acceptcertificatesnote');
         html += '<ol>';
-        var i;
-        for (i in servers) {
-            if (servers.hasOwnProperty(i)) {
-                var n = 1 + i;
-                html += '<li><a href="' + servers[i] + '" target="_blank">Server ';
-                html += n + '</a></li>';
-            }
+        for (var i = 0; i < servers.length; i++) {
+            var n = i + 1;
+            html += '<li><a href="' + VPLUtil.sanitizeText(servers[i]) + '" target="_blank">Server ';
+            html += n + '</a></li>';
         }
         html += '</ol>';
         var m = VPLUI.showMessage(html, {
