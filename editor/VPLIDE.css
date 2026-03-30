@@ -234,17 +234,33 @@ div.vpl_ide_file.ui-tabs-panel {
     display: block;
 }
 
+.vpl_ide_statusbar {
+    width: 100%;
+    border: 1px solid lightgray;
+    background-color: #f0f0f0;
+}
 
-.vpl_ide_status {
-    bottom: 2px;
-    right: 2px;
-    border: 1px;
-    margin: 0;
-    padding: 0;
-    font-size: 80%;
-    z-index: 200;
-    position: absolute;
-    display: none;
+.vpl_ide_statusbar_filename {
+    padding: 0 0.5em 0 0.5em;
+    text-align: left;
+}
+
+.vpl_ide_statusbar_position {
+    float: right;
+    padding: 0 0.5em 0 0.5em;
+    border-left: 1px solid lightgray;
+}
+
+.vpl_ide_statusbar_language {
+    float: right;
+    padding: 0 0.5em 0 0.5em;
+    border-left: 1px solid lightgray;
+}
+
+.vpl_ide_statusbar_unsaved {
+    padding: 0 0.5em 0 0.5em;
+    color: red;
+    border-left: 1px solid lightgray;
 }
 
 img.vpl_ide_file {
@@ -355,40 +371,6 @@ img.vpl_ide_file {
     color: black;
 }
 
-.vpl_terminal_theme1 .reverse-video {
-    background-color: black;
-    color: white;
-}
-
-.vpl_terminal_theme2 div {
-    background-color: navy;
-    color: yellow;
-}
-
-.vpl_terminal_theme2 .reverse-video {
-    background-color: yellow;
-    color: navy;
-}
-
-.vpl_terminal_theme3 div {
-    background-color: blue;
-    color: white;
-}
-
-.vpl_terminal_theme3 .reverse-video {
-    background-color: white;
-    color: blue;
-}
-.vpl_terminal_theme4 div {
-    background-color: red;
-    color: #0ff;
-}
-
-.vpl_terminal_theme4 .reverse-video {
-    background-color: #0ff;
-    color: red;
-}
-
 .vpl_clipboard {
     display: none;
     z-index: 1010;
@@ -450,9 +432,4 @@ label[for="vpl_donotshowagain"] {
 
 .vpl_dimmed {
     opacity: 0.3;
-}
-
-.vpl_ide_status {
-    opacity: 0.8;
-    z-index: 100;
 }

@@ -200,16 +200,14 @@ export const codeExtension = function() {
         if (!this.isOpen()) {
             return;
         }
-        var text = '';
+        var status = {};
         var pos = editor.getCursorPosition();
         var fullname = this.getFileName();
-        var name = VPLUtil.getFileName(fullname);
-        if (fullname.length > 20 || name != fullname) {
-            text = fullname + ' ';
-        }
-        text += "Ln " + (pos.row + 1) + ', Col ' + (pos.column + 1);
-        text += " " + VPLUtil.langName(name);
-        VPLUI.showIDEStatus(text);
+        status.fileName = fullname;
+        status.position = "Ln " + (pos.row + 1) + ', Col ' + (pos.column + 1);
+        status.language = VPLUtil.langName(fullname);
+        status.unsaved = this.isModified();
+        VPLUI.showIDEStatus(status);
     };
 
     this.open = function() {

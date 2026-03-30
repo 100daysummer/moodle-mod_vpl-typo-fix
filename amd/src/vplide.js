@@ -57,7 +57,7 @@ var VPLIDE = function(rootId, options) {
     $("head").append('<meta name="viewport" content="initial-scale=1">')
                     .append('<meta name="viewport" width="device-width">')
                     .append('<link rel="stylesheet" href="' + coreURL.relativeUrl('/mod/vpl/editor/VPLIDE.css') + '"/>');
-    if (typeof rootObj != 'object') {
+    if (rootObj.length === 0) {
         throw new Error("VPL: constructor tag_id not found");
     }
     var optionsToCheck = {
@@ -543,7 +543,7 @@ var VPLIDE = function(rootId, options) {
                                     encoding: 0
                                 };
                                 fileManager.deleteFile(oldname, showError);
-                                var fileResult = fileManager.addFile(file, false, updateMenu, showErrorMessage);
+                                var fileResult = fileManager.addFile(file, false, updateMenu, showError);
                                 if (fileResult) {
                                     fileManager.gotoFileName(newname);
                                 }
@@ -569,6 +569,8 @@ var VPLIDE = function(rootId, options) {
                 return false;
             }
             self.setModified();
+            self.currentFile('setModified');
+            self.currentFile('updateStatus');
             adjustTabsTitles(false);
             VPLUtil.delay('updateFileList', self.updateFileList);
             return true;
@@ -662,7 +664,7 @@ var VPLIDE = function(rootId, options) {
                 var action = arguments[0];
                 if (typeof file[action] === 'function') {
                     var fun = file[action];
-                    var args = Array.prototype.slice(arguments);
+                    var args = Array.prototype.slice.call(arguments);
                     args.shift();
                     return fun.apply(file, args);
                 }
@@ -673,7 +675,7 @@ var VPLIDE = function(rootId, options) {
             var currentFileName = '';
             var currentFile = fileManager.currentFile();
             if (currentFile) {
-                currentFileName = currentFile.name;
+                currentFileName = currentFile.getFileName();
             }
             return currentFileName;
         };
@@ -1130,7 +1132,9 @@ var VPLIDE = function(rootId, options) {
      */
     function resizeHeight() {
         var newHeight = $(window).outerHeight();
-        newHeight -= menu.offset().top + menu.height() + (fullScreen ? getTabsAir() : 20);
+        var statusbarHeight = $('#vpl_ide_statusbar').outerHeight() || 0;
+        newHeight -= menu.offset().top + menu.outerHeight() + getTabsAir();
+        newHeight -= statusbarHeight;
         if (newHeight < 250) {
             newHeight = 250;
         }

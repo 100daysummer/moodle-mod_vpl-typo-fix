@@ -140,13 +140,16 @@ class vpl_editor_util {
             <div id="vpl_tabs_scroll">
                 <ul id="vpl_tabs_ul"></ul>
             </div>
-            <span class="vpl_ide_status ui-button ui-corner-all ui-widget"
-                  style="display:none;position:absolute;padding:1px;
-                        margin:3px;right:20px;bottom:20px;font-size:80%;"></span>
         </div>
         <div id="vpl_results" class="vpl_ide_results">
             <div id="vpl_results_accordion"></div>
         </div>
+    </div>
+    <div id="vpl_ide_statusbar" class="vpl_ide_statusbar ui-corner-all">
+            <span class="vpl_ide_statusbar_filename"></span>
+            <span class="vpl_ide_statusbar_language"></span>
+            <span class="vpl_ide_statusbar_position"></span>
+            <span class="vpl_ide_statusbar_unsaved" style="display: none;">*</span>
     </div>
     <div id="vpl_ide_dialog_new" class="vpl_ide_dialog"
         style="display: none;">

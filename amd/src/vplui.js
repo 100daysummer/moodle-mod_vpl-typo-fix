@@ -706,13 +706,29 @@ VPLUI.webSocketMonitor = function(coninfo, title, running, externalActions) {
 
 VPLUI.hideIDEStatus = function() {
     VPLUtil.delay('updateIDEStatus', function() {
-        $('.vpl_ide_status').hide();
+        $('#vpl_ide_statusbar').hide();
     });
 };
 
 VPLUI.showIDEStatus = function(status) {
+    if (typeof status !== 'object') {
+        return;
+    }
     VPLUtil.delay('updateIDEStatus', function() {
-        $('.vpl_ide_status').text(status);
-        $('.vpl_ide_status').show();
+        $('#vpl_ide_statusbar').show();
+        if (status.fileName) {
+            $('#vpl_ide_statusbar .vpl_ide_statusbar_filename').text(status.fileName);
+        }
+        if (status.position) {
+            $('#vpl_ide_statusbar .vpl_ide_statusbar_position').text(status.position);
+        }
+        if (status.language) {
+            $('#vpl_ide_statusbar .vpl_ide_statusbar_language').text(status.language);
+        }
+        if (status.unsaved) {
+            $('#vpl_ide_statusbar .vpl_ide_statusbar_unsaved').show();
+        } else {
+            $('#vpl_ide_statusbar .vpl_ide_statusbar_unsaved').hide();
+        }
     });
 };
