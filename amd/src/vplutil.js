@@ -356,7 +356,7 @@ VPLUtil.dataFromURLData = function(data) {
         'SQL': 'sql',
         'SVG': 'svg',
         'TeX': 'tex',
-        'tcl': 'tcl',
+        'TCL': 'tcl',
         'TypeScript': 'typescript',
         'Twig': 'twig',
         'VBScript': 'vbscript',
@@ -365,7 +365,7 @@ VPLUtil.dataFromURLData = function(data) {
         'VisualBasic project': 'xml',
         'VHDL': 'vhdl',
         'XML': 'xml',
-        'Yaml': 'yaml'
+        'YAML': 'yaml'
     };
     var mapname = {
         'abap': 'Abap',
