@@ -181,7 +181,7 @@ export class VPLVNCClient {
             },
             resizeStop: function() {
                 controlDialogSize();
-                needResize = true;
+                self.displayResize();
             }
         });
 
