@@ -317,6 +317,16 @@ function compile_scss {
 	IFS=$SAVEIFS
 }
 
+function remove_vpl_executable_files {
+	(
+		rm vpl_environment.sh
+		rm common_script.sh
+		rm .vpl_*
+		rm vpl_execution
+		rm vpl_wexecution
+		rm vpl_execution_in_gui
+	) &> /dev/null
+}
 #Decode BASE64 files
 get_source_files b64
 SAVEIFS=$IFS
