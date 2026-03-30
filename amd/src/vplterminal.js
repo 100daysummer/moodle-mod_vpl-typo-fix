@@ -29,7 +29,8 @@ import url from 'core/url';
 import {VPLUtil} from 'mod_vpl/vplutil';
 import {VPLUI} from 'mod_vpl/vplui';
 import {VPLClipboard} from 'mod_vpl/vplclipboard';
-const NTHEMES = 5;
+import {VPLTerminalThemes} from 'mod_vpl/vplterminalthemes';
+
 export const VPLTerminal = function(dialogId, terminalId, str) {
     var self = this;
     var ws = null;
@@ -46,6 +47,9 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
     var fitAddon;
     var initReady;
     var terminalTag = $('#' + terminalId);
+    var themes = VPLTerminalThemes.getThemes();
+    const NTHEMES = themes.length;
+
     this.updateTitle = function() {
         var text = title;
         if (message !== '') {
@@ -260,14 +264,13 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
      * @param {int} theme
      */
     function setTheme(theme) {
-        var cbase = "vpl_terminal_theme";
-        var nthemes = 5;
+        theme = theme % NTHEMES;
         tdialog.data('terminal_theme', theme);
         VPLUtil.setUserPreferences({terminalTheme: theme});
-        for (var i = 0; i < nthemes; i++) {
-            tdialog.removeClass(cbase + i);
+        if (terminal) {
+            var t = Object.assign({}, themes[theme]);
+            terminal.options.theme = t;
         }
-        tdialog.addClass(cbase + theme);
     }
     /**
      * Limits the size of the dialogo to the IDE
@@ -348,9 +351,6 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
         }
         terminalTag.css("font-size", size + "px");
     };
-    VPLUtil.getUserPreferences(function(data) {
-        setTheme(data.preferences.terminalTheme);
-    });
     tdialog.css("padding", "1px");
     tdialog.parent().css('z-index', 2000);
     this.show = function() {
@@ -400,6 +400,9 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
         });
         terminal.open(terminalTag[0]);
         terminal.reset();
+        VPLUtil.getUserPreferences(function(data) {
+            setTheme(data.preferences.terminalTheme);
+        });
     };
     initReady = this.init();
 };
