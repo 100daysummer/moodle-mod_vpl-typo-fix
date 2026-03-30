@@ -64,7 +64,7 @@ export class VPLIDEButtons {
             var cl = 'vpl_bt_extrahtml';
             var btag = $('#vpl_ide_' + buttonName);
             if (btag.find('.' + cl).length == 0) {
-                btag.append(' <span class="' + cl + '"><span>');
+                btag.append(' <span class="' + cl + '"></span>');
             }
             btag.find('.' + cl).html(html);
         };
@@ -175,7 +175,7 @@ export class VPLIDEButtons {
             for (var buttonName in buttons) {
                 if (buttons.hasOwnProperty(buttonName)) {
                     var editorName = buttons[buttonName].editorName;
-                    if (commands[editorName] && commands[editorName].bindKey && !buttons[buttonName].Key) {
+                    if (commands[editorName] && commands[editorName].bindKey && !buttons[buttonName].key) {
                         buttons[buttonName].key = commands[editorName].bindKey[platform];
                         self.setText(buttonName);
                     } else {
@@ -304,12 +304,12 @@ export class VPLIDEButtons {
             var updatePrecision = function(timeLeft) {
                 precision = 5;
                 checkt = 1000;
-                if (timeLeft > hour) {
-                    precision = 60;
-                    checkt = 5000;
-                } else if (timeLeft > day) {
+                if (timeLeft > day) {
                     precision = 5 * 60;
                     checkt = 5 * 5000;
+                } else if (timeLeft > hour) {
+                    precision = 60;
+                    checkt = 5000;
                 }
             };
             var updateTimeLeft = function() {
