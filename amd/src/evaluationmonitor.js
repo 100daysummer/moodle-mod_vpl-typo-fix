@@ -161,7 +161,9 @@ export const multievaluation = (options) => {
                 VPL.hideTableRows(student.subid);
             }
             var firstTD = VPL.getTableRow(student.subid).querySelector('td');
-            firstTD.innerHTML = (i + 1) + '/' + nstudents;
+            if (firstTD) {
+                firstTD.innerHTML = (i + 1) + '/' + nstudents;
+            }
             VPL.showTableRow(student.subid);
             try {
                 await evaluateStudent(student.id, student.subid);
