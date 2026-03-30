@@ -168,7 +168,7 @@ export const blocklyExtension = function() {
             if (type == 'string') {
                 HTML = '"' + VPLUtil.sanitizeText(val) + '"';
             } else if (type == 'boolean') {
-                HTML = "<b>" + val + "</b>";
+                HTML = "<b>" + VPLUtil.sanitizeText('' + val) + "</b>";
             } else if (type == 'object' && val.class === "Array") {
                 HTML = '[';
                 var ar = val.properties;
@@ -180,23 +180,23 @@ export const blocklyExtension = function() {
                 }
                 HTML += ']';
             } else if (type == 'object') {
-                HTML = "<b>" + val.toString() + "</b>";
+                HTML = "<b>" + VPLUtil.sanitizeText(val.toString()) + "</b>";
             } else {
-                HTML += '' + val;
+                HTML += VPLUtil.sanitizeText('' + val);
             }
         }
         return HTML;
     };
     this.getVariables = function(properties) {
         var HTML = '';
-        for (var proname in properties) {
+        for (var proname of Object.keys(properties)) {
             if (this.reservedWords[proname] === true) {
                 continue;
             }
             var pro = properties[proname];
             if (pro != undefined && !(pro.class === "Function")) {
-                var value = VPLUtil.sanitizeText(self.getVarValue(pro));
-                HTML += '<b>' + proname + "</b>:&nbsp;" + value + "<br>\n";
+                var value = self.getVarValue(pro);
+                HTML += '<b>' + VPLUtil.sanitizeText(proname) + "</b>:&nbsp;" + value + "<br>\n";
             }
         }
         return HTML;
@@ -204,7 +204,7 @@ export const blocklyExtension = function() {
     this.getParameters = function(args) {
         var HTML = '(';
         for (var i = 0; i < args.length; i++) {
-            HTML += '' + args[i];
+            HTML += VPLUtil.sanitizeText('' + args[i]);
             if (i < args.length - 1) {
                 HTML += ', ';
             }
@@ -218,7 +218,7 @@ export const blocklyExtension = function() {
         var lastFunc = '<tr><td>0</td><td><b>Globals</b></td>';
         for (var i = 0; i < stack.length; i++) {
             var level = stack[i];
-            if (lastFunc > '' && (level.node.type == 'CallExpression' || i == stack.length - 1)) {
+            if (lastFunc !== '' && (level.node.type == 'CallExpression' || i == stack.length - 1)) {
                 HTML += lastFunc + '<td>' + self.getVariables(level.scope.properties);
                 HTML += '</td></tr>';
             }
@@ -574,7 +574,7 @@ export const blocklyExtension = function() {
         };
         this.workspaceInstance = Blockly.inject(this.bdiv, options);
         this.setToolbox();
-        this.firstContent = code > '';
+        this.firstContent = code !== '';
         self.workspaceInstance.addChangeListener(self.changeCode);
         this.setContent(code);
         VPLUtil.adjustBlockly(self.workspaceInstance, 10, 10);
@@ -599,7 +599,7 @@ export const blocklyExtension = function() {
     var setContentOld = this.setContent;
     this.setContent = function(c) {
         setContentOld.call(this, c);
-        if (c.length > 0 && this.isOpen()) {
+        if (c.length !== 0 && this.isOpen()) {
             this.workspaceInstance.clear();
             var xml = Blockly.Xml.textToDom(c);
             Blockly.Xml.domToWorkspace(xml, this.workspaceInstance);
