@@ -45,7 +45,7 @@ export const VPLFile = function(id, name, value, fileManager, vplIdeInstance) {
     };
     this.setContent = function(c) {
         value = c;
-        binary = VPLUtil.isBinary(name, value);
+        binary = VPLUtil.isBinary(fileName, value);
     };
     this.getFileManager = function() {
         return fileManager;
@@ -136,9 +136,9 @@ export const VPLFile = function(id, name, value, fileManager, vplIdeInstance) {
         if (fn != name) {
             $(tabnameid + ' a').attr('title', name);
         }
-        VPLUtil.afterAll('adjustTabsTitles' + self.id, function() {
+        VPLUtil.afterAll('adjustTabsTitles' + self.getId(), function() {
             fileManager.adjustTabsTitles(true);
-            VPLUtil.delay('adjustTabsTitles' + self.id, function() {
+            VPLUtil.delay('adjustTabsTitles' + self.getId(), function() {
                 self.adjustSize();
             });
         });
