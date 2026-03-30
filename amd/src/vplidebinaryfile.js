@@ -50,7 +50,7 @@ export const binaryExtension = function() {
     this.setContent = function(c) {
         setOldContent.call(this, c);
         this.setModified();
-        this.updateDataURL();
+        this.updateDataURL(this.getType(), this.getFileName(), c);
     };
     this.updateDataURL = function(type, fileName, value) {
         var tid = this.getTId();
@@ -83,7 +83,7 @@ export const binaryExtension = function() {
         if (type === 'binary') {
             $(tid).find('div').text(VPLUtil.str('binaryfile') + ": '" + this.getFileName() + "'");
         } else {
-            this.updateDataURL(type, this.getFileName(), this.getContent());
+            this.updateDataURL(this.getType(), this.getFileName(), this.getContent());
         }
     };
     this.close = function() {
