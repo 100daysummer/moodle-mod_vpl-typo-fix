@@ -38,10 +38,10 @@ export class VPLClipboard {
         label1.html(hlabel1);
         label2.html(hlabel2);
         if (action1) {
-            label1.button().click(action1);
+            label1.button().on('click', action1);
         }
         if (action2) {
-            label2.button().click(action2);
+            label2.button().on('click', action2);
         }
         tdialog.dialog({
             title: VPLUtil.str('clipboard'),
