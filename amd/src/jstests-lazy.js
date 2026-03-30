@@ -65,7 +65,9 @@ function assert(b, message) {
     nAsserts++;
     if (!b) {
         if (typeof message == 'string') {
-            result.push("Error: " + message + " testing " + testing);
+            result.push("Error: " + message + " testing " + testing + ' must be true but is ' + b);
+        } else {
+            result.push("Error: assert failed testing " + testing+ ' must be true but is ' + b);
         }
     }
 }
@@ -81,6 +83,8 @@ function assertEquals(a, b, message) {
     if (a != b) {
         if (typeof message == 'string') {
             result.push("Error: " + message + " testing " + testing + '. Expected "' + a + '" found "' + b + '"');
+        } else {
+            result.push("Error: assertEquals failed testing " + testing + '. Expected "' + a + '" found "' + b + '"');
         }
     }
 }
