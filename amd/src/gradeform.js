@@ -189,7 +189,7 @@ export const setupGetGradeCommentList = (id) => {
                 window.VPL.resizeSView();
                 setInterval(window.VPL.resizeSView, 5000);
             },
-            error: function() {               
+            error: function() {
                 panel.text(M.util.get_string('error', 'moodle'));
             },
         });
