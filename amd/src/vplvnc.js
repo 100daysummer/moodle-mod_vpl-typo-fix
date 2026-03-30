@@ -35,11 +35,11 @@ export class VPLVNCClient {
         var message = '';
         var lastState = 'disconnected';
         var lastCanvas = null;
+        var resizeImg = null;
         var VNCDialog = $('#' + VNCDialogId);
         var canvas = $('#' + VNCDialogId + " div");
         var onCloseAction = VPLUtil.doNothing;
         var clipboard;
-        var needResize = true;
         var titleText;
         /**
          * Add input for activating virtual keyboard
@@ -123,9 +123,14 @@ export class VPLVNCClient {
             }
         });
         this.displayResize = function() {
-            var w = round(VNCDialog.width());
-            var h = round(VNCDialog.parent().height() - VNCDialog.prev().outerHeight());
-            self.setCanvasSize(w, h);
+            var titleBar = VNCDialog.parent().find('.ui-dialog-titlebar');
+            var titleBarHeight = titleBar.outerHeight() || 30;
+            var padding = 3;
+            var w = round(VNCDialog.parent().width() - 2 * padding);
+            var h = round(VNCDialog.parent().height() - 2 * padding - titleBarHeight);
+            VPLUtil.log('Resizing VNC canvas to ' + w + 'x' + h);
+            canvas.width(w);
+            canvas.height(h);
         };
 
         /**
@@ -145,15 +150,14 @@ export class VPLVNCClient {
             var bw = $('html').width();
             var bh = $(window).height();
             if (VNCDialog.width() > bw) {
-                needResize = true;
                 VNCDialog.dialog("option", "width", bw);
             }
             if (VNCDialog.parent().height() > bh) {
-                needResize = true;
                 VNCDialog.dialog("option", "height", bh - VNCDialog.prev().outerHeight());
             }
         }
         VNCDialog.dialog({
+            resizable: true,
             closeOnEscape: false,
             autoOpen: false,
             modal: true,
@@ -171,21 +175,34 @@ export class VPLVNCClient {
             focus: getFocus,
             open: openHandler,
             beforeClose: function() {
-                if (needResize) {
-                    needResize = false;
-                    self.displayResize();
-                }
+                self.displayResize();
             },
             close: function() {
                 self.disconnect();
             },
-            resizeStop: function() {
-                controlDialogSize();
-                self.displayResize();
+            resizeStart: function() {
+                var realCanvas = canvas.find('canvas');
+                if (realCanvas.length > 0) {
+                    resizeImg = document.createElement('img');
+                    resizeImg.src = realCanvas[0].toDataURL();
+                    resizeImg.style.width = '100%';
+                    resizeImg.style.height = '100%';
+                    canvas.hide();
+                    VNCDialog.append(resizeImg);
+                } else {
+                    canvas.hide();
+                }
+            },
+            resizeStop: function (event, ui) {
+                VNCDialog.find('img').remove();
+                canvas.show();
+                self.setCanvasSize(ui.size.width, ui.size.height);
+                VPLUtil.longDelay('vncresize', function() {self.displayResize();});
             }
         });
-
+        // Remove padding to avoid scroll bars.
         VNCDialog.css("padding", "1px");
+        // Set a high z-index to avoid being hidden by other dialogs.
         VNCDialog.parent().css('z-index', 2000);
 
         this.updateTitle = function() {
@@ -262,7 +279,7 @@ export class VPLVNCClient {
          * @param {*} event
          */
         function clippingviewportHandler(event) {
-            VPLUtil.log('VNC clipping viewport ' + event.detail.status);
+            VPLUtil.log('VNC clipping viewport ' + JSON.stringify(event.detail));
         }
         /**
          * Event handler for the VNC capabilities.
@@ -290,7 +307,7 @@ export class VPLVNCClient {
             switch (newstate) {
                 case "connected":
                     lastState = 'connected';
-                    self.displayResize();
+                    VPLUtil.longDelay('vncresize', function() {self.displayResize();});
                     self.setMessage('');
                     self.setTitle(str('connected'));
                     break;
@@ -397,15 +414,11 @@ export class VPLVNCClient {
         };
 
         this.setCanvasSize = function(w, h) {
-            w = round(w);
-            h = round(h);
+            // Reduce padding and borders to avoid scroll bars.
+            w = round(w) - 6;
+            h = round(h) - 6;
             canvas.width(w);
             canvas.height(h);
-            var inner = canvas.find('canvas');
-            if (inner.length > 0) {
-                inner.width(w);
-                inner.height(h);
-            }
         };
         this.show = function() {
             VNCDialog.dialog('open');
