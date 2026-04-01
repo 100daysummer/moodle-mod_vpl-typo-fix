@@ -48,7 +48,6 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
     var initReady;
     var terminalTag = $('#' + terminalId);
     var themes = VPLTerminalThemes.getThemes();
-    const NTHEMES = themes.length;
 
     this.updateTitle = function() {
         var text = title;
@@ -261,15 +260,18 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
     };
     /**
      * Sets the terminal theme
-     * @param {int} theme
+     * @param {string} themeName Name of the theme to set
      */
-    function setTheme(theme) {
-        theme = theme % NTHEMES;
-        tdialog.data('terminal_theme', theme);
-        VPLUtil.setUserPreferences({terminalTheme: theme});
+    function setTheme(themeName) {
+        let themeNames = Object.keys(themes);
+        if (themeNames.indexOf(themeName) === -1) {
+            themeName = themeNames[0]; // Default to the first theme if not found.
+        }
+        tdialog.data('terminal_theme', themeName);
+        VPLUtil.setUserPreferences({terminalTheme: themeName});
         if (terminal) {
-            var t = Object.assign({}, themes[theme]);
-            terminal.options.theme = t;
+            var themeSettings = Object.assign({}, themes[themeName]);
+            terminal.options.theme = themeSettings;
         }
     }
     /**
@@ -323,9 +325,10 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
                         }
                     },
                     function() {
-                        // Cycle themes from 0 to NTHEMES-1.
-                        var theme = (tdialog.data('terminal_theme') + 1) % NTHEMES;
-                        setTheme(theme);
+                        let themeNames = Object.keys(themes);
+                        let oldTheme = tdialog.data('terminal_theme');
+                        var theme = (themeNames.indexOf(oldTheme) + 1) % themeNames.length;
+                        setTheme(themeNames[theme]);
                     }]);
         },
         close: function() {
