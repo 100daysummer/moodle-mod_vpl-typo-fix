@@ -102,9 +102,7 @@ class provider implements core_userlist_provider, metadata_provider, user_prefer
         $collection->add_database_table('vpl_assigned_overrides', $overridesfields, 'privacy:metadata:vpl_assigned_overrides');
         $collection->add_database_table('vpl_running_processes', $runningfields, 'privacy:metadata:vpl_running_processes');
         // IDE user preferences.
-        $collection->add_user_preference('vpl_editor_fontsize', 'privacy:metadata:vpl_editor_fontsize');
-        $collection->add_user_preference('vpl_acetheme', 'privacy:metadata:vpl_acetheme');
-        $collection->add_user_preference('vpl_terminaltheme', 'privacy:metadata:vpl_terminaltheme');
+        $collection->add_user_preference('vpl_ide_preferences', 'privacy:metadata:vpl_ide_preferences');
 
         return $collection;
     }
@@ -264,12 +262,10 @@ class provider implements core_userlist_provider, metadata_provider, user_prefer
      */
     public static function export_user_preferences(int $userid) {
         $context = \context_system::instance();
-
-        $preferences = self::get_user_preferences($userid);
-        foreach ($preferences as $key => $value) {
-            $str = get_string('privacy:metadata:' . $key, 'mod_vpl');
-            writer::with_context($context)->export_user_preference('mod_vpl', $key, $value, $str);
-        }
+        $prefs = self::get_user_preferences($userid);
+        $tag = 'vpl_ide_preferences';
+        $str = get_string('privacy:metadata:' . $tag, 'mod_vpl');
+        writer::with_context($context)->export_user_preference('mod_vpl', $tag, $prefs, $str);
     }
 
     /**
@@ -581,20 +577,19 @@ class provider implements core_userlist_provider, metadata_provider, user_prefer
     }
 
     /**
-     * Returns preference key => value for the user
+     * Returns preferences of IDE for the user as string separated by comma.
      *
-     * @param int $userid The userid of the preferences to return
+     * @param int $userid The userid of the preferences to return.
+     * @return string User preferences field: value separaly by comma.  
      */
-    protected static function get_user_preferences(int $userid): array {
-        $pref = [];
-        $preferences = ['vpl_editor_fontsize', 'vpl_acetheme', 'vpl_terminaltheme'];
-        foreach ($preferences as $key) {
-            $value = get_user_preferences($key, null, $userid);
-            if (isset($value)) {
-                $pref[$key] = $value;
-            }
+    protected static function get_user_preferences(int $userid): string {
+        $preferences = \mod_vpl\util\userpreferences::get($userid);
+        $result = '';
+        foreach ($preferences as $field => $value) {
+            $result .= $field . ': ' . $value . ', ';
         }
-        return $pref;
+        $result = rtrim($result, ', ');
+        return $result;
     }
 
     /**
