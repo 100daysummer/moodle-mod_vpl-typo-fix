@@ -61,15 +61,17 @@ class vpl_editor_util {
     public static function generate_requires($vpl, $options) {
         global $PAGE;
         global $CFG;
+        $userprefs = \mod_vpl\util\userpreferences::get();
+        $userdefaults = \mod_vpl\util\userpreferences::fieldsDefaults;
         $plugincfg = get_config('mod_vpl');
         $tagid = 'vplide';
         if (isset($plugincfg->editor_theme)) {
-            $options['theme'] = $plugincfg->editor_theme;
-        } else {
-            $options['theme'] = 'chrome';
+            $userdefaults['editorTheme'] = $plugincfg->editor_theme;
         }
-        $options['fontSize'] = get_user_preferences('vpl_editor_fontsize', 12);
-        $options['theme'] = get_user_preferences('vpl_acetheme', $options['theme']);
+        $userprefs = array_merge($userdefaults, (array)$userprefs);
+        foreach ($userprefs as $key => $value) {
+            $options[$key] = $value;
+        }
         $options['lang'] = $CFG->lang;
         $options['postMaxSize'] = \mod_vpl\util\phpconfig::get_post_max_size();
         $options['isGroupActivity'] = $vpl->is_group_activity();
