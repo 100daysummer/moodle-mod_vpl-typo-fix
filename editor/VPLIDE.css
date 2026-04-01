@@ -245,21 +245,25 @@ div.vpl_ide_file.ui-tabs-panel {
     text-align: left;
 }
 
+.vpl_ide_statusbar_unsaved {
+    padding: 0 0.5em 0 0.5em;
+    color: red;
+    border-left: 1px solid lightgray;
+}
+
 .vpl_ide_statusbar_position {
     float: right;
     padding: 0 0.5em 0 0.5em;
     border-left: 1px solid lightgray;
 }
-
 .vpl_ide_statusbar_language {
     float: right;
     padding: 0 0.5em 0 0.5em;
     border-left: 1px solid lightgray;
 }
-
-.vpl_ide_statusbar_unsaved {
+.vpl_ide_statusbar_preferences {
+    float: right;
     padding: 0 0.5em 0 0.5em;
-    color: red;
     border-left: 1px solid lightgray;
 }
 
@@ -433,3 +437,23 @@ label[for="vpl_donotshowagain"] {
 .vpl_dimmed {
     opacity: 0.3;
 }
+
+#vpl_ide_dialog_preferences legend {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#vpl_ide_dialog_preferences > div {
+    display: flex;
+    gap: 1.5em;
+    align-items: flex-start;
+}
+#vpl_ide_dialog_preferences > div > fieldset {
+    flex: 1;
+    min-width: 0;
+}
+#vpl_ide_dialog_preferences select {
+    width: 100%;
+    box-sizing: border-box;
+}
+

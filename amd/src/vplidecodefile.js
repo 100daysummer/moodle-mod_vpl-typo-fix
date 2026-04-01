@@ -196,6 +196,28 @@ export const codeExtension = function() {
         }
         editor.setTheme("ace/theme/" + theme);
     };
+    this.setKeyBinding = function(binding) {
+        if (!this.isOpen()) {
+            return;
+        }
+        if (binding && binding !== 'Ace') {
+            editor.setKeyboardHandler('ace/keyboard/' + binding.toLowerCase());
+        } else {
+            editor.setKeyboardHandler(null);
+        }
+    };
+    this.setShowInvisibles = function(show) {
+        if (!this.isOpen()) {
+            return;
+        }
+        editor.setShowInvisibles(show);
+    };
+    this.setLiveAutocompletion = function(enable) {
+        if (!this.isOpen()) {
+            return;
+        }
+        editor.setOption('enableLiveAutocompletion', enable);
+    };
     this.updateStatus = function() {
         if (!this.isOpen()) {
             return;
@@ -237,6 +259,16 @@ export const codeExtension = function() {
         editor.setValue(this.getContent());
         editor.setFontSize(fileManager.getFontSize());
         editor.setTheme("ace/theme/" + fileManager.getTheme());
+        const keyBinding = fileManager.getEditorKeyBinding ? fileManager.getEditorKeyBinding() : null;
+        if (keyBinding && keyBinding !== 'Ace') {
+            editor.setKeyboardHandler('ace/keyboard/' + keyBinding.toLowerCase());
+        }
+        if (fileManager.getEditorShowInvisibles) {
+            editor.setShowInvisibles(fileManager.getEditorShowInvisibles());
+        }
+        if (fileManager.getEditorLiveAutocompletion) {
+            editor.setOption('enableLiveAutocompletion', fileManager.getEditorLiveAutocompletion());
+        }
         editor.$blockScrolling = Infinity;
         editor.gotoLine(1, 0);
         editor.setReadOnly(readOnly);

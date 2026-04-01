@@ -310,7 +310,9 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
             if (terminal) {
                 terminal.focus();
             }
-            self.startBlinking();
+            if (self.isConnected()) {
+                self.startBlinking();
+            }
         },
         classes: {
             "ui-dialog":  'vpl_ide vpl_vnc',
@@ -329,6 +331,8 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
                         let oldTheme = tdialog.data('terminal_theme');
                         var theme = (themeNames.indexOf(oldTheme) + 1) % themeNames.length;
                         setTheme(themeNames[theme]);
+                        // Show a message with the new theme name.
+                        titleText.text('[' + themeNames[theme] + ']');
                     }]);
         },
         close: function() {
@@ -353,6 +357,32 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
             return;
         }
         terminalTag.css("font-size", size + "px");
+        if (terminal) {
+            terminal.options.fontSize = size;
+            if (fitAddon) {
+                fitAddon.fit();
+            }
+        }
+    };
+    this.getFontSize = function() {
+        if (terminal && terminal.options.fontSize) {
+            return terminal.options.fontSize;
+        } else {
+            var fontSize = parseInt(terminalTag.css("font-size"), 10);
+            if (!isNaN(fontSize) && fontSize > 0 && fontSize <= 48) {
+                return fontSize;
+            }
+            return 12; // Default font size
+        }
+    };
+    this.setTheme = function(themeName) {
+        setTheme(themeName);
+    };
+    this.getTheme = function() {
+        return tdialog.data('terminal_theme') || Object.keys(themes)[0];
+    };
+    this.getThemeNames = function() {
+        return Object.keys(themes);
     };
     tdialog.css("padding", "1px");
     tdialog.parent().css('z-index', 2000);
@@ -405,6 +435,14 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
         terminal.reset();
         VPLUtil.getUserPreferences(function(data) {
             setTheme(data.preferences.terminalTheme);
+            const fontSize = parseInt(data.preferences.terminalFontSize, 10);
+            if (!isNaN(fontSize) && fontSize > 0 && fontSize <= 48) {
+                terminal.options.fontSize = fontSize;
+                terminalTag.css("font-size", fontSize + "px");
+                if (fitAddon) {
+                    fitAddon.fit();
+                }
+            }
         });
     };
     initReady = this.init();

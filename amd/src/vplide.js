@@ -21,7 +21,7 @@
  * @author Juan Carlos Rodríguez-del-Pino <jcrodriguez@dis.ulpgc.es>
  */
 
-/* globals openpopup */
+/* globals openpopup, ace */
 
 import $ from 'jquery';
 /* eslint-disable no-unused-vars */
@@ -74,7 +74,7 @@ var VPLIDE = function(rootId, options) {
         'sort': true,
         'multidelete': true,
         'showparentfiles': true,
-        'acetheme': true,
+        'preferences': true,
         'console': true,
         'comments': true
     };
@@ -87,7 +87,7 @@ var VPLIDE = function(rootId, options) {
         options.rename = activateModification;
         options.delete = activateModification;
         options.comments = options.comments && !options.example;
-        options.acetheme = true;
+        options.preferences = true;
     })();
     options.sort = (maxNumberOfFiles - minNumberOfFiles >= 2);
     options.multidelete = options.sort;
@@ -99,10 +99,29 @@ var VPLIDE = function(rootId, options) {
         return options[op];
     };
     options.console = isOptionAllowed('run') || isOptionAllowed('debug');
-    if ((typeof options.fontSize) == 'undefined') {
-        options.fontSize = 12;
+    if ((typeof options.editorFontSize) == 'undefined') {
+        options.editorFontSize = 12;
     }
-    options.fontSize = parseInt(options.fontSize);
+    options.editorFontSize = parseInt(options.editorFontSize);
+    if ((typeof options.editorTheme) == 'undefined') {
+        options.editorTheme = 'chrome';
+    }
+    if ((typeof options.terminalFontSize) == 'undefined') {
+        options.terminalFontSize = 12;
+    }
+    options.terminalFontSize = parseInt(options.terminalFontSize);
+    if ((typeof options.editorKeyBinding) == 'undefined') {
+        options.editorKeyBinding = 'Ace';
+    }
+    if ((typeof options.editorShowInvisibles) == 'undefined') {
+        options.editorShowInvisibles = false;
+    }
+    if ((typeof options.editorLiveAutocompletion) == 'undefined') {
+        options.editorLiveAutocompletion = false;
+    }
+    if ((typeof options.terminalTheme) == 'undefined') {
+        options.terminalTheme = '';
+    }
     /**
      * Handler for dragover event.
      * @param {object} e event.
@@ -346,12 +365,39 @@ var VPLIDE = function(rootId, options) {
             return openFiles.length;
         };
         this.getTheme = function() {
-            return options.theme;
+            return options.editorTheme;
         };
         this.setTheme = function(theme) {
-            options.theme = theme;
+            options.editorTheme = theme;
             for (var i = 0; i < files.length; i++) {
                 files[i].setTheme(theme);
+            }
+        };
+        this.getEditorKeyBinding = function() {
+            return options.editorKeyBinding;
+        };
+        this.setEditorKeyBinding = function(binding) {
+            options.editorKeyBinding = binding;
+            for (var i = 0; i < files.length; i++) {
+                files[i].setKeyBinding(binding);
+            }
+        };
+        this.getEditorShowInvisibles = function() {
+            return options.editorShowInvisibles;
+        };
+        this.setEditorShowInvisibles = function(show) {
+            options.editorShowInvisibles = show;
+            for (var i = 0; i < files.length; i++) {
+                files[i].setShowInvisibles(show);
+            }
+        };
+        this.getEditorLiveAutocompletion = function() {
+            return options.editorLiveAutocompletion;
+        };
+        this.setEditorLiveAutocompletion = function(enable) {
+            options.editorLiveAutocompletion = enable;
+            for (var i = 0; i < files.length; i++) {
+                files[i].setLiveAutocompletion(enable);
             }
         };
         this.addTab = function(fid) {
@@ -447,14 +493,27 @@ var VPLIDE = function(rootId, options) {
             }
         };
         this.setFontSize = function(size) {
-            options.fontSize = size;
+            options.editorFontSize = size;
             for (var i = 0; i < files.length; i++) {
                 files[i].setFontSize(size);
             }
-            terminal.setFontSize(size);
         };
         this.getFontSize = function() {
-            return options.fontSize;
+            return options.editorFontSize;
+        };
+        this.getTerminalFontSize = function() {
+            return terminal.getFontSize();
+        };
+        this.setTerminalFontSize = function(size) {
+            options.terminalFontSize = size;
+            terminal.setFontSize(size);
+        };
+        this.getTerminalTheme = function() {
+            return terminal ? terminal.getTheme() : options.terminalTheme;
+        };
+        this.setTerminalTheme = function(theme) {
+            options.terminalTheme = theme;
+            terminal.setTheme(theme);
         };
         this.addFile = function(file, replace, ok, showError) {
             if ((typeof file.name != 'string') || !VPLUtil.validPath(file.name)) {
@@ -1010,8 +1069,7 @@ var VPLIDE = function(rootId, options) {
         if (show) {
             resultContainer.show();
             resultContainer.vplVisible = true;
-            result.accordion("refresh");
-            result.accordion('option', 'active', gradeShow ? 1 : 0);
+            reinitAccordion(gradeShow ? 1 : 0);
             for (i = 0; i < files.length; i++) {
                 var annotations = files[i].getAnnotations();
                 for (var j = 0; j < annotations.length; j++) {
@@ -1028,17 +1086,24 @@ var VPLIDE = function(rootId, options) {
             $('#vpl_ide_shrightpanel').hide();
         }
         VPLUtil.delay('autoResizeTab', autoResizeTab);
-        VPLUtil.delay('fixAccordion', function() {
-            result.accordion('option', 'active', gradeShow ? 1 : 0);
-        });
     };
 
-    result.accordion({
+    var accordionOptions = {
         heightStyle: 'fill',
         header: 'h4',
         animate: false,
         beforeActivate: avoidSelectGrade,
-    });
+    };
+    var reinitAccordion = function(activeIndex) {
+        if (result.hasClass('ui-accordion')) {
+            result.accordion('destroy');
+        }
+        result.accordion(accordionOptions);
+        if (typeof activeIndex !== 'undefined') {
+            result.accordion('option', 'active', activeIndex);
+        }
+    };
+    result.accordion(accordionOptions);
     resultContainer.width(2 * resultContainer.vplMinWidth);
     result.on('click', 'a', function(event) {
         if (fileManager.gotoFileLink(event.currentTarget)) {
@@ -1220,6 +1285,9 @@ var VPLIDE = function(rootId, options) {
         }
         adjustTabsTitles(true);
         resizeHeight();
+        if (resultContainer.vplVisible) {
+            result.accordion('refresh');
+        }
         fileManager.currentFile('adjustSize');
     };
     /**
@@ -1502,70 +1570,151 @@ var VPLIDE = function(rootId, options) {
     }));
     VPLUI.setDialogTitleIcon(dialogMultidelete, 'multidelete');
 
-    var dialogFontsize = $('#vpl_ide_dialog_fontsize');
-    var fontsizeSlider = $('#vpl_ide_dialog_fontsize .vpl_fontsize_slider');
-    var dialogFontFizeButtons = {};
-    dialogFontFizeButtons[str('ok')] = function() {
-        var value = fontsizeSlider.slider("value");
-        fileManager.setFontSize(value);
+    var dialogPreferences = $('#vpl_ide_dialog_preferences');
+    var prefEditorThemeSelect = $('#vpl_ide_preferences_editor_theme');
+    var prefEditorFontsizeSlider = $('#vpl_ide_dialog_preferences .vpl_fontsize_slider');
+    var prefEditorFontsizeValue = $('#vpl_ide_dialog_preferences .vpl_fontsize_slider_value');
+    var prefEditorKeybindingSelect = $('#vpl_ide_preferences_editor_keybinding');
+    var prefEditorShowinvisiblesCheck = $('#vpl_ide_preferences_editor_showinvisibles');
+    var prefEditorLiveautocompletionCheck = $('#vpl_ide_preferences_editor_liveautocompletion');
+    var prefTerminalThemeSelect = $('#vpl_ide_preferences_terminal_theme');
+    var prefTerminalFontsizeSlider = $('#vpl_ide_dialog_preferences .vpl_termfontsize_slider');
+    var prefTerminalFontsizeValue = $('#vpl_ide_dialog_preferences .vpl_termfontsize_slider_value');
+    // Snapshot saved on dialog open, used to revert on cancel.
+    var prefSnapshot = {};
+    var populateSelect = function(select, options, selected) {
+        select.empty();
+        options.forEach(function(opt) {
+            select.append($('<option>', { value: opt.value, text: opt.label }));
+        });
+        select.val(selected);
+    };
+    var loadPreferencesDialogState = function() {
+        // Read live state from fileManager (source of truth).
+        prefSnapshot = {
+            editorTheme: fileManager.getTheme(),
+            editorFontSize: fileManager.getFontSize(),
+            editorKeyBinding: fileManager.getEditorKeyBinding(),
+            editorShowInvisibles: fileManager.getEditorShowInvisibles(),
+            editorLiveAutocompletion: fileManager.getEditorLiveAutocompletion(),
+            terminalTheme: fileManager.getTerminalTheme(),
+            terminalFontSize: fileManager.getTerminalFontSize(),
+        };
+        // Populate editor themes from ace/ext/themelist when ace is available.
+        var aceThemeOptions = [];
+        if (typeof ace !== 'undefined') {
+            try {
+                var themeList = ace.require('ace/ext/themelist');
+                if (themeList && themeList.themes) {
+                    aceThemeOptions = themeList.themes.map(function(t) {
+                        return { value: t.name, label: t.caption };
+                    });
+                }
+            } catch(e) { /* ace/ext/themelist not loaded yet */ }
+        }
+        if (aceThemeOptions.length === 0) {
+            // Fallback static list.
+            aceThemeOptions = [
+                'ambiance','chaos','chrome','clouds','clouds_midnight','cobalt',
+                'crimson_editor','dawn','dracula','dreamweaver','eclipse','github',
+                'gob','gruvbox','idle_fingers','iplastic','katzenmilch','kr_theme',
+                'kuroir','merbivore','merbivore_soft','mono_industrial','monokai',
+                'pastel_on_dark','solarized_dark','solarized_light','sqlserver',
+                'terminal','textmate','tomorrow','tomorrow_night','tomorrow_night_blue',
+                'tomorrow_night_bright','tomorrow_night_eighties','twilight',
+                'vibrant_ink','xcode'
+            ].map(function(v) {
+                var name = v.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+                return {value: v, label: name };
+            });
+        }
+        populateSelect(prefEditorThemeSelect, aceThemeOptions, prefSnapshot.editorTheme);
+        const keybindingOptions = [
+            { value: 'Ace', label: 'Ace' },
+            { value: 'vim', label: 'Vim' },
+            { value: 'emacs', label: 'Emacs' },
+            { value: 'sublime', label: 'Sublime' },
+            { value: 'vscode', label: 'VS Code' },
+        ];
+        populateSelect(prefEditorKeybindingSelect, keybindingOptions, prefSnapshot.editorKeyBinding);
+        prefEditorFontsizeSlider.slider('value', prefSnapshot.editorFontSize);
+        prefEditorFontsizeValue.text(prefSnapshot.editorFontSize);
+        prefEditorShowinvisiblesCheck.prop('checked', prefSnapshot.editorShowInvisibles);
+        prefEditorLiveautocompletionCheck.prop('checked', prefSnapshot.editorLiveAutocompletion);
+        // Populate terminal themes from terminal instance.
+        var terminalThemes = terminal.getThemeNames ? terminal.getThemeNames() : [];
+        var termThemeOptions = terminalThemes.map(function(t) { return { value: t, label: t }; });
+        populateSelect(prefTerminalThemeSelect, termThemeOptions, prefSnapshot.terminalTheme);
+        prefTerminalFontsizeSlider.slider('value', prefSnapshot.terminalFontSize);
+        prefTerminalFontsizeValue.text(prefSnapshot.terminalFontSize);
+    };
+    var dialogPreferencesButtons = {};
+    dialogPreferencesButtons[str('ok')] = function() {
+        var editorTheme = prefEditorThemeSelect.val();
+        var editorFontSize = prefEditorFontsizeSlider.slider('value');
+        var editorKeyBinding = prefEditorKeybindingSelect.val();
+        var editorShowInvisibles = prefEditorShowinvisiblesCheck.prop('checked');
+        var editorLiveAutocompletion = prefEditorLiveautocompletionCheck.prop('checked');
+        var terminalTheme = prefTerminalThemeSelect.val();
+        var terminalFontSize = prefTerminalFontsizeSlider.slider('value');
+        fileManager.setTheme(editorTheme);
+        fileManager.setFontSize(editorFontSize);
+        fileManager.setEditorKeyBinding(editorKeyBinding);
+        fileManager.setEditorShowInvisibles(editorShowInvisibles);
+        fileManager.setEditorLiveAutocompletion(editorLiveAutocompletion);
+        fileManager.setTerminalTheme(terminalTheme);
+        fileManager.setTerminalFontSize(terminalFontSize);
+        VPLUtil.setUserPreferences({
+            editorTheme: editorTheme,
+            editorFontSize: editorFontSize,
+            editorKeyBinding: editorKeyBinding,
+            editorShowInvisibles: editorShowInvisibles,
+            editorLiveAutocompletion: editorLiveAutocompletion,
+            terminalTheme: terminalTheme,
+            terminalFontSize: terminalFontSize,
+        });
         $(this).dialog('close');
-        VPLUtil.setUserPreferences({fontSize: value});
     };
-    dialogFontFizeButtons[str('cancel')] = function() {
-        fileManager.setFontSize(fontsizeSlider.data("vpl_fontsize"));
+    dialogPreferencesButtons[str('cancel')] = function() {
+        // Revert all live changes made while the dialog was open.
+        fileManager.setTheme(prefSnapshot.editorTheme);
+        fileManager.setFontSize(prefSnapshot.editorFontSize);
+        fileManager.setEditorKeyBinding(prefSnapshot.editorKeyBinding);
+        fileManager.setEditorShowInvisibles(prefSnapshot.editorShowInvisibles);
+        fileManager.setEditorLiveAutocompletion(prefSnapshot.editorLiveAutocompletion);
+        fileManager.setTerminalTheme(prefSnapshot.terminalTheme);
+        fileManager.setTerminalFontSize(prefSnapshot.terminalFontSize);
         $(this).dialog('close');
     };
-    dialogFontFizeButtons[str('reset')] = function() {
-        fontsizeSlider.slider('value', 12);
-    };
-    dialogFontsize.dialog($.extend({}, dialogbaseOptions, {
-        title: str('fontsize'),
-        buttons: dialogFontFizeButtons,
+    dialogPreferences.dialog($.extend({}, dialogbaseOptions, {
+        title: str('preferences'),
+        buttons: dialogPreferencesButtons,
         open: function() {
-            fontsizeSlider.data("vpl_fontsize", fileManager.getFontSize());
-            fontsizeSlider.slider('value', fileManager.getFontSize());
+            loadPreferencesDialogState();
         },
     }));
-    fontsizeSlider.slider({
+    prefEditorFontsizeSlider.slider({
         min: 1,
         max: 48,
         change: function() {
-            var value = fontsizeSlider.slider("value");
+            var value = prefEditorFontsizeSlider.slider('value');
             fileManager.setFontSize(value);
-            dialogFontsize.find('.vpl_fontsize_slider_value').text(value);
+            prefEditorFontsizeValue.text(value);
         }
     });
-    VPLUI.setDialogTitleIcon(dialogFontsize, 'fontsize');
-
-    var dialogAceTheme = $('#vpl_ide_dialog_acetheme');
-    var acethemeSelect = $('#vpl_ide_dialog_acetheme select');
-    var dialogAceThemeButtons = {};
-    dialogAceThemeButtons[str('ok')] = function() {
-        fileManager.setTheme(acethemeSelect.val());
-        $(this).dialog('close');
-        VPLUtil.setUserPreferences({aceTheme: acethemeSelect.val()});
-    };
-    dialogAceThemeButtons[str('cancel')] = function() {
-        fileManager.setTheme(acethemeSelect.data("acetheme"));
-        $(this).dialog('close');
-    };
-    dialogAceThemeButtons[str('reset')] = function() {
-        acethemeSelect.val(acethemeSelect.data("acetheme"));
-        fileManager.setTheme(acethemeSelect.val());
-    };
-    dialogAceTheme.dialog($.extend({}, dialogbaseOptions, {
-        title: str('theme'),
-        buttons: dialogAceThemeButtons,
-        modal: false,
-        open: function() {
-            acethemeSelect.data("acetheme", fileManager.getTheme());
-            acethemeSelect.val(fileManager.getTheme());
-        },
-    }));
-    acethemeSelect.on('change', function() {
-            fileManager.setTheme(acethemeSelect.val());
+    prefTerminalFontsizeSlider.slider({
+        min: 1,
+        max: 48,
+        change: function() {
+            var value = prefTerminalFontsizeSlider.slider('value');
+            fileManager.setTerminalFontSize(value);
+            prefTerminalFontsizeValue.text(value);
+        }
     });
-    VPLUI.setDialogTitleIcon(dialogAceTheme, 'theme');
+    prefEditorThemeSelect.on('change', function() {
+        fileManager.setTheme(prefEditorThemeSelect.val());
+    });
+    VPLUI.setDialogTitleIcon(dialogPreferences, 'preferences');
 
     var terminal = new VPLTerminal('vpl_dialog_terminal', 'vpl_terminal', str);
     var VNCClient = new VPLVNCClient('vpl_dialog_vnc', str);
@@ -1695,15 +1844,9 @@ var VPLIDE = function(rootId, options) {
         }
     });
     menuButtons.add({
-        name: 'fontsize',
+        name: 'preferences',
         originalAction: function() {
-            dialogFontsize.dialog('open');
-        }
-    });
-    menuButtons.add({
-        name: 'theme',
-        originalAction: function() {
-            dialogAceTheme.dialog('open');
+            dialogPreferences.dialog('open');
         }
     });
     menuButtons.add({
@@ -2046,8 +2189,6 @@ var VPLIDE = function(rootId, options) {
     menuHtml += menuButtons.getHTML('sort');
     menuHtml += menuButtons.getHTML('multidelete');
     menuHtml += menuButtons.getHTML('showparentfiles');
-    menuHtml += menuButtons.getHTML('fontsize');
-    menuHtml += menuButtons.getHTML('theme');
     menuHtml += "</span> ";
     // TODO print still not implemented.
     menuHtml += "<span id='vpl_ide_edit'>";
@@ -2072,15 +2213,18 @@ var VPLIDE = function(rootId, options) {
     $('#vpl_ide_edit').controlgroup();
     $('#vpl_ide_mexecution').controlgroup();
     $('#vpl_ide_fullscreen').button();
-    $('#vpl_ide_acetheme').button();
     $('#vpl_ide_about').button();
     $('#vpl_ide_user').button().css('float', 'right').hide();
     $('#vpl_ide_timeleft').button().css('float', 'right').hide();
+    $('.vpl_ide_statusbar_preferences').append(menuButtons.getHTML('preferences'));
+    $('#vpl_ide_preferences').on('click', function() {
+        menuButtons.launchAction('preferences');
+    });
     $('#vpl_menu .ui-button').css('padding', '6px');
     $('#vpl_menu .ui-button-text').css('padding', '0');
     var alwaysActive = ['filelist', 'more', 'fullscreen', 'about', 'resetfiles',
                         'download', 'comments', 'console', 'import',
-                        'fontsize', 'timeleft'];
+                        'preferences', 'timeleft'];
     for (var i = 0; i < alwaysActive.length; i++) {
         menuButtons.enable(alwaysActive[i], true);
     }
@@ -2278,7 +2422,15 @@ var VPLIDE = function(rootId, options) {
         } else if (!options.saved) {
             fileManager.setModified();
         }
-        fileManager.setFontSize(options.fontSize);
+        fileManager.setFontSize(options.editorFontSize);
+        fileManager.setTheme(options.editorTheme);
+        fileManager.setEditorKeyBinding(options.editorKeyBinding);
+        fileManager.setEditorShowInvisibles(options.editorShowInvisibles);
+        fileManager.setEditorLiveAutocompletion(options.editorLiveAutocompletion);
+        fileManager.setTerminalFontSize(options.terminalFontSize);
+        if (options.terminalTheme) {
+            fileManager.setTerminalTheme(options.terminalTheme);
+        }
         fileManager.setVersion(response.version);
         fileManager.fileListVisible(showFileList);
         VPLUtil.afterAll('AfterLoadFiles', function() {

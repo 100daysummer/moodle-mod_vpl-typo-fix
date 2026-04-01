@@ -257,6 +257,7 @@ VPLUI.iconFolder = function() {
         'theme':  'paint-brush',
         'user': 'user',
         'fontsize': 'text-height',
+        'preferences': 'sliders',
         'close-rightpanel': 'caret-square-o-right',
         'open-rightpanel': 'caret-square-o-left'
     };

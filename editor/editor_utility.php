@@ -129,6 +129,14 @@ class vpl_editor_util {
         $newfilename = s(get_string('new_file_name', VPL));
         $rename = s(get_string('rename'));
         $comments = s(get_string('comments', VPL));
+        $editor = s(get_string('editor', VPL));
+        $editortheme = s(get_string('editortheme', VPL));
+        $fontsize = s(get_string('fontsize', VPL));
+        $keybinding = s(get_string('keybinding', VPL));
+        $showinvisibles = s(get_string('showinvisibles', VPL));
+        $liveautocompletion = s(get_string('liveautocompletion', VPL));
+        $terminal = s(get_string('terminal', VPL));
+        $terminaltheme = s(get_string('terminaltheme', VPL));
 
         $html = <<<"HTML"
 <div id="$tagid" class="vpl_ide vpl_ide_root">
@@ -149,9 +157,10 @@ class vpl_editor_util {
     </div>
     <div id="vpl_ide_statusbar" class="vpl_ide_statusbar ui-corner-all">
             <span class="vpl_ide_statusbar_filename"></span>
-            <span class="vpl_ide_statusbar_language"></span>
-            <span class="vpl_ide_statusbar_position"></span>
             <span class="vpl_ide_statusbar_unsaved" style="display: none;">*</span>
+            <span class="vpl_ide_statusbar_preferences"></span>
+            <span class="vpl_ide_statusbar_position"></span>
+            <span class="vpl_ide_statusbar_language"></span>
     </div>
     <div id="vpl_ide_dialog_new" class="vpl_ide_dialog"
         style="display: none;">
@@ -192,51 +201,36 @@ class vpl_editor_util {
         style="display: none;">
         <fieldset id="vpl_multidelete_list"></fieldset>
     </div>
-    <div id="vpl_ide_dialog_fontsize" class="vpl_ide_dialog"
+    <div id="vpl_ide_dialog_preferences" class="vpl_ide_dialog"
         style="display: none;">
-        <div class="vpl_fontsize_slider_value"></div>
-        <div class="vpl_fontsize_slider"></div>
-    </div>
-    <div id="vpl_ide_dialog_acetheme" class="vpl_ide_dialog" style="display: none;">
-        <select>
-           <option value="ambiance">Ambiance</option>
-           <option value="chaos">Chaos</option>
-           <option value="chrome">Chrome</option>
-           <option value="clouds">Clouds</option>
-           <option value="clouds_midnight">Clouds Midnight</option>
-           <option value="cobalt">Cobalt</option>
-           <option value="crimson_editor">Crimson Editor</option>
-           <option value="dawn">Dawn</option>
-           <option value="dracula">Dracula</option>
-           <option value="dreamweaver">Dreamweaver</option>
-           <option value="eclipse">Eclipse</option>
-           <option value="github">GitHub</option>
-           <option value="gob">Gob</option>
-           <option value="gruvbox">Gruvbox</option>
-           <option value="idle_fingers">idle Fingers</option>
-           <option value="iplastic">IPlastic</option>
-           <option value="katzenmilch">Katzenmilch</option>
-           <option value="kr_theme">Kr theme</option>
-           <option value="kuroir">Kuroir</option>
-           <option value="merbivore">Merbivore</option>
-           <option value="merbivore_soft">Merbivore Soft</option>
-           <option value="mono_industrial">Mono Industrial</option>
-           <option value="monokai">Monokai</option>
-           <option value="pastel_on_dark">Pastel on dark</option>
-           <option value="solarized_dark">Solarized Dark</option>
-           <option value="solarized_light">Solarized Light</option>
-           <option value="sqlserver">SQL Server</option>
-           <option value="terminal">Terminal</option>
-           <option value="textmate">TextMate</option>
-           <option value="tomorrow">Tomorrow</option>
-           <option value="tomorrow_night">Tomorrow Night</option>
-           <option value="tomorrow_night_blue">Tomorrow Night Blue</option>
-           <option value="tomorrow_night_bright">Tomorrow Night Bright</option>
-           <option value="tomorrow_night_eighties">Tomorrow Night 80s</option>
-           <option value="twilight">Twilight</option>
-           <option value="vibrant_ink">Vibrant Ink</option>
-           <option value="xcode">XCode</option>
-        </select>
+        <div>
+        <fieldset>
+            <legend>$editor</legend>
+            <label>$editortheme</label><br>
+            <select id="vpl_ide_preferences_editor_theme">
+            </select>
+            <br><br>
+            <label>$fontsize:&nbsp;<span class="vpl_fontsize_slider_value"></span></label><br>
+            <div class="vpl_fontsize_slider"></div>
+            <br>
+            <label>$keybinding</label><br>
+            <select id="vpl_ide_preferences_editor_keybinding">
+            </select>
+            <br><br>
+            <label><input type="checkbox" id="vpl_ide_preferences_editor_showinvisibles"> $showinvisibles</label>
+            <br>
+            <label><input type="checkbox" id="vpl_ide_preferences_editor_liveautocompletion"> $liveautocompletion</label>
+        </fieldset>
+        <fieldset>
+            <legend>$terminal</legend>
+            <label>$terminaltheme</label><br>
+            <select id="vpl_ide_preferences_terminal_theme">
+            </select>
+            <br><br>
+            <label>$fontsize:&nbsp;<span class="vpl_termfontsize_slider_value"></span></label><br>
+            <div class="vpl_termfontsize_slider"></div>
+        </fieldset>
+        </div>
     </div>
     <div id="vpl_ide_dialog_comments" class="vpl_ide_dialog"
         style="display: none;">
@@ -407,6 +401,14 @@ HTML;
                 'removebreakpoint',
                 'maxpostsizeexceeded',
                 'showparentfiles',
+                'preferences',
+                'editor',
+                'editortheme',
+                'keybinding',
+                'showinvisibles',
+                'liveautocompletion',
+                'terminal',
+                'terminaltheme',
         ];
         $words = [
                 'cancel',
