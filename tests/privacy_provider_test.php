@@ -37,8 +37,11 @@ use core_privacy\local\request\contextlist;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\writer;
 use core_privacy\local\request\userlist;
+use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
+use mod_vpl\util\userpreferences;
 use mod_vpl\tests\base_fixture;
-use mod_vpl\tests\testable_provider;
+use mod_vpl\privacy\provider;
 use stdClass;
 use mod_vpl_submission;
 use mod_vpl_submission_CE;
@@ -75,7 +78,7 @@ final class privacy_provider_test extends base_fixture {
     protected function setUp(): void {
         parent::setUp();
         $this->setupinstances();
-        $this->provider = new testable_provider();
+        $this->provider = new provider();
         $this->setUser($this->students[2]);
         $res = $this->vplvariations->get_variation($this->students[2]->id);
         if ($res === false) {
@@ -193,9 +196,9 @@ final class privacy_provider_test extends base_fixture {
         $contexts = $this->provider->get_contexts_for_userid($this->students[4]->id);
         $context = $this->vplonefile->get_context();
         $this->assertEquals($context, $contexts->current());
-        $approved = new \core_privacy\local\request\approved_contextlist($this->students[4], 'mod_vpl', [$context->id]);
+        $approved = new approved_contextlist($this->students[4], 'mod_vpl', [$context->id]);
         $this->provider->export_user_data($approved);
-        $writer = \core_privacy\local\request\writer::with_context($context);
+        $writer = writer::with_context($context);
 
         $data = $writer->get_data([]);
         $this->assertInstanceOf('stdClass', $data);
@@ -233,9 +236,9 @@ final class privacy_provider_test extends base_fixture {
         $contexts = $this->provider->get_contexts_for_userid($this->students[2]->id);
         $context = $this->vplvariations->get_context();
         $this->assertEquals($context, $contexts->current());
-        $approved = new \core_privacy\local\request\approved_contextlist($this->students[2], 'mod_vpl', [$context->id]);
+        $approved = new approved_contextlist($this->students[2], 'mod_vpl', [$context->id]);
         $this->provider->export_user_data($approved);
-        $writer = \core_privacy\local\request\writer::with_context($context);
+        $writer = writer::with_context($context);
 
         $data = $writer->get_data([]);
         $this->assertInstanceOf('stdClass', $data);
@@ -262,9 +265,9 @@ final class privacy_provider_test extends base_fixture {
         $contexts = $this->provider->get_contexts_for_userid($this->teachers[1]->id);
         $context = $this->vplonefile->get_context();
         $this->assertEquals($context, $contexts->current());
-        $approved = new \core_privacy\local\request\approved_contextlist($this->teachers[1], 'mod_vpl', [$context->id]);
+        $approved = new approved_contextlist($this->teachers[1], 'mod_vpl', [$context->id]);
         $this->provider->export_user_data($approved);
-        $writer = \core_privacy\local\request\writer::with_context($context);
+        $writer = writer::with_context($context);
 
         $this->assertTrue($writer->has_any_data());
         $data = $writer->get_data([]);
@@ -302,9 +305,9 @@ final class privacy_provider_test extends base_fixture {
             $DB->insert_record(VPL_RUNNING_PROCESSES, $parms);
         }
         $context = $this->vplonefile->get_context();
-        $approved = new \core_privacy\local\request\approved_contextlist($this->students[0], 'mod_vpl', [$context->id]);
+        $approved = new approved_contextlist($this->students[0], 'mod_vpl', [$context->id]);
         $this->provider->export_user_data($approved);
-        $writer = \core_privacy\local\request\writer::with_context($context);
+        $writer = writer::with_context($context);
         for ($i = 1; $i < 4; $i++) {
             $data = $writer->get_data([get_string('privacy:runningprocesspath', 'vpl', $i) ]);
             $this->assertInstanceOf('stdClass', $data);
@@ -318,37 +321,20 @@ final class privacy_provider_test extends base_fixture {
      * Method to test export_user_preferences.
      */
     public function test_export_user_preferences(): void {
-        // Student 0.
-        set_user_preference('vpl_editor_fontsize', 14, $this->students[0]);
-        set_user_preference('vpl_acetheme', 'Eclipse', $this->students[0]);
-        set_user_preference('vpl_terminaltheme', 0, $this->students[0]);
-        // Student 1.
-        set_user_preference('vpl_editor_fontsize', 10, $this->students[1]);
-        set_user_preference('vpl_acetheme', 'VPL', $this->students[1]);
-        set_user_preference('vpl_terminaltheme', 2, $this->students[1]);
-        // Student 2.
-        set_user_preference('vpl_acetheme', 'Netbeans', $this->students[2]);
-        // Student 3.
-        set_user_preference('vpl_editor_fontsize', 8, $this->students[3]);
-        // Teacher 0.
-        set_user_preference('vpl_editor_fontsize', 10, $this->editingteachers[1]);
-        set_user_preference('vpl_acetheme', 'VPL', $this->editingteachers[1]);
-        set_user_preference('vpl_terminaltheme', 2, $this->editingteachers[1]);
-
-        $expected = ['vpl_editor_fontsize' => 14, 'vpl_acetheme' => 'Eclipse', 'vpl_terminaltheme' => 0];
-        $this->assertEquals($expected, $this->provider->get_user_preferences($this->students[0]->id));
-        $expected = ['vpl_editor_fontsize' => 10, 'vpl_acetheme' => 'VPL', 'vpl_terminaltheme' => 2];
-        $this->assertEquals($expected, $this->provider->get_user_preferences($this->students[1]->id));
-        $this->assertEquals($expected, $this->provider->get_user_preferences($this->editingteachers[1]->id));
-
-        $expected = ['vpl_acetheme' => 'Netbeans'];
-        $this->assertEquals($expected, $this->provider->get_user_preferences($this->students[2]->id));
-
-        $expected = ['vpl_editor_fontsize' => 8];
-        $this->assertEquals($expected, $this->provider->get_user_preferences($this->students[3]->id));
-
-        $expected = [];
-        $this->assertEquals($expected, $this->provider->get_user_preferences($this->students[4]->id));
+        $this->setUser($this->students[0]);
+        $preferences = (object)[
+            'editorTheme' => 'dark',
+            'editorShowInvisibles' => true,
+            'terminalFontSize' => 12,
+        ];
+        userpreferences::update(json_encode($preferences));
+        $context = \context_system::instance();
+        $this->provider->export_user_preferences($this->students[0]->id);
+        $writer = writer::with_context($context);
+        $data = $writer->get_user_preferences('mod_vpl');
+        $expected = 'editorTheme: dark, editorShowInvisibles: 1, terminalFontSize: 12';
+        $this->assertObjectHasProperty('vpl_ide_preferences', $data);
+        $this->assertEquals($expected, $data->vpl_ide_preferences->value);
     }
     /**
      * Method to test provider::delete_data_for_all_users_in_context.
@@ -407,7 +393,7 @@ final class privacy_provider_test extends base_fixture {
             if (count($usersvpls[$n]) > 0) {
                 $contextids = [$usersvpls[$n][0]->get_context()->id];
                 array_splice($usersvpls[$n], 0, 1);
-                $approved = new \core_privacy\local\request\approved_contextlist($user, 'mod_vpl', $contextids);
+                $approved = new approved_contextlist($user, 'mod_vpl', $contextids);
                 $this->assertEquals(1, $approved->count(), "User {$user->username}");
                 $userid = $user->id;
                 $ncontextsbefore = $this->provider->get_contexts_for_userid($userid)->count();
@@ -433,7 +419,7 @@ final class privacy_provider_test extends base_fixture {
                 $contextids[] = $vpl->get_context()->id;
                 $info .= $vpl->get_instance()->name . " | ";
             }
-            $approved = new \core_privacy\local\request\approved_contextlist($user, 'mod_vpl', $contextids);
+            $approved = new approved_contextlist($user, 'mod_vpl', $contextids);
             $this->assertEquals(count($usersvpls[$n]), $approved->count(), "User {$user->username} {$info}");
             $this->provider->delete_data_for_user($approved);
             $ncontextsafter = $this->provider->get_contexts_for_userid($userid)->count();
@@ -469,7 +455,7 @@ final class privacy_provider_test extends base_fixture {
                 continue;
             }
             $context = $usersvpls[$n][0]->get_context();
-            $approved = new \core_privacy\local\request\approved_userlist($context, 'mod_vpl', [$users[$n]->id]);
+            $approved = new approved_userlist($context, 'mod_vpl', [$users[$n]->id]);
             array_splice($usersvpls[$n], 0, 1);
 
             $this->provider->delete_data_for_users($approved);
@@ -503,7 +489,7 @@ final class privacy_provider_test extends base_fixture {
         }
         foreach ($allvpls as $vpl) {
             $context = $vpl->get_context();
-            $approved = new \core_privacy\local\request\approved_userlist($context, 'mod_vpl', $userlist);
+            $approved = new approved_userlist($context, 'mod_vpl', $userlist);
 
             $this->provider->delete_data_for_users($approved);
 
