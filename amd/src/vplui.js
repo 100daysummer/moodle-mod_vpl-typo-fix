@@ -722,13 +722,13 @@ VPLUI.updateIDEStatus = function(status) {
         return;
     }
     $('#vpl_ide_statusbar').show();
-    if (status.fileName) {
+    if (typeof status.fileName !== 'undefined') {
         $('#vpl_ide_statusbar .vpl_ide_statusbar_filename').text(status.fileName);
     }
-    if (status.position) {
+    if (typeof status.position !== 'undefined') {
         $('#vpl_ide_statusbar .vpl_ide_statusbar_position').text(status.position);
     }
-    if (status.language) {
+    if (typeof status.language !== 'undefined') {
         $('#vpl_ide_statusbar .vpl_ide_statusbar_language').text(status.language);
     }
     if (typeof status.action !== 'undefined') {
