@@ -229,7 +229,7 @@ export const codeExtension = function() {
         status.position = "Ln " + (pos.row + 1) + ', Col ' + (pos.column + 1);
         status.language = VPLUtil.langName(fullname);
         status.unsaved = this.isModified();
-        VPLUI.showIDEStatus(status);
+        VPLUI.updateIDEStatus(status);
     };
 
     this.open = function() {

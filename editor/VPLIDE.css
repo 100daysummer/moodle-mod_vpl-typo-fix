@@ -245,10 +245,38 @@ div.vpl_ide_file.ui-tabs-panel {
     text-align: left;
 }
 
+.vpl_ide_statusbar_action {
+    padding: 0 0.5em 0 0.5em;
+    border-left: 1px solid lightgray;
+    float: right;
+    animation: actionPulse 3s infinite;
+}
+
+@keyframes actionPulse {
+    0% {
+        background-color: inherit;
+    }
+    50% {
+        background-color: #bcf000;
+    }
+    100% {
+        background-color: inherit;
+    }
+}
+
 .vpl_ide_statusbar_unsaved {
     padding: 0 0.5em 0 0.5em;
-    color: red;
+    color: white;
+    background-color: red;
     border-left: 1px solid lightgray;
+    font-weight: bold;
+    animation: unsavedPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes unsavedPulse {
+    0%   { background-color: red; color: white; }
+    50%  { background-color: #ff6666; color: white; }
+    100% { background-color: red; color: white; }
 }
 
 .vpl_ide_statusbar_position {

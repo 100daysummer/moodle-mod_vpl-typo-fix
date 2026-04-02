@@ -438,7 +438,7 @@ var VPLIDE = function(rootId, options) {
             var pos;
             var fid = file.getId();
             file.close();
-            VPLUI.hideIDEStatus();
+            VPLUI.cleanIDEStatus();
             self.removeTab(fid);
             var ptab = self.getTabPos(fid);
             openFiles.splice(ptab, 1);
@@ -708,7 +708,7 @@ var VPLIDE = function(rootId, options) {
             this.closeFile(files[pos]);
             files.splice(pos, 1);
             if (openFiles.length == 0) {
-                VPLUI.hideIDEStatus();
+                VPLUI.cleanIDEStatus();
             }
             VPLUtil.delay('updateFileList', self.updateFileList);
             return true;
@@ -812,6 +812,7 @@ var VPLIDE = function(rootId, options) {
             for (var i = 0; i < files.length; i++) {
                 files[i].resetModified();
             }
+            self.currentFile('updateStatus');
             VPLUtil.delay('updateMenu', updateMenu);
             VPLUtil.delay('updateFileList', self.updateFileList);
         };
@@ -1204,7 +1205,7 @@ var VPLIDE = function(rootId, options) {
             newHeight = 250;
         }
         tr.height(newHeight);
-        var panelHeight = newHeight - 3 * getTabsAir();
+        var panelHeight = newHeight - 2 * getTabsAir();
         tabs.height(panelHeight);
         if (resultContainer.vplVisible) {
             resultContainer.height(panelHeight + getTabsAir());
@@ -2282,7 +2283,10 @@ var VPLIDE = function(rootId, options) {
 
     executionActions = {
         'open': updateMenu,
-        'close': updateMenu,
+        'close': function() {
+            VPLUI.updateIDEStatus({action: null});
+            updateMenu();
+        },
         'getConsole': function() {
             return lastConsole;
         },
@@ -2290,7 +2294,7 @@ var VPLIDE = function(rootId, options) {
         'ajaxurl': options.ajaxurl,
         'run': function(content, coninfo, ws) {
             var parsed = /^([^:]*):?(.*)/.exec(content);
-            var type = VPLUtil.sanitizeText(parsed[1]);
+            var type = parsed[1];
             if (type == 'terminal' || type == 'webterminal') {
                 if (lastConsole && lastConsole.isOpen()) {
                     lastConsole.close();
@@ -2301,6 +2305,7 @@ var VPLIDE = function(rootId, options) {
                     focusCurrentFile();
                 });
                 if (type == 'webterminal') {
+                    // Load favicon to get the cookie iwh
                     var URLfavicon = (coninfo.secure ? "https" : "http") + "://" + coninfo.server + ":" + coninfo.portToUse;
                     URLfavicon += "/favicon.ico";
                     var imgFavicon = $('<img>');
@@ -2324,14 +2329,18 @@ var VPLIDE = function(rootId, options) {
                 if (isTeacher) {
                     URL += "?private";
                 }
-                var message = '<a href="' + URL + '" target="_blank">';
-                message += VPLUtil.str('open') + '</a>';
-                var options = {
-                    width: 200,
-                    icon: 'run',
-                    title: VPLUtil.str('run'),
-                };
-                showMessage(message, options);
+                var action = {};
+                action.href = URL;
+                action.target = "_blank";
+                action.rel = "noopener noreferrer";
+                if (isTeacher) {
+                    action.icon = 'open-private-browser';
+                    action.text = VPLUtil.str('open_private_browser');
+                } else {
+                    action.icon = 'open-browser';
+                    action.text = VPLUtil.str('open_browser');
+                }
+                VPLUI.updateIDEStatus({action: action});
             } else {
                 VPLUtil.log("Type of run error " + content, true);
             }

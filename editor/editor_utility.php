@@ -137,6 +137,7 @@ class vpl_editor_util {
         $liveautocompletion = s(get_string('liveautocompletion', VPL));
         $terminal = s(get_string('terminal', VPL));
         $terminaltheme = s(get_string('terminaltheme', VPL));
+        $unsaved = s(get_string('unsaved', VPL));
 
         $html = <<<"HTML"
 <div id="$tagid" class="vpl_ide vpl_ide_root">
@@ -157,10 +158,11 @@ class vpl_editor_util {
     </div>
     <div id="vpl_ide_statusbar" class="vpl_ide_statusbar ui-corner-all">
             <span class="vpl_ide_statusbar_filename"></span>
-            <span class="vpl_ide_statusbar_unsaved" style="display: none;">*</span>
+            <span class="vpl_ide_statusbar_unsaved" style="display: none;">$unsaved</span>
             <span class="vpl_ide_statusbar_preferences"></span>
             <span class="vpl_ide_statusbar_position"></span>
             <span class="vpl_ide_statusbar_language"></span>
+            <span class="vpl_ide_statusbar_action"></span>
     </div>
     <div id="vpl_ide_dialog_new" class="vpl_ide_dialog"
         style="display: none;">
@@ -255,13 +257,13 @@ class vpl_editor_util {
             <li><a href="http://ace.c9.io" target="_blank">ACE</a>: an embeddable
                 code editor written in JavaScript. Copyright (c) 2010, Ajax.org B.V.
                 (<a href="../editor/ace9/LICENSE" target="_blank">licence</a>)</li>
-            <li><a href="https://github.com/chjj/term.js/" target="_blank">term.js</a>:
-                A full xterm clone written in javascript. Copyright (c) 2012-2013,
-                Christopher Jeffrey (MIT License)</li>
+            <li><a href="https://xtermjs.org/" target="_blank">xterm.js</a>:
+                A terminal emulator written in JavaScript. Copyright (c) 2017-2019,
+                The xterm.js authors (MIT License)</li>
             <li><a href="http://kanaka.github.io/noVNC/" target="_blank">noVNC</a>:
                 VNC client using HTML5 (WebSockets, Canvas). noVNC is Copyright (C)
                 2011 Joel Martin &lt;github@martintribe.org&gt; (<a
-                href="../editor/noVNC/LICENSE.txt" target="_blank">licence</a>)</li>
+                href="../thirdpartylibs/noVNC/LICENSE.txt" target="_blank">licence</a>)</li>
             <li>unzip.js: August Lilleaas</li>
             <li>inflate.js: August Lilleaas and Masanao Izumo &lt;iz@onicos.co.jp&gt;</li>
             <li><a href="https://developers.google.com/blockly" target="_blank">Blockly</a>:
@@ -409,6 +411,11 @@ HTML;
                 'liveautocompletion',
                 'terminal',
                 'terminaltheme',
+                'open_browser',
+                'open_private_browser',
+                'update',
+                'updating',
+                'unzipping',
         ];
         $words = [
                 'cancel',

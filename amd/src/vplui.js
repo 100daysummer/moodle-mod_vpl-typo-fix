@@ -259,7 +259,9 @@ VPLUI.iconFolder = function() {
         'fontsize': 'text-height',
         'preferences': 'sliders',
         'close-rightpanel': 'caret-square-o-right',
-        'open-rightpanel': 'caret-square-o-left'
+        'open-rightpanel': 'caret-square-o-left',
+        'open-browser': 'gear fa-spin|external-link',
+        'open-private-browser': 'gear fa-spin|external-link|shield',
     };
     VPLUI.genIcon = function(icon, size) {
         if (!menuIcons[icon]) {
@@ -705,31 +707,53 @@ VPLUI.webSocketMonitor = function(coninfo, title, running, externalActions) {
     return deferred;
 };
 
-VPLUI.hideIDEStatus = function() {
-    VPLUtil.delay('updateIDEStatus', function() {
-        $('#vpl_ide_statusbar').hide();
+VPLUI.clearIDEStatus = function() {
+    VPLUI.updateIDEStatus({
+        filename: '',
+        position: '',
+        language: '',
+        unsaved: false,
+        action: ''
     });
 };
 
-VPLUI.showIDEStatus = function(status) {
+VPLUI.updateIDEStatus = function(status) {
     if (typeof status !== 'object') {
         return;
     }
-    VPLUtil.delay('updateIDEStatus', function() {
-        $('#vpl_ide_statusbar').show();
-        if (status.fileName) {
-            $('#vpl_ide_statusbar .vpl_ide_statusbar_filename').text(status.fileName);
+    $('#vpl_ide_statusbar').show();
+    if (status.fileName) {
+        $('#vpl_ide_statusbar .vpl_ide_statusbar_filename').text(status.fileName);
+    }
+    if (status.position) {
+        $('#vpl_ide_statusbar .vpl_ide_statusbar_position').text(status.position);
+    }
+    if (status.language) {
+        $('#vpl_ide_statusbar .vpl_ide_statusbar_language').text(status.language);
+    }
+    if (typeof status.action !== 'undefined') {
+        if (status.action === null) {
+            $('#vpl_ide_statusbar .vpl_ide_statusbar_action').html('');
+            $('#vpl_ide_statusbar .vpl_ide_statusbar_action').hide();
+        } else {
+            var action = status.action;
+            var actionHtml = "<a href='" + action.href + "'";
+            actionHtml += action.title? " title='" + VPLUtil.sanitizeText(action.title) + "'": "";
+            actionHtml += action.target? " target='" + VPLUtil.sanitizeText(action.target) + "'": "";
+            actionHtml += action.rel? " rel='" + VPLUtil.sanitizeText(action.rel) + "'": "";
+            actionHtml += ">";
+            actionHtml += VPLUI.genIcon(action.icon);
+            actionHtml += VPLUtil.sanitizeText(action.text);
+            actionHtml += "</a>";
+            $('#vpl_ide_statusbar .vpl_ide_statusbar_action').html(actionHtml);
+            $('#vpl_ide_statusbar .vpl_ide_statusbar_action').show();
         }
-        if (status.position) {
-            $('#vpl_ide_statusbar .vpl_ide_statusbar_position').text(status.position);
-        }
-        if (status.language) {
-            $('#vpl_ide_statusbar .vpl_ide_statusbar_language').text(status.language);
-        }
+    }
+    if (typeof status.unsaved !== 'undefined') {
         if (status.unsaved) {
             $('#vpl_ide_statusbar .vpl_ide_statusbar_unsaved').show();
         } else {
             $('#vpl_ide_statusbar .vpl_ide_statusbar_unsaved').hide();
         }
-    });
+    }
 };
