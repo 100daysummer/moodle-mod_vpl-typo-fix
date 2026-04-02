@@ -709,7 +709,7 @@ VPLUI.webSocketMonitor = function(coninfo, title, running, externalActions) {
 
 VPLUI.clearIDEStatus = function() {
     VPLUI.updateIDEStatus({
-        filename: '',
+        fileName: '',
         position: '',
         language: '',
         unsaved: false,
