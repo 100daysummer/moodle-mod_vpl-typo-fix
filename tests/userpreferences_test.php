@@ -51,11 +51,11 @@ final class userpreferences_test extends base_fixture {
      * @covers \mod_vpl\util\userpreferences::get
      */
     public function test_update_and_get(): void {
-        // Check that preferences are empty for a new user
+        // Check that preferences are empty for a new user.
         $this->setUser($this->users[0]);
         $prefs = userpreferences::get();
         $this->assertEmpty((array)$prefs);
-        // Update preferences and check that they are saved and retrieved correctly
+        // Update preferences and check that they are saved and retrieved correctly.
         $newprefs = (object)[
             'editorTheme' => 'dark',
             'editorFontSize' => 14,
@@ -69,18 +69,18 @@ final class userpreferences_test extends base_fixture {
         $this->assertEquals($newprefs, $prefs);
         $prefs = userpreferences::get();
         $this->assertEquals($newprefs, $prefs);
-        // Update some preferences and check that they are updated correctly
+        // Update some preferences and check that they are updated correctly.
         $newprefs->terminalFontSize = 16;
         $prefs = userpreferences::update(json_encode($newprefs));
         $this->assertEquals($newprefs, $prefs);
         $prefs = userpreferences::get();
         $this->assertEquals($newprefs, $prefs);
-        // Reset preferences and check that they are empty again
+        // Reset preferences and check that they are empty again.
         $prefs = userpreferences::update(json_encode((object)['reset' => true]));
         $this->assertEmpty((array)$prefs);
         $prefs = userpreferences::get();
         $this->assertEmpty((array)$prefs);
-        // Check that invalid preferences are ignored and do not cause errors
+        // Check that invalid preferences are ignored and do not cause errors.
         $invalidprefs = (object)[
             'editorTheme' => 'dark',
             'editorFontSize' => 'not a number => 0',
@@ -105,13 +105,13 @@ final class userpreferences_test extends base_fixture {
         $this->assertEquals($expectedprefs, $prefs);
         $prefs = userpreferences::get();
         $this->assertEquals($expectedprefs, $prefs);
-        // Check that preferences are user-specific
+        // Check that preferences are user-specific.
         $this->setUser($this->users[1]);
         $prefs = userpreferences::get();
         $this->assertEmpty((array)$prefs);
         $prefs = userpreferences::get($this->users[0]->id);
         $this->assertEquals($expectedprefs, $prefs);
-        // Check that preferences can be updated for a specific user
+        // Check that preferences can be updated for a specific user.
         $newprefs = (object)[
             'editorTheme' => 'light',
             'editorFontSize' => 18,

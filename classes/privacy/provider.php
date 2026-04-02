@@ -580,7 +580,7 @@ class provider implements core_userlist_provider, metadata_provider, user_prefer
      * Returns preferences of IDE for the user as string separated by comma.
      *
      * @param int $userid The userid of the preferences to return.
-     * @return string User preferences field: value separaly by comma.  
+     * @return string User preferences field: value separaly by comma.
      */
     protected static function get_user_preferences(int $userid): string {
         $preferences = \mod_vpl\util\userpreferences::get($userid);

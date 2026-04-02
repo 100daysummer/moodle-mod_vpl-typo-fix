@@ -438,7 +438,7 @@ var VPLIDE = function(rootId, options) {
             var pos;
             var fid = file.getId();
             file.close();
-            VPLUI.cleanIDEStatus();
+            VPLUI.clearIDEStatus();
             self.removeTab(fid);
             var ptab = self.getTabPos(fid);
             openFiles.splice(ptab, 1);
@@ -708,7 +708,7 @@ var VPLIDE = function(rootId, options) {
             this.closeFile(files[pos]);
             files.splice(pos, 1);
             if (openFiles.length == 0) {
-                VPLUI.cleanIDEStatus();
+                VPLUI.clearIDEStatus();
             }
             VPLUtil.delay('updateFileList', self.updateFileList);
             return true;

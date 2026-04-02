@@ -33,9 +33,9 @@ namespace mod_vpl\util;
  */
 class userpreferences {
     /** @var string Preference name for user preferences */
-    public const preference_name = 'vpl_user_preferences';
-    /** @var array Fields and their types */
-    public const fields = [
+    public const PREFERENCE_NAME = 'vpl_user_preferences';
+    /** @var array FIELDS and their types */
+    public const FIELDS = [
         'editorTheme' => 'string',
         'editorFontSize' => 'integer',
         'editorKeyBinding' => 'string',
@@ -44,8 +44,8 @@ class userpreferences {
         'terminalTheme' => 'string',
         'terminalFontSize' => 'integer',
     ];
-    /** @var array Default values for fields */
-    public const fieldsDefaults = [
+    /** @var array Default values for FIELDS */
+    public const FIELDSDEFAULTS = [
         'editorTheme' => 'chrome',
         'editorFontSize' => 12,
         'editorKeyBinding' => 'Ace',
@@ -56,14 +56,14 @@ class userpreferences {
     ];
 
     /**
-     * Clean preferences removing unknown fields and converting to correct types.
-     * 
+     * Clean preferences removing unknown FIELDS and converting to correct types.
+     *
      * @param object $preferences preferences object
      * @return object cleaned preferences object
      */
     public static function clean($preferences) {
         $cleaned = (object)[];
-        foreach (self::fields as $field => $type) {
+        foreach (self::FIELDS as $field => $type) {
             if (isset($preferences->$field)) {
                 switch ($type) {
                     case 'string':
@@ -92,7 +92,7 @@ class userpreferences {
         $save = false;
         if ($newpreferences !== null) {
             if (isset($newpreferences->reset)) {
-                \unset_user_preference(self::preference_name, $userid);
+                \unset_user_preference(self::PREFERENCE_NAME, $userid);
                 unset($newpreferences->reset);
                 $save = true;
             }
@@ -110,7 +110,7 @@ class userpreferences {
             }
         }
         if ($save) {
-            \set_user_preference(self::preference_name, json_encode($preferences), $userid);
+            \set_user_preference(self::PREFERENCE_NAME, json_encode($preferences), $userid);
         }
         return $preferences;
     }
@@ -122,7 +122,7 @@ class userpreferences {
      * @return object user preferences
      */
     public static function get($userid = null) {
-        $jsonpreferences = \get_user_preferences(self::preference_name, '{}', $userid);
+        $jsonpreferences = \get_user_preferences(self::PREFERENCE_NAME, '{}', $userid);
         $preferences = json_decode($jsonpreferences);
         if (!is_object($preferences)) {
             $preferences = (object)[];

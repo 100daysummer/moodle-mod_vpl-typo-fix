@@ -62,7 +62,7 @@ class vpl_editor_util {
         global $PAGE;
         global $CFG;
         $userprefs = \mod_vpl\util\userpreferences::get();
-        $userdefaults = \mod_vpl\util\userpreferences::fieldsDefaults;
+        $userdefaults = \mod_vpl\util\userpreferences::FIELDSDEFAULTS;
         $plugincfg = get_config('mod_vpl');
         $tagid = 'vplide';
         if (isset($plugincfg->editor_theme)) {
