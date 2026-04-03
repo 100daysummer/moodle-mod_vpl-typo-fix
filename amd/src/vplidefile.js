@@ -198,6 +198,9 @@ export const VPLFile = function(id, name, value, fileManager, vplIdeInstance) {
     this.setAnnotations = VPLUtil.doNothing;
     this.setFontSize = VPLUtil.doNothing;
     this.setTheme = VPLUtil.doNothing;
+    this.setKeyBinding = VPLUtil.doNothing;
+    this.setShowInvisibles = VPLUtil.doNothing;
+    this.setLiveAutocompletion = VPLUtil.doNothing;
     this.clearAnnotations = VPLUtil.doNothing;
     this.langSelection = VPLUtil.doNothing;
     // Adds support for current extensions
