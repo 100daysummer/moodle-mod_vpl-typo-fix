@@ -526,11 +526,13 @@ var VPLIDE = function(rootId, options) {
             var pos = this.fileNameExists(file.name);
             if (pos != -1) {
                 if (replace && !files[pos].isReadOnly()) {
-                    files[pos].setContent(file.contents);
-                    self.setModified();
+                    if (files[pos].getContent() != file.contents) {
+                        files[pos].setContent(file.contents);
+                        self.setModified();
+                    }
                     ok();
                     VPLUtil.delay('updateFileList', self.updateFileList);
-                    return file;
+                    return files[pos];
                 } else {
                     showError(str('filenotadded', file.name));
                     return false;
@@ -709,6 +711,8 @@ var VPLIDE = function(rootId, options) {
             files.splice(pos, 1);
             if (openFiles.length == 0) {
                 VPLUI.clearIDEStatus();
+            } else {
+                self.currentFile('updateStatus');
             }
             VPLUtil.delay('updateFileList', self.updateFileList);
             return true;
