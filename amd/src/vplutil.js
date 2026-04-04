@@ -69,7 +69,7 @@ VPLUtil.sanitizeHTML = function(t) {
     return doc.body.innerHTML;
 };
 VPLUtil.sanitizeText = function(s) {
-    if (typeof s == 'undefined' || s.replace(/^\s+$/g, '') == '') {
+    if (typeof s == 'undefined') {
         return '';
     }
     return s.replace(/&/g, "&amp;")
@@ -133,7 +133,7 @@ VPLUtil.String2ArrayBuffer = function(data) {
     var regImg = /^(gif|jpg|jpeg|png|ico)$/i;
     var regAudio = /^(wav|aiff|pcm|mp3|aac|ogg|oga|wma|m4a|flac|alac|ape|wv|amr)$/i;
     var regVideo = /^(mp4|webm|ogv|avi|mov|wmv|flv|mkv|m4v|mpeg|mpg|3gp)$/i;
-    var regBin = /^(zip|jar|pdf|tar|bin|7z|arj|deb|gzip|rar|rpm|dat|db|dll|rtf|doc|docx|odt|exe|com)$/i;
+    var regBin = /^(zip|jar|pdf|tar|bin|7z|arj|deb|gzip|rar|rpm|dat|db|dll|rtf|doc|docx|xlsx|pptx|odt|exe|com)$/i;
     var regBlk = /^blockly[0123]?$/;
     var textBytesSet = new Set([7, 8, 9, 10, 12, 13, 27]
                     .concat([...Array(0x5f).keys()].map(i => i + 0x20)) // Include [0x20 -> 0x7e].
@@ -220,12 +220,24 @@ VPLUtil.dataFromURLData = function(data) {
 
 (function() {
     var MIME = {
+        // Image formats
         'gif': 'image/gif',
         'jpg': 'image/jpeg',
         'jpeg': 'image/jpeg',
         'png': 'image/png',
         'ico': 'image/vnd.microsoft.icon',
+
+        // Document formats
         'pdf': 'application/pdf',
+        'rtf': 'application/rtf',
+        'doc': 'application/msword',
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'odt': 'application/vnd.oasis.opendocument.text',
+        'xls': 'application/vnd.ms-excel',
+        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'ppt': 'application/vnd.ms-powerpoint',
+        'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+
         // Audio formats
         'wav': 'audio/wav',
         'aiff': 'audio/aiff',
@@ -241,6 +253,7 @@ VPLUtil.dataFromURLData = function(data) {
         'ape': 'audio/x-ape',
         'wv': 'audio/x-wavpack',
         'amr': 'audio/amr',
+
         // Video formats
         'mp4': 'video/mp4',
         'webm': 'video/webm',
