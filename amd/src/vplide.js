@@ -1003,6 +1003,7 @@ var VPLIDE = function(rootId, options) {
         var titleTag = result.find('.' + titleclass);
         var contentTag = result.find('.' + contentclass);
         var HTMLcontent = $('<div>' + content + '</div>');
+        // Downgrade h4 to h5 to avoid problems with accordion.
         HTMLcontent.find('h4').replaceWith(function() {
             return $("<h5>").append($(this).contents());
         });
@@ -1913,6 +1914,7 @@ var VPLIDE = function(rootId, options) {
                 $('#vpl_ide_user').hide();
                 fullScreen = false;
             } else {
+                $(window).scrollTop(0);
                 $('body').addClass('vpl_body_fullscreen').scrollTop(0);
                 rootObj.addClass('vpl_ide_root_fullscreen');
                 menuButtons.setText('fullscreen', 'regularscreen');
