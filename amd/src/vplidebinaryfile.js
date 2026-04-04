@@ -23,12 +23,14 @@
 
 import $ from 'jquery';
 import {VPLUtil} from 'mod_vpl/vplutil';
+import {VPLUI} from 'mod_vpl/vplui';
 
 export const binaryExtension = function() {
     var type2HTML = {
         'img': '<img />',
         'audio': '<audio controls></audio>',
         'video': '<video controls></video>',
+        'embed': '<embed></embed>',
         'binary': '<div></div>'
     };
     this.isBinary = function() {
@@ -44,6 +46,9 @@ export const binaryExtension = function() {
         if (VPLUtil.isVideo(this.getFileName())) {
             return 'video';
         }
+        if (VPLUtil.getMIME(this.getFileName()) !== 'application/octet-stream') {
+            return 'embed';
+        }
         return 'binary';
     };
     var setOldContent = this.setContent;
@@ -55,7 +60,8 @@ export const binaryExtension = function() {
     this.updateDataURL = function(type, fileName, value) {
         var tid = this.getTId();
         var prevalue = 'data:' + VPLUtil.getMIME(fileName) + ';base64,';
-        $(tid).find(type).attr('src', prevalue + value);
+        var element = $(tid).find(type);
+        element.attr('src', prevalue + value);
     };
     this.adjustSize = function() {
         if (!this.isOpen()) {
@@ -65,14 +71,20 @@ export const binaryExtension = function() {
         if (editTag.length === 0) {
             return false;
         }
+        var change = false;
         var tabs = editTag.parent();
         var newHeight = tabs.height();
         newHeight -= editTag.position().top;
         if (newHeight != editTag.height()) {
             editTag.height(newHeight);
-            return true;
+            change = true;
         }
-        return false;
+        var newWidth = $('#vpl_tabs_scroll').width();
+        if (newWidth != editTag.width()) {
+            editTag.width(newWidth);
+            change = true;
+        }
+        return change;
     };
     this.open = function() {
         this.showFileName();
@@ -81,7 +93,10 @@ export const binaryExtension = function() {
         var type = this.getType();
         $(tid).addClass('vpl_ide_' + type).append(type2HTML[type]);
         if (type === 'binary') {
-            $(tid).find('div').text(VPLUtil.str('binaryfile') + ": '" + this.getFileName() + "'");
+            var text = VPLUtil.str('binaryfile') + ": ";
+            text += "'" + this.getFileName() + "'";
+            text += " (" + this.getHumanReadableSize() + ")";
+            $(tid).find('div').text(text);
         } else {
             this.updateDataURL(this.getType(), this.getFileName(), this.getContent());
         }
@@ -90,6 +105,47 @@ export const binaryExtension = function() {
         this.setOpen(false);
     };
     this.langSelection = function() {
-        this.setLang('Binary');
+        this.setLang(VPLUtil.str('binaryfile'));
     };
+    /**
+     * Returns the size of the content in a human-readable string (e.g., 1.2 MB, 512 KB).
+     * @returns {string} Human-readable size string.
+     */
+    this.getHumanReadableSize = function() {
+        var base64 = this.getContent();
+        // Calculate decoded byte length from base64 string
+        let extra = 0;
+        for (let i = 0; i < base64.length; i++) {
+            let char = base64[i];
+             // Ignore padding characters and newlines
+            if (char === '=') {
+                extra++;
+            }
+            if (char === '\n') {
+                extra++;
+            }
+            if (char === '\r') {
+                extra++;
+            }
+        }
+        var bytes = Math.floor((base64.length - extra) * 3 / 4);
+        if (bytes === 0) {
+            return '0 B';
+        }
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+    this.updateStatus = function() {
+        VPLUI.updateIDEStatus(
+            {
+                fileName: this.getFileName(),
+                position: this.getHumanReadableSize(),
+                language: this.getLang(),
+                unsaved: this.isModified(),
+            }
+        );
+    };
+    this.setLang(VPLUtil.str('binaryfile'));
 };

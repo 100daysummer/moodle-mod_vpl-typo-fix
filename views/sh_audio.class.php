@@ -90,5 +90,8 @@ class vpl_sh_audio extends vpl_sh_base {
         echo 'Your browser does not support the audio element.';
         echo '</audio>';
         echo '</div>';
+        $strbinaryfile = get_string('binaryfile', VPL);
+        $size = vpl_conv_size_to_string(strlen($data));
+        echo "$strbinaryfile ($size)<br>";
     }
 }

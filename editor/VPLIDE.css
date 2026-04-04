@@ -485,3 +485,21 @@ label[for="vpl_donotshowagain"] {
     box-sizing: border-box;
 }
 
+.vpl_ide_file img, .vpl_ide_file video {
+    max-height: 100%;
+    height: auto;
+    width: auto;
+}
+
+.vpl_ide_file audio {
+    max-width: 100%;
+    height: auto;
+    width: auto;
+}
+
+.vpl_ide_file embed {
+    max-width: 100%;
+    max-height: 100%;
+    height: 100%;
+    width: 100%;
+}

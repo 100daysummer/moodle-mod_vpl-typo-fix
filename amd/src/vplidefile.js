@@ -173,11 +173,22 @@ export const VPLFile = function(id, name, value, fileManager, vplIdeInstance) {
     this.isBinary = function() {
         return binary;
     };
-    this.updateStatus = VPLUI.hideIDEStatus;
+    this.updateStatus = function() {
+        VPLUI.updateIDEStatus(
+            {
+                fileName: self.getFileName(),
+                position: '',
+                language: self.isBinary() ? VPLUtil.str('binaryfile') : self.getLang(),
+                unsaved: self.isModified(),
+            }
+        );
+    };
     this.gotoLine = VPLUtil.doNothing;
     this.setReadOnly = VPLUtil.doNothing;
     this.isReadOnly = VPLUtil.returnFalse;
-    this.focus = VPLUI.hideIDEStatus;
+    this.focus = function() {
+        this.updateStatus();
+    };
     this.blur = VPLUtil.doNothing;
     this.undo = VPLUtil.doNothing;
     this.redo = VPLUtil.doNothing;

@@ -34,6 +34,42 @@ require_once(dirname(__FILE__) . '/sh_base.class.php');
  */
 class vpl_sh_binary extends vpl_sh_base {
     /**
+     * @var array mime types for the binary files
+     * This array contains the mime types for the binary files.
+     */
+    private $mime;
+
+    /**
+     * Constructor
+     *
+     * Initializes the mime types for the binary files.
+     */
+    public function __construct() {
+        $this->mime = [
+            'pdf' => 'application/pdf',
+            'rtf' => 'application/rtf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'odt' => 'application/vnd.oasis.opendocument.text',
+            'xls' => 'application/vnd.ms-excel',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'ppt' => 'application/vnd.ms-powerpoint',
+            'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        ];
+    }
+
+    /**
+     * Get the mime type of a file
+     *
+     * @param string $name name of the file
+     * @return string mime type of the file
+     */
+    public function get_mime($name) {
+        $ext = strtolower(vpl_fileextension($name));
+        return isset($this->mime[$ext]) ? $this->mime[$ext] : '';
+    }
+
+    /**
      * This method prints the content of a binary file.
      *
      * @param string $name name of the file
@@ -42,6 +78,16 @@ class vpl_sh_binary extends vpl_sh_base {
      */
     public function print_file($name, $data) {
         echo "<h4>" . s($name) . '</h4>';
-        echo get_string('binaryfile', VPL);
+        $mime = $this->get_mime($name);
+        if ($mime) {
+            $encodeddata = base64_encode($data);
+            $style = 'width: 100%; height: 500px;';
+            echo '<div class="vpl_sh vpl_g">';
+            echo "<embed src='data:$mime;base64,$encodeddata' style='$style'></embed>";
+            echo '</div>';
+        }
+        $strbinaryfile = get_string('binaryfile', VPL);
+        $size = vpl_conv_size_to_string(strlen($data));
+        echo "$strbinaryfile ($size)<br>";
     }
 }
