@@ -65,16 +65,20 @@ final class userpreferences_test extends base_fixture {
             'terminalTheme' => 'light',
             'terminalFontSize' => 12,
         ];
+        // terminalFontSize is default (12), so it will be stripped.
+        $expected = clone $newprefs;
+        unset($expected->terminalFontSize);
         $prefs = userpreferences::update(json_encode($newprefs));
-        $this->assertEquals($newprefs, $prefs);
+        $this->assertEquals($expected, $prefs);
         $prefs = userpreferences::get();
-        $this->assertEquals($newprefs, $prefs);
+        $this->assertEquals($expected, $prefs);
         // Update some preferences and check that they are updated correctly.
         $newprefs->terminalFontSize = 16;
+        $expected->terminalFontSize = 16;
         $prefs = userpreferences::update(json_encode($newprefs));
-        $this->assertEquals($newprefs, $prefs);
+        $this->assertEquals($expected, $prefs);
         $prefs = userpreferences::get();
-        $this->assertEquals($newprefs, $prefs);
+        $this->assertEquals($expected, $prefs);
         // Reset preferences and check that they are empty again.
         $prefs = userpreferences::update(json_encode((object)['reset' => true]));
         $this->assertEmpty((array)$prefs);
@@ -121,10 +125,19 @@ final class userpreferences_test extends base_fixture {
             'terminalTheme' => 'dark',
             'terminalFontSize' => 14,
         ];
+        // editorShowInvisibles is default (false), so it will be stripped.
+        $expectedupdated = (object)[
+            'editorTheme' => 'light',
+            'editorFontSize' => 18,
+            'editorKeyBinding' => 'emacs',
+            'editorLiveAutocompletion' => true,
+            'terminalTheme' => 'dark',
+            'terminalFontSize' => 14,
+        ];
         $prefs = userpreferences::update(json_encode($newprefs), $this->users[1]->id);
-        $this->assertEquals($newprefs, $prefs);
+        $this->assertEquals($expectedupdated, $prefs);
         $prefs = userpreferences::get($this->users[1]->id);
-        $this->assertEquals($newprefs, $prefs);
+        $this->assertEquals($expectedupdated, $prefs);
         $prefs = userpreferences::get($this->users[0]->id);
         $this->assertEquals($expectedprefs, $prefs);
     }

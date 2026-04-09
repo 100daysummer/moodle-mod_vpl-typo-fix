@@ -340,7 +340,7 @@ foreach ($vplactivities as $cm) {
                 }
                 break;
             case 'examples':
-                if ($instance->example) {
+                if ($vpl->is_example()) {
                     $add = true;
                 }
         }
@@ -366,7 +366,7 @@ foreach ($vpls as $vpl) {
         $student = true;
     }
     $instance = $vpl->get_instance();
-    if ($vpl->get_grade() != 0 && ! $instance->example) {
+    if ($vpl->get_grade() != 0 && ! $vpl->is_example()) {
         $nograde = false;
     }
     if ($instance->startdate > 0) {
@@ -447,7 +447,7 @@ foreach ($vpls as $vpl) {
     if ($grader) {
         if (
             $vpl->has_capability(VPL_GRADE_CAPABILITY)
-            && $vpl->get_grade() != 0 && ! $instance->example
+            && $vpl->get_grade() != 0 && ! $vpl->is_example()
         ) {
             $info = vpl_list_util::count_graded($vpl);
             $totalsubs += $info['submissions'];
@@ -479,7 +479,7 @@ foreach ($vpls as $vpl) {
         if (
             ! $vpl->has_capability(VPL_GRADE_CAPABILITY)
             && $vpl->has_capability(VPL_SUBMIT_CAPABILITY)
-            && $vpl->get_grade() != 0 && ! $instance->example
+            && $vpl->get_grade() != 0 && ! $vpl->is_example()
         ) {
             $subinstance = $vpl->last_user_submission($USER->id);
             if ($subinstance) { // Submitted.

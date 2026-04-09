@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__FILE__) . '/lib.php');
 use mod_vpl\util\file_group;
 use mod_vpl\util\file_group_execution;
+use mod_vpl\util\activity_mode;
 
 /**
  * Class mod_vpl
@@ -430,6 +431,9 @@ class mod_vpl {
      *
      */
     public function get_fulldescription_with_basedon() {
+        if (! $this->is_visible()) {
+            return '';
+        }
         $ret = '';
         if ($this->instance->basedon) { // Show recursive variations.
             $basevpl = new mod_vpl(false, $this->instance->basedon);
@@ -634,6 +638,10 @@ class mod_vpl {
      * @return void
      */
     public function restrictions_check() {
+        // If students readonly mode, do no check.
+        if ($this->is_mode(\mod_vpl\util\activity_mode::STUDENTSREADONLY)) {
+            return;
+        }
         $this->network_check();
         $this->password_check();
         $this->seb_check();
@@ -699,10 +707,7 @@ class mod_vpl {
         }
         $submittedby = '';
         if ($USER->id != $userid) {
-            if (
-                $vpl->has_capability(VPL_MANAGE_CAPABILITY) ||
-                $vpl->has_capability(VPL_GRADE_CAPABILITY)
-            ) {
+            if ($vpl->is_teacher()) {
                 $user = self::get_db_record('user', $USER->id);
                 $submittedby = get_string('submittedby', VPL, fullname($user)) . "\n";
                 if (strpos($comments, $submittedby) !== false) {
@@ -774,12 +779,9 @@ class mod_vpl {
     public function add_submission($userid, &$files, $comments, &$error) {
         global $USER;
         if ($USER->id != $userid) {
-            if (
-                !$this->has_capability(VPL_MANAGE_CAPABILITY) &&
-                !$this->has_capability(VPL_GRADE_CAPABILITY)
-            ) {
-                    $error = get_string('notavailable');
-                    return false;
+            if (! $this->is_teacher()) {
+                $error = get_string('notavailable');
+                return false;
             }
         }
         $vplid = $this->get_instance()->id;
@@ -919,8 +921,8 @@ class mod_vpl {
     /**
      * Get last user submission
      *
-     * @param int $userid
-     * @return false/object
+     * @param int $userid the user id to retrieve submission
+     * @return false/object re gister of vpl_submissions table or false if no submission
      *
      */
     public function last_user_submission($userid) {
@@ -1014,10 +1016,11 @@ class mod_vpl {
             return;
         }
         if ($plugincfg->discard_submission_period > 0) {
+            $vplid = $this->get_instance()->id;
             $select = "(userid = ?) AND (vpl = ?)";
             $params = [
                     $userid,
-                    $this->instance->id,
+                    $vplid,
             ];
             $res = $DB->get_records_select(VPL_SUBMISSIONS, $select, $params, 'id DESC', '*', 0, 3);
             if (count($res) == 3) {
@@ -1043,7 +1046,15 @@ class mod_vpl {
                 if (($last->datesubmitted - $first->datesubmitted) < $plugincfg->discard_submission_period) {
                     // Remove second submission.
                     $submission = new mod_vpl_submission($this, $second);
-                    $submission->delete();
+                    if ($this->is_vpl_question_mode()) {
+                        $processesinfo = vpl_running_processes::get_by_submission_id($vplid, $userid, $second->id);
+                        if ($processesinfo == false) {
+                            // No process, remove submission.
+                            $submission->delete();
+                        }
+                    } else {
+                        $submission->delete();
+                    }
                 }
             }
         }
@@ -1078,9 +1089,10 @@ class mod_vpl {
         $ret = true;
         $ret = $ret && $modinfo->get_cm($cm->id)->uservisible;
         $ret = $ret && $this->has_capability(VPL_VIEW_CAPABILITY, $userid);
+        $ret = $ret && !$this->mode_prevents_viewing($userid);
         // Grader and manager always view.
-        $ret = $ret || $this->has_capability(VPL_GRADE_CAPABILITY, $userid);
-        $ret = $ret || $this->has_capability(VPL_MANAGE_CAPABILITY, $userid);
+        $ret = $ret || $this->is_teacher($userid);
+        $ret = $ret || $this->is_mode(\mod_vpl\util\activity_mode::STUDENTSREADONLY);
         return $ret;
     }
 
@@ -1094,12 +1106,12 @@ class mod_vpl {
         $cm = $this->get_course_module();
         $modinfo = get_fast_modinfo($cm->course, $userid);
         $ret = true;
-        $ret = $ret && $this->has_capability(VPL_SUBMIT_CAPABILITY);
+        $ret = $ret && $this->has_capability(VPL_SUBMIT_CAPABILITY, $userid);
         $ret = $ret && $this->is_submission_period($userid);
-        $ret = $ret && $modinfo->get_cm($cm->id)->uservisible;
+        $ret = $ret && $this->is_visible($userid);
+        $ret = $ret && !$this->mode_prevents_modification($userid);
         // Manager or grader can always submit.
-        $ret = $ret || $this->has_capability(VPL_GRADE_CAPABILITY);
-        $ret = $ret || $this->has_capability(VPL_MANAGE_CAPABILITY);
+        $ret = $ret || $this->is_teacher($userid);
         return $ret;
     }
 
@@ -1517,6 +1529,14 @@ class mod_vpl {
         if ($info) {
             $tittle .= ' ' . $info;
         }
+        if (! $this->is_visible()) {
+            $tittle = get_string('notavailable');
+            if (isset($this->errors)) {
+                $this->errors[] = $tittle;
+            } else {
+                $this->errors = [ $tittle ];
+            }
+        }
         $PAGE->set_title($this->get_course()->fullname . ' ' . $tittle);
         $PAGE->set_heading($this->get_course()->fullname);
         if ($this->use_seb() && ! $this->has_capability(VPL_GRADE_CAPABILITY)) {
@@ -1527,6 +1547,10 @@ class mod_vpl {
         self::$headerisout = true;
         foreach ($this->errors as $errormessage) {
             vpl_notice($errormessage, 'error');
+        }
+        if (! $this->is_visible()) {
+            $this->print_footer_simple();
+            die();
         }
     }
     /**
@@ -1543,6 +1567,14 @@ class mod_vpl {
         if ($info) {
             $tittle .= ' ' . $info;
         }
+        if (! $this->is_visible()) {
+            $tittle = get_string('notavailable');
+            if (isset($this->errors)) {
+                $this->errors[] = $tittle;
+            } else {
+                $this->errors = [ $tittle ];
+            }
+        }
         $PAGE->set_title($this->get_course()->fullname . ' ' . $tittle);
         if ($this->use_seb() && ! $this->has_capability(VPL_GRADE_CAPABILITY)) {
             $PAGE->set_popup_notification_allowed(false);
@@ -1553,6 +1585,10 @@ class mod_vpl {
         foreach ($this->errors as $errormessage) {
             vpl_notice($errormessage, 'error');
         }
+        if (! $this->is_visible()) {
+            $this->print_footer_simple();
+            die();
+        }
     }
     /**
      * Print heading action with help
@@ -1560,6 +1596,9 @@ class mod_vpl {
      * @param string $action base text and help
      */
     public function print_heading_with_help($action) {
+        if (! $this->is_visible()) {
+            return;
+        }
         global $OUTPUT;
         $title = get_string($action, VPL) . ': ' . $this->get_printable_name();
         echo $OUTPUT->heading_with_help(vpl_get_awesome_icon($action) . $title, $action, 'vpl');
@@ -1573,6 +1612,9 @@ class mod_vpl {
      *
      */
     public function print_view_tabs($path) {
+        if (! $this->is_visible()) {
+            return;
+        }
         // TODO refactor using functions.
         global $USER, $DB, $PAGE;
         $active = basename($path);
@@ -1584,7 +1626,7 @@ class mod_vpl {
         $similarity = $this->has_capability(VPL_SIMILARITY_CAPABILITY);
         $grader = $this->has_capability(VPL_GRADE_CAPABILITY);
         $manager = $this->has_capability(VPL_MANAGE_CAPABILITY);
-        $example = $this->instance->example;
+        $example = $this->is_example();
         if (! $userid || ! $grader || $copy) {
             $userid = $USER->id;
         }
@@ -1920,7 +1962,7 @@ class mod_vpl {
         }
         $stryes = get_string('yes');
         $strno = get_string('no');
-        if ($instance->example) {
+        if ($this->is_example()) {
             $html .= $this->str_setting_with_icon('isexample', $stryes);
         }
         $strgradessettings = get_string('gradessettings', 'core_grades');
@@ -2120,6 +2162,9 @@ class mod_vpl {
      */
     public function print_shortdescription() {
         global $OUTPUT;
+        if (! $this->is_visible()) {
+            return;
+        }
         if ($this->instance->shortdescription) {
             echo $OUTPUT->box_start();
             echo format_text($this->instance->shortdescription, FORMAT_PLAIN);
@@ -2279,10 +2324,13 @@ class mod_vpl {
      */
     public function get_variation_html($userid = 0, $already = []) {
         global $OUTPUT;
-        $html = '';
         if (isset($already[$this->instance->id])) { // Avoid infinite recursion.
-            return;
+            return '';
         }
+        if (! $this->is_visible()) {
+            return '';
+        }
+        $html = '';
         $already[$this->instance->id] = true; // Mark as visited.
         if ($this->instance->basedon) { // Show recursive varaitions.
             $basevpl = new mod_vpl(false, $this->instance->basedon);
@@ -2670,5 +2718,78 @@ class mod_vpl {
         $customized['evaluate'] = isset($data->files[mod_vpl_submission_CE::TYPE_TO_SCRIPT[mod_vpl_submission_CE::TEVALUATE]]) &&
              trim($data->files[mod_vpl_submission_CE::TYPE_TO_SCRIPT[mod_vpl_submission_CE::TEVALUATE]]) != '';
         return $customized;
+    }
+
+    /**
+     * Check if the activity is in a specific mode.
+     * @param int $mode Activity mode to check
+     * @return bool
+     */
+    public function is_mode($mode) {
+        return $this->instance->mode == $mode;
+    }
+
+    /**
+     * Check if the activity is in example mode.
+     * @return bool
+     */
+    public function is_example() {
+        return $this->is_mode(activity_mode::EXAMPLE);
+    }
+
+    /**
+     * Check if the activity is in VPL question mode.
+     * @return bool
+     */
+    public function is_vpl_question_mode() {
+        $is = $this->is_mode(activity_mode::VPLQUESTION);
+        $is = $is || ($this->instance->mode == activity_mode::VPLQUESTIONNOSTUDENTS);
+        return $is;
+    }
+
+    /**
+     * Return if is user is a teacher in this activity.
+     * Has capability to grade or manage is considered teacher.
+     * @param int $userid (optional) Check for given user, current user if null.
+     * @return bool
+     */
+    public function is_teacher($userid = null) {
+        global $USER;
+        if ($userid === null) {
+            $userid = $USER->id;
+        }
+        return ($this->has_capability(VPL_GRADE_CAPABILITY, $userid) ||
+                $this->has_capability(VPL_MANAGE_CAPABILITY, $userid));
+    }
+
+    /**
+     * Return if the activity mode prevents showing the activity to the user.
+     * @param int $userid (optional) Check for given user, current user if null.
+     * @return bool
+     */
+    public function mode_prevents_viewing($userid = null) {
+        global $USER;
+        if ($userid === null) {
+            $userid = $USER->id;
+        }
+        if ($this->is_teacher($userid)) {
+            return false;
+        }
+        return activity_mode::mode_prevents_viewing($this->instance->mode);
+    }
+    /**
+     * Return if the activity mode prevent modification of the activity for the user.
+     * @param int $userid (optional) Check for given user, current user if null.
+     * @return bool
+     */
+    public function mode_prevents_modification($userid = null) {
+        global $USER;
+        if ($userid === null) {
+            $userid = $USER->id;
+        }
+        if ($this->is_teacher($userid)) {
+            return false;
+        }
+        return activity_mode::mode_prevents_modification($this->instance->mode);
     }
 }

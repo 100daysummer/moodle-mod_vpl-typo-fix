@@ -81,6 +81,5 @@ class vpl_sh_image extends vpl_sh_base {
         $strbinaryfile = get_string('binaryfile', VPL);
         $size = vpl_conv_size_to_string(strlen($data));
         echo "$strbinaryfile ($size)<br>";
-
     }
 }

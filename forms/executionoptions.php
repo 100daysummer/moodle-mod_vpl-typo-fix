@@ -275,24 +275,28 @@ class mod_vpl_executionoptions_form extends moodleform {
         foreach ($listcm as $aux) {
             $vpl = new mod_vpl($aux->id);
             $instance = $vpl->get_instance();
-            $allactivities[$instance->id] = $vpl->get_printable_name();
+            $allactivities[$instance->id] = $vpl;
             $usedbasedonlist[$instance->basedon] = 1;
         }
         // Remove current activity.
         unset($allactivities[$this->vpl->get_instance()->id]);
+        $modebasedonlist = [];
         $basedonlist = [];
         $otherslist = [];
-        foreach ($allactivities as $id => $name) {
-            if (isset($usedbasedonlist[$id])) {
-                $basedonlist[$id] = '↳ ' . $name;
+        foreach ($allactivities as $id => $vpl) {
+            $name = $vpl->get_printable_name();
+            if ($vpl->is_mode(\mod_vpl\util\activity_mode::BASEDON)) {
+                $modebasedonlist[$id] = '↖🛡️ ' . $name;
+            } else if (isset($usedbasedonlist[$id])) {
+                $basedonlist[$id] = '↖ ' . $name;
             } else {
                 $otherslist[$id] = $name;
             }
         }
-
+        asort($modebasedonlist);
         asort($basedonlist);
         asort($otherslist);
-        return [0 => get_string('select')] + $basedonlist + $otherslist;
+        return [0 => get_string('select')] + $modebasedonlist + $basedonlist + $otherslist;
     }
 
     /**

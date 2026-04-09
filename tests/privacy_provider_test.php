@@ -332,7 +332,8 @@ final class privacy_provider_test extends base_fixture {
         $this->provider->export_user_preferences($this->students[0]->id);
         $writer = writer::with_context($context);
         $data = $writer->get_user_preferences('mod_vpl');
-        $expected = 'editorTheme: dark, editorShowInvisibles: 1, terminalFontSize: 12';
+        // terminalFontSize is default (12), so it is stripped.
+        $expected = 'editorTheme: dark, editorShowInvisibles: 1';
         $this->assertObjectHasProperty('vpl_ide_preferences', $data);
         $this->assertEquals($expected, $data->vpl_ide_preferences->value);
     }

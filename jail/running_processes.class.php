@@ -37,7 +37,8 @@ class vpl_running_processes {
     const TABLE = 'vpl_running_processes';
 
     /**
-     * Returns record of a running process (type run, debug or evaluate).
+     * Returns the first record of running processes based on user id, optional VPL id
+     * and optionally admin ticket.
      *
      * @param int $userid User id of the process.
      * @param ?int $vplid VPL activity id (optional).
@@ -46,17 +47,18 @@ class vpl_running_processes {
      */
     public static function get_run(int $userid, ?int $vplid = null, ?string $adminticket = null) {
         global $DB;
-        $select = 'userid = :userid AND type <> 4';
+        $where = 'userid = :userid AND type <> 4';
         $params = ['userid' => $userid];
         if ($vplid !== null) {
             $params['vpl'] = $vplid;
-            $select .= ' AND vpl = :vpl';
+            $where .= ' AND vpl = :vpl';
         }
         if ($adminticket !== null) {
             $params['adminticket'] = $adminticket;
-            $select .= ' AND adminticket = :adminticket';
+            $where .= ' AND adminticket = :adminticket';
         }
-        return $DB->get_record_select(self::TABLE, $select, $params);
+        $results = $DB->get_records_select(self::TABLE, $where, $params, 'id ASC', '*', 0, 1);
+        return reset($results);
     }
 
     /**
@@ -75,17 +77,33 @@ class vpl_running_processes {
     }
 
     /**
-     * Returns process info by id.
+     * Returns process info by process id.
+     * The process must belong to the user and VPL activity specified in the parameters.
      * @param int $vplid VPL id.
      * @param int $userid User id.
-     * @param int $id Process record id.
-     * @return object
+     * @param int $processid Process record id.
+     * @return object|false Process record or false if not found.
      */
-    public static function get_by_id(int $vplid, int $userid, int $id) {
+    public static function get_by_id(int $vplid, int $userid, int $processid) {
         global $DB;
-        $params = ['id' => $id, 'vpl' => $vplid, 'userid' => $userid];
+        $params = ['id' => $processid, 'vpl' => $vplid, 'userid' => $userid];
         return $DB->get_record(self::TABLE, $params);
     }
+
+    /**
+     * Returns process info by submission id.
+     * The process must belong to the user and VPL activity specified in the parameters.
+     * @param int $vplid VPL id.
+     * @param int $userid User id.
+     * @param int $submissionid Submission record id.
+     * @return object|false Process record or false if not found.
+     */
+    public static function get_by_submission_id(int $vplid, int $userid, int $submissionid) {
+        global $DB;
+        $params = ['submissionid' => $submissionid, 'vpl' => $vplid, 'userid' => $userid];
+        return $DB->get_record(self::TABLE, $params);
+    }
+
 
     /**
      * Adds a proccess information to the vpl_running_processes DB table.
@@ -131,14 +149,18 @@ class vpl_running_processes {
 
     /**
      * Cleans table removing old processes.
+     * Processes are considered old if reach time_limit or
+     * they were started more than $timeout seconds ago.
      *
-     * @param int $timeout Time in seconds to consider a process as old.
+     * @param int $old Time in seconds to consider a process as old.
      */
-    public static function remove_old_processes(int $timeout) {
+    public static function remove_old_processes(int $old) {
         global $DB;
-        $timelimit = time() - $timeout;
-        $sql = 'SELECT * FROM {vpl_running_processes} WHERE start_time < ?';
-        $param = [ $timelimit ];
+        $grace = 60;
+        $timeold = time() - $old;
+        $timelimit = time() - $grace;
+        $sql = 'SELECT * FROM {vpl_running_processes} WHERE start_time < ? OR time_limit < ?';
+        $param = [ $timeold, $timelimit ];
         $oldprocesses = $DB->get_records_sql($sql, $param, 0, 20);
         foreach ($oldprocesses as $processinfo) {
             $server = $processinfo->server;

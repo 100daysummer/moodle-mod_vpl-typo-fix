@@ -86,7 +86,6 @@ class mod_vpl_grade_form extends moodleform {
         $mform->setType('inpopup', PARAM_INT);
         $vplinstance = $this->vpl->get_instance();
         $grade = $this->vpl->get_grade();
-        // TODO Show others evaluation.
 
         $gradinginstance = $this->submission->get_grading_instance();
         if ($gradinginstance) {

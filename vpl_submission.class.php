@@ -1452,7 +1452,7 @@ class mod_vpl_submission {
      * Return stdClass with compilation, execution, evaluation, grade and nevaluations as attributes.
      *
      * @param array $response Response from server
-     * @return stdClass Object for editor
+     * @return stdClass Object with compilation, execution, evaluation, grade and nevaluations as attributes
      */
     public function get_ce_for_editor($response = null) {
         $ce = new stdClass();

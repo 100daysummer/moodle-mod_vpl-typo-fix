@@ -33,7 +33,7 @@ namespace mod_vpl\util;
  */
 class userpreferences {
     /** @var string Preference name for user preferences */
-    public const PREFERENCE_NAME = 'vpl_user_preferences';
+    public const PREFERENCE_NAME = 'vpl_preferences';
     /** @var array FIELDS and their types */
     public const FIELDS = [
         'editorTheme' => 'string',
@@ -109,7 +109,21 @@ class userpreferences {
                 $save = true;
             }
         }
-        if ($save) {
+        // Remove default values to save only differences.
+        $fieldsused = 0;
+        foreach (self::FIELDSDEFAULTS as $field => $default) {
+            if (isset($preferences->$field)) {
+                if ($preferences->$field === $default) {
+                    unset($preferences->$field);
+                    $save = true;
+                } else {
+                    $fieldsused++;
+                }
+            }
+        }
+        if ($fieldsused === 0) {
+            \unset_user_preference(self::PREFERENCE_NAME, $userid);
+        } else if ($save) {
             \set_user_preference(self::PREFERENCE_NAME, json_encode($preferences), $userid);
         }
         return $preferences;

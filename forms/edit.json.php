@@ -59,20 +59,25 @@ try {
         throw new Exception("Ajax POST error: CONTENT_LENGTH expected " . $_SERVER['CONTENT_LENGTH'] . " found $rawdatasize)");
     }
     $actiondata = json_decode($rawdata, null, 512, JSON_INVALID_UTF8_SUBSTITUTE);
-    if (! $vpl->is_submit_able()) {
-        throw new Exception(get_string('notavailable'));
-    }
-    if (! $userid || $userid == $USER->id) { // Make load own submission.
+    $modevplquestion = $vpl->is_vpl_question_mode();
+    $cansubmit = $vpl->is_submit_able() || $modevplquestion;
+    $canview = $vpl->is_visible() || $modevplquestion;
+    if (! $userid || $userid == $USER->id) { // Acting on own submission.
+        $ownsubmission = true;
         $userid = $USER->id;
         $vpl->require_capability(VPL_SUBMIT_CAPABILITY);
         $vpl->restrictions_check();
-    } else { // Access other user submission.
+    } else { // Acting on other user submission.
+        $ownsubmission = false;
         $vpl->require_capability(VPL_GRADE_CAPABILITY);
     }
     $instance = $vpl->get_instance();
     switch ($action) {
         case 'save':
-            if ($userid != $USER->id) {
+            if (! $cansubmit) {
+                throw new Exception(get_string('notavailable'));
+            }
+            if (! $ownsubmission) {
                 $vpl->require_capability(VPL_MANAGE_CAPABILITY);
             }
             $files = mod_vpl_edit::filesfromide($actiondata->files);
@@ -87,6 +92,9 @@ try {
             $result->response = mod_vpl_edit::save($vpl, $userid, $files, $actiondata->comments, $actiondata->version);
             break;
         case 'update':
+            if (! $cansubmit) {
+                throw new Exception(get_string('notavailable'));
+            }
             $files = mod_vpl_edit::filesfromide($actiondata->files);
             $filestodelete = isset($actiondata->filestodelete) ? $actiondata->filestodelete : [];
             $result->response = mod_vpl_edit::update(
@@ -98,16 +106,23 @@ try {
             );
             break;
         case 'resetfiles':
+            if (! $canview) {
+                throw new Exception(get_string('notavailable'));
+            }
             $files = mod_vpl_edit::get_requested_files($vpl);
             $result->response->files = mod_vpl_edit::filestoide($files);
             break;
         case 'load':
+            if (! $canview) {
+                throw new Exception(get_string('notavailable'));
+            }
             if (isset($actiondata->submissionid)) {
                 $subid = $actiondata->submissionid;
             }
-            if ($subid && $vpl->has_capability(VPL_GRADE_CAPABILITY)) {
+            // Only teachers can load not the last submissions.
+            if ($subid && $vpl->is_teacher()) {
                 $load = mod_vpl_edit::load($vpl, $userid, $subid);
-            } else {
+            } else { // Load last submission.
                 $load = mod_vpl_edit::load($vpl, $userid);
             }
             if ($copy) {
@@ -119,21 +134,37 @@ try {
         case 'run':
         case 'debug':
         case 'evaluate':
-            if (! $instance->$action && ! $vpl->has_capability(VPL_GRADE_CAPABILITY)) {
+            if (! $canview) {
+                throw new Exception(get_string('notavailable'));
+            }
+            // Action available for teachers even if not enabled for students.
+            if (! $instance->$action && ! $vpl->is_teacher()) {
                 throw new Exception(get_string('notavailable'));
             }
             $result->response = mod_vpl_edit::execute($vpl, $userid, $action, $actiondata);
             break;
         case 'retrieve':
+            if (! $canview) {
+                throw new Exception(get_string('notavailable'));
+            }
             $result->response = mod_vpl_edit::retrieve_result($vpl, $userid, $actiondata->processid);
             break;
         case 'cancel':
+            if (! $canview) {
+                throw new Exception(get_string('notavailable'));
+            }
             $result->response->error = mod_vpl_edit::cancel($vpl, $userid, $actiondata->processid);
             break;
         case 'getjails':
+            if (! $canview) {
+                throw new Exception(get_string('notavailable'));
+            }
             $result->response->servers = vpl_jailserver_manager::get_https_server_list($vpl->get_instance()->jailservers);
             break;
         case 'directrun':
+            if (! $canview) {
+                throw new Exception(get_string('notavailable'));
+            }
             $files = mod_vpl_edit::filesfromide($actiondata->files);
             $result->response = mod_vpl_edit::directrun($vpl, $userid, $actiondata->command, $files);
             break;

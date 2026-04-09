@@ -111,6 +111,13 @@ class restore_vpl_activity_structure_step extends restore_activity_structure_ste
         if ($data->grade < 0) {
             $data->grade = - ($this->get_mappingid('scale', - ($data->grade)));
         }
+        // Backware compatibility.
+        if (isset($data->example) && !isset($data->mode)) {
+            $data->mode = $data->example ? \mod_vpl\util\activity_mode::EXAMPLE : \mod_vpl\util\activity_mode::NORMAL;
+        }
+        if (! isset($data->mode)) {
+            $data->mode = \mod_vpl\util\activity_mode::NORMAL;
+        }
         // Insert the choice record.
         $newitemid = $DB->insert_record('vpl', $data);
         // Immediately after inserting "activity" record, call this.

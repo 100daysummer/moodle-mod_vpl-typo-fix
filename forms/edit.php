@@ -81,11 +81,11 @@ if ($subid && $grader) {
 $options = [];
 $options['id'] = $id;
 $options['restrictededitor'] = $instance->restrictededitor && ! $grader;
-$options['save'] = ! $instance->example;
+$options['save'] = ! $vpl->is_example() && ($grader || $vpl->is_submit_able());
 $options['run'] = ($instance->run || $grader);
 $options['debug'] = ($instance->debug || $grader);
 $options['evaluate'] = ($instance->evaluate || $grader);
-$options['example'] = true && $instance->example;
+$options['example'] = $vpl->is_example();
 $options['comments'] = ! $options['example'];
 $linkuserid = $copy ? $USER->id : $userid;
 $options['username'] = $vpl->fullname($DB->get_record('user', [ 'id' => $linkuserid ]), false);
@@ -110,7 +110,7 @@ if ($subid) {
 }
 
 $reqfgm = $vpl->get_required_fgm();
-$options['resetfiles'] = ($reqfgm->is_populated() && ! $instance->example);
+$options['resetfiles'] = ($reqfgm->is_populated() && ! $vpl->is_example());
 $options['showparentfiles'] = false;
 $options['showparentfilesurl'] = null;
 $options['maxfiles'] = intval($instance->maxfiles);

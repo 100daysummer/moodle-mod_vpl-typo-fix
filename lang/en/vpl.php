@@ -328,6 +328,23 @@ The VPL Jail servers in the following list
 $string['message::subject_bad_jailservers'] = 'Important Report of the VPL Plugin in Moodle on the \'{$a}\' Server';
 $string['messageprovider:bad_jailservers'] = 'Report VPL Jail Servers';
 $string['minsimlevel'] = 'Minimum similarity level to show';
+$string['mode'] = 'Activity mode';
+$string['mode_help'] = 'Change the access rules and behavior of the activity. The modes are:
+<ul>
+<li><b>Normal</b>: No changes to the default behavior.</li>
+<li><b>No students</b>: This mode prevents students from accessing the activity.</li>
+<li><b>Students readonly</b>: This mode <b>grants</b> students access the activity in readonly mode.</li>
+<li><b>Based on</b>: The activity is a template for be inherited by others activities plus "No students" mode.</li>
+<li><b>VPL question</b>: The activity is adapted for the VPL question type, students can has readonly access.</li>
+<li><b>VPL question no students</b>: "VPL question" plus "No students".</li>
+<li><b>Example</b>: The students can run and debug requested files but readonly.</li>
+</ul>';
+$string['mode_basedon'] = 'Based on';
+$string['mode_no_students'] = 'No students';
+$string['mode_normal'] = 'Normal';
+$string['mode_students_readonly'] = 'Students readonly';
+$string['mode_vplquestion'] = 'VPL question';
+$string['mode_vplquestion_no_students'] = 'VPL question no students';
 $string['moduleconfigtitle'] = 'VPL Module Config';
 $string['modulename'] = 'Virtual programming lab';
 $string['modulename_help'] = '<p>VPL is an activity module for Moodle that manages programming assignments and whose salient features are:

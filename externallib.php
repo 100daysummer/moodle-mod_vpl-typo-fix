@@ -148,7 +148,8 @@ class mod_vpl_webservice extends external_api {
      * @param int $id The coursemodule id.
      * @param string $password The password for using the VPL activity.
      * @return array with 'name', 'shortdescription', 'intro', 'introformat', 'reqpassword',
-     * 'example', 'restrictededitor', 'maxfiles' and 'reqfiles' keys.
+     * 'example', 'mode', 'restrictededitor', 'maxfiles' and 'reqfiles' keys.
+     * 'example' is keep for compatibility, it will be removed in future versions.
      * @throws Exception if not available or not allowed.
      */
     public static function info($id, $password) {
@@ -170,7 +171,8 @@ class mod_vpl_webservice extends external_api {
                 'intro' => self::rewrite_pluginfile_for_external($vpl->get_fulldescription(), context_module::instance($id)->id),
                 'introformat' => (int) FORMAT_HTML,
                 'reqpassword' => ($instance->password > '' ? 1 : 0),
-                'example' => (int) $instance->example,
+                'example' => ((int) $instance->mode) == 1 ? 1 : 0, // Keep for compatibility, it will be removed in future versions.
+                'mode' => (int) $instance->mode,
                 'restrictededitor' => (int) $instance->restrictededitor,
                 'maxfiles' => (int) $instance->maxfiles,
                 'reqfiles' => [],
@@ -195,6 +197,7 @@ class mod_vpl_webservice extends external_api {
                 'introformat' => new external_value(PARAM_INT, 'Description format', VALUE_REQUIRED),
                 'reqpassword' => new external_value(PARAM_INT, 'Activity requiere password', VALUE_REQUIRED),
                 'example' => new external_value(PARAM_INT, 'Activity is an example', VALUE_REQUIRED),
+                'mode' => new external_value(PARAM_INT, 'Activity mode', VALUE_REQUIRED),
                 'restrictededitor' => new external_value(PARAM_INT, 'Activity edition is restricted', VALUE_REQUIRED),
                 'maxfiles' => new external_value(PARAM_INT, 'Maximum number of file acepted', VALUE_REQUIRED),
                 'reqfiles' => new external_multiple_structure(new external_single_structure([
@@ -254,7 +257,7 @@ class mod_vpl_webservice extends external_api {
             $vpl->require_capability(VPL_MANAGE_CAPABILITY);
         }
         $instance = $vpl->get_instance();
-        if ($instance->example || ($instance->restrictededitor && ! $vpl->has_capability(VPL_MANAGE_CAPABILITY))) {
+        if ($vpl->is_example() || ($instance->restrictededitor && ! $vpl->has_capability(VPL_MANAGE_CAPABILITY))) {
             throw new Exception(get_string('notavailable'));
         }
         // Adapts to the file format VPL3.2.
@@ -393,7 +396,7 @@ class mod_vpl_webservice extends external_api {
             if (! $vpl->is_submit_able()) {
                 throw new Exception(get_string('notavailable'));
             }
-            if ($instance->example || ! $instance->evaluate) {
+            if ($vpl->is_example() || ! $instance->evaluate) {
                 throw new Exception(get_string('notavailable'));
             }
         }
@@ -471,7 +474,7 @@ if the websocket client send something to the server then the evaluation is stop
             if (! $vpl->is_submit_able()) {
                 throw new Exception(get_string('notavailable'));
             }
-            if ($instance->example || ! $instance->evaluate) {
+            if ($vpl->is_example() || ! $instance->evaluate) {
                 throw new Exception(get_string('notavailable'));
             }
         }

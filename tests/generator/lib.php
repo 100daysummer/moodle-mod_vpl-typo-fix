@@ -62,7 +62,7 @@ class mod_vpl_generator extends testing_module_generator {
             'automaticgrading' => 0,
             'maxexetime' => 0,
             'restrictededitor' => 0,
-            'example' => 0,
+            'mode' => 0,
             'maxexememory' => 0,
             'maxexefilesize' => 0,
             'maxexeprocesses' => 0,
@@ -76,6 +76,9 @@ class mod_vpl_generator extends testing_module_generator {
             'sebkeys' => '',
             'runscript' => '',
             'debugscript' => '',
+            'evaluator' => '',
+            'run_mode' => 0,
+            'evaluation_mode' => 0,
         ];
 
         // Set default value.

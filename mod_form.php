@@ -29,6 +29,28 @@ require_once(dirname(__FILE__) . '/vpl.class.php');
  */
 class mod_vpl_mod_form extends moodleform_mod {
     /**
+     * Get array for select mode
+     * @return array
+     */
+    protected function get_modes(): array {
+        $order = [
+            \mod_vpl\util\activity_mode::NORMAL,
+            \mod_vpl\util\activity_mode::NOSTUDENTS,
+            \mod_vpl\util\activity_mode::STUDENTSREADONLY,
+            \mod_vpl\util\activity_mode::BASEDON,
+            \mod_vpl\util\activity_mode::VPLQUESTIONNOSTUDENTS,
+            \mod_vpl\util\activity_mode::VPLQUESTION,
+            \mod_vpl\util\activity_mode::EXAMPLE,
+        ];
+        $ret = [];
+        foreach ($order as $mode) {
+            $in18str = mod_vpl\util\activity_mode::string_name($mode);
+            $ret[$mode] = get_string($in18str, VPL);
+        }
+        return $ret;
+    }
+
+    /**
      * Define the form elements.
      */
     protected function definition() {
@@ -70,12 +92,19 @@ class mod_vpl_mod_form extends moodleform_mod {
                 0 => get_string('individualwork', VPL),
                 1 => get_string('groupwork', VPL),
         ]);
+        $mform->addElement('select', 'mode', get_string('mode', VPL), $this->get_modes());
+        $mform->setDefault('mode', \mod_vpl\util\activity_mode::NORMAL);
+        $mform->addHelpButton('mode', 'mode', VPL);
+        foreach (\mod_vpl\util\activity_mode::CONTROL_VIEW as $mode) {
+            $mform->hideIf('visible', 'mode', 'eq', $mode);
+            $mform->hideIf('visiblegrade', 'mode', 'eq', $mode);
+        }
+        foreach (\mod_vpl\util\activity_mode::NO_GRADE as $mode) {
+            $mform->hideIf('grade', 'mode', 'eq', $mode);
+        }
         $mform->addElement('selectyesno', 'restrictededitor', get_string('restrictededitor', VPL));
         $mform->setDefault('restrictededitor', false);
         $mform->setAdvanced('restrictededitor');
-        $mform->addElement('selectyesno', 'example', get_string('isexample', VPL));
-        $mform->setDefault('example', false);
-        $mform->setAdvanced('example');
         $max = \mod_vpl\util\phpconfig::get_post_max_size();
         if ($plugincfg->maxfilesize > 0 && $plugincfg->maxfilesize < $max) {
             $max = $plugincfg->maxfilesize;

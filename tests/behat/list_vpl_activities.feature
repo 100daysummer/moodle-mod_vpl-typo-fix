@@ -78,7 +78,7 @@ Feature: In a VPL activity get the list of VPL activities in the course
       | id_duedate_day | 1 |
       | id_duedate_month | 1 |
       | id_duedate_year | 2050 |
-      | id_example | 1 |
+      | id_mode | Example |
       | id_grade_modgrade_type | None |
     And I press "Save and return to course"
     And I click on "VPL activity five" "link" in the "region-main" "region"
@@ -89,7 +89,7 @@ Feature: In a VPL activity get the list of VPL activities in the course
       | id_duedate_day | 1 |
       | id_duedate_month | 1 |
       | id_duedate_year | 2010 |
-      | id_example | 0 |
+      | id_mode | Normal |
       | id_grade_modgrade_type | Point |
       | id_grade_modgrade_point | 10 |
     And I press "Save and return to course"
@@ -101,7 +101,7 @@ Feature: In a VPL activity get the list of VPL activities in the course
       | id_startdate_day | 1 |
       | id_startdate_month | 1 |
       | id_startdate_year | 2010 |
-      | id_example | 1 |
+      | id_mode | Example |
       | id_grade_modgrade_type | None |
     And I press "Save and display"
     And I log out

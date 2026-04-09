@@ -50,7 +50,7 @@ function vpl_grade_item_update($instance, $grades = null) {
     if (isset($instance->cmidnumber)) {
         $params['idnumber'] = $instance->cmidnumber;
     }
-    if ($instance->grade == 0 || $instance->example != 0) {
+    if ($instance->grade == 0 || $instance->mode == \mod_vpl\util\activity_mode::EXAMPLE) {
         $params['gradetype'] = GRADE_TYPE_NONE;
         $params['deleted'] = true;
     } else if ($instance->grade > 0) {
@@ -307,6 +307,7 @@ function vpl_add_instance($instance) {
     global $CFG, $DB;
     require_once($CFG->dirroot . '/calendar/lib.php');
     vpl_truncate_vpl($instance);
+    vpl_update_mode($instance);
     $id = $DB->insert_record(VPL, $instance);
     // Add event.
     if ($instance->duedate) {
@@ -321,6 +322,47 @@ function vpl_add_instance($instance) {
         \core_completion\api::update_completion_date_event($cmid, 'vpl', $instance, $completionexpected);
     }
     return $id;
+}
+
+/**
+ * Updates a vpl instance fields to the mode set as field values.
+ * This is used to set the fields according to the mode when creating or updating an instance.
+ *
+ * @param Object $instance from the form in mod_form
+ */
+function vpl_update_mode($instance) {
+    switch ($instance->mode) {
+        case \mod_vpl\util\activity_mode::EXAMPLE:
+            $instance->grade = 0;
+            break;
+        case \mod_vpl\util\activity_mode::BASEDON:
+            $instance->grade = 0;
+            $instance->visible = 0;
+            break;
+        case \mod_vpl\util\activity_mode::NOSTUDENTS:
+            $instance->visiblegrade = 0;
+            $instance->visible = 0;
+            break;
+        case \mod_vpl\util\activity_mode::STUDENTSREADONLY:
+            $instance->visible = 1;
+            $instance->visiblegrade = 1;
+            break;
+        case \mod_vpl\util\activity_mode::VPLQUESTION:
+            $instance->duedate = 0;
+            $instance->maxfiles = 1000;
+            $instance->run = 1;
+            $instance->evaluate = 1;
+            $instance->grade = 0;
+            break;
+        case \mod_vpl\util\activity_mode::VPLQUESTIONNOSTUDENTS:
+            $instance->visible = 0;
+            $instance->duedate = 0;
+            $instance->maxfiles = 1000;
+            $instance->run = 1;
+            $instance->evaluate = 1;
+            $instance->grade = 0;
+            break;
+    }
 }
 
 /**
@@ -363,7 +405,9 @@ function vpl_update_instance_event($instance): void {
 function vpl_update_instance($instance) {
     global $DB;
     vpl_truncate_vpl($instance);
+    vpl_update_mode($instance);
     $instance->id = $instance->instance;
+    // Apply mode changes.
     vpl_update_instance_event($instance);
     $cm = get_coursemodule_from_instance(VPL, $instance->id, $instance->course);
     if (!isset($instance->cmidnumber)) {
@@ -502,6 +546,9 @@ function vpl_user_outline($course, $user, $mod, $instance) {
  * @param stdClass $vpl VPL instance object
  */
 function vpl_user_complete($course, $user, $mod, $vpl) {
+    if (! $vpl->is_visible()) {
+        return;
+    }
     require_once('vpl_submission.class.php');
     // TODO Print a detailed report of what a user has done with a given particular instance.
     // Search submisions for $user $instance.
@@ -530,12 +577,11 @@ function vpl_user_complete($course, $user, $mod, $vpl) {
  */
 function vpl_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid = 0, $groupid = 0) {
     global $CFG, $USER, $DB;
-    $grader = false;
     $vpl = new mod_vpl($cmid);
     $modinfo = get_fast_modinfo($vpl->get_course());
     $cm = $modinfo->get_cm($cmid);
     $vplid = $vpl->get_instance()->id;
-    $grader = $vpl->has_capability(VPL_GRADE_CAPABILITY);
+    $grader = $vpl->is_teacher();
     if (! $vpl->is_visible() && ! $grader) {
         return false; // No activity if not visible and not grader.
     }
@@ -596,6 +642,10 @@ function vpl_get_recent_mod_activity(&$activities, &$index, $timestart, $coursei
 function vpl_print_recent_mod_activity($activity, $courseid, $detail, $modnames, $viewfullnames) {
     // TODO improve.
     global $CFG, $OUTPUT;
+    $vpl = new mod_vpl($activity->cmid);
+    if (! $vpl->is_visible()) {
+        return; // No activity if not visible and not grader.
+    }
     echo '<table border="0" cellpadding="3" cellspacing="0" class="vpl-recent">';
     echo '<tr><td class="userpicture" valign="top">';
     echo $OUTPUT->user_picture($activity->user);
@@ -726,13 +776,13 @@ function vpl_navi_node_create(navigation_node $vplnode, $str, $url, $type = navi
 function vpl_extend_navigation(navigation_node $vplnode, $course, $module, $cm) {
     global $USER;
     $vpl = new mod_vpl($cm->id);
-    $viewer = $vpl->has_capability(VPL_VIEW_CAPABILITY);
-    $submiter = $vpl->has_capability(VPL_SUBMIT_CAPABILITY);
+    $viewer = $vpl->is_visible();
+    $submiter = $vpl->has_capability(VPL_SUBMIT_CAPABILITY) && ! $vpl->mode_prevents_modification();
     $similarity = $vpl->has_capability(VPL_SIMILARITY_CAPABILITY);
     $grader = $vpl->has_capability(VPL_GRADE_CAPABILITY);
     $manager = $vpl->has_capability(VPL_MANAGE_CAPABILITY);
     $userid = optional_param('userid', false, PARAM_INT);
-    if (! $userid && $USER->id != $userid) {
+    if (! $userid && $USER->id != $userid && ($grader || $manager)) {
         $parm = [ 'id' => $cm->id, 'userid' => $userid ];
     } else {
         $userid = $USER->id;
@@ -743,7 +793,7 @@ function vpl_extend_navigation(navigation_node $vplnode, $course, $module, $cm) 
         $node = vpl_navi_node_create($vplnode, 'description', $url);
         $vplnode->add_node($node);
     }
-    $example = $vpl->get_instance()->example;
+    $example = $vpl->is_example();
     $submitable = $manager || ($grader && $USER->id != $userid) || (! $grader && $submiter && $vpl->is_submit_able());
     if ($submitable && ! $example && ! $vpl->get_instance()->restrictededitor) {
         $url = new moodle_url('/mod/vpl/forms/submission.php', $parm);

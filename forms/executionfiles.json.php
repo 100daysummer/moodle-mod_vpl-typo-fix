@@ -85,10 +85,12 @@ try {
             $result->response = mod_vpl_edit::execute($vpl, $USER->id, $action, $actiondata);
             break;
         case 'retrieve':
-            $result->response = mod_vpl_edit::retrieve_result($vpl, $USER->id);
+            $result->response = mod_vpl_edit::retrieve_result($vpl, $USER->id, $actiondata->processid);
+            break;
             break;
         case 'cancel':
-            $result->response->error = mod_vpl_edit::cancel($vpl, $USER->id);
+            $result->response->error = mod_vpl_edit::cancel($vpl, $USER->id, $actiondata->processid);
+            break;
             break;
         case 'getjails':
             $result->response->servers = vpl_jailserver_manager::get_https_server_list($vpl->get_instance()->jailservers);

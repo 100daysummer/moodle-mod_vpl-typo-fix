@@ -739,7 +739,9 @@ class mod_vpl_submission_CE extends mod_vpl_submission {
     public function jailreaction($action, $processinfo = false) {
         if ($processinfo === false) {
             $vplid = $this->vpl->get_instance()->id;
-            $processinfo = vpl_running_processes::get_run($this->get_instance()->userid, $vplid);
+            $userid = $this->get_instance()->userid;
+            $submissionid = $this->get_instance()->id;
+            $processinfo = vpl_running_processes::get_by_submission_id($vplid, $userid, $submissionid);
         }
         if ($processinfo === false) {
             return;
@@ -788,7 +790,10 @@ class mod_vpl_submission_CE extends mod_vpl_submission {
     public function run($type, $options = []) {
         // Stop current task if one.
         global $DB;
-        $this->cancelprocess();
+        // Allow multiple runs simultaneously only for question activities.
+        if (! $this->vpl->is_vpl_question_mode()) {
+            $this->cancelprocess();
+        }
         $options = (array) $options;
         $plugincfg = get_config('mod_vpl');
         $data = $this->prepare_execution($type);
@@ -844,6 +849,8 @@ class mod_vpl_submission_CE extends mod_vpl_submission {
         $process->adminticket = $jailresponse['adminticket'];
         $process->server = $jailserver;
         $process->type = $type;
+        $process->time_limit = time() + $data->maxtime;
+        $process->submissionid = $instance->id;
         $response->processid = vpl_running_processes::set($process);
         if ($type < 2) {
             if ($type == 0) {
@@ -857,12 +864,12 @@ class mod_vpl_submission_CE extends mod_vpl_submission {
     }
 
     /**
-     * Updates files in running task
+     * Updates files in a running task
      *
-     * @param mod_vpl $vpl VPL instance
-     * @param int $userid
-     * @param int $processid
-     * @param array $files internal format
+     * @param mod_vpl $vpl VPL object of the process to update
+     * @param int $userid User ID of the process owner
+     * @param int $processid Process ID of the running task
+     * @param array $files Internal format of the files to update
      * @param array $filestodelete List of files to delete in the running task
      * @return boolean True if updated
      */
@@ -890,11 +897,13 @@ class mod_vpl_submission_CE extends mod_vpl_submission {
         return $response['update'] > 0;
     }
     /**
-     * Retrieve the result of a process.
+     * Retrieve the result of a evaluation process from the execution server and save it.
+     * If automatic grading => save grade and comment in the gradebook.
+     * If the evaluation is manual and there is a previous automatic grade saved => remove it.
      *
      * @param int $processid Process ID to retrieve the evaluation result.
      * @throws Exception If no process found or if there is an error retrieving the result.
-     * @return string The evaluation result.
+     * @return stdClass Object with compilation, execution, evaluation, grade and nevaluations as attributes.
      */
     public function retrieveresult($processid) {
         $vplid = $this->vpl->get_instance()->id;
@@ -904,7 +913,7 @@ class mod_vpl_submission_CE extends mod_vpl_submission {
         }
         $response = $this->jailreaction('getresult', $processinfo);
         if ($response === false) {
-            throw new Exception(get_string('serverexecutionerror', VPL) . ' getresult no repsonse');
+            throw new Exception(get_string('serverexecutionerror', VPL) . ' getresult give no response');
         }
         if ($response['interactive'] == 0 && $processinfo->type == 2) {
             $this->saveCE($response);
@@ -937,13 +946,15 @@ class mod_vpl_submission_CE extends mod_vpl_submission {
     }
     /**
      * Cancel running process
-     * @param int $processid
+     *
+     * @param int $processid Process ID to cancel, -1 for the current process.
      */
     public function cancelprocess(int $processid = -1) {
         $vplid = $this->vpl->get_instance()->id;
         $userid = $this->get_instance()->userid;
+        $submissionid = $this->get_instance()->id;
         if ($processid == -1) {
-            $processinfo = vpl_running_processes::get_run($userid, $vplid);
+            $processinfo = vpl_running_processes::get_by_submission_id($vplid, $userid, $submissionid);
         } else {
             $processinfo = vpl_running_processes::get_by_id($vplid, $userid, $processid);
         }

@@ -100,21 +100,21 @@ class mod_vpl_edit {
      * Save a submission version
      *
      * @param mod_vpl $vpl VPL instance
-     * @param int $userid
+     * @param int $userid User id of the submission
      * @param array $files internal format
-     * @param string $comments
-     * @param int $version -1 for new version, or the version to replace
+     * @param string $comments User comments for the submission
+     * @param int $originalversion -1 for no previous version or the id of version to update
      * @throws Exception
      * @return int saved record id
      */
-    public static function save(mod_vpl $vpl, int $userid, array &$files, string $comments = '', int $version = -1) {
+    public static function save(mod_vpl $vpl, int $userid, array &$files, string $comments = '', int $originalversion = -1) {
         global $USER;
         $response = new stdClass();
         $response->requestsconfirmation = false;
         $response->saved = false;
-        if ($version != -1) {
+        if ($originalversion != -1) {
             $lastsub = $vpl->last_user_submission($userid);
-            if ($lastsub && $lastsub->id != $version) {
+            if ($lastsub && $lastsub->id != $originalversion) {
                 $response->requestsconfirmation = true;
                 $response->question = get_string('replacenewer', VPL);
                 $response->version = $lastsub->id;
@@ -251,7 +251,7 @@ class mod_vpl_edit {
      */
     public static function execute($vpl, $userid, $action, $options = []) {
         global $USER;
-        $example = $vpl->get_instance()->example;
+        $example = $vpl->is_example();
         $lastsub = $vpl->last_user_submission($userid);
         if (! $lastsub && ! $example && $action != 'test_evaluate') {
             throw new Exception(get_string('nosubmission', VPL));
@@ -270,27 +270,38 @@ class mod_vpl_edit {
     }
 
     /**
-     * Request the retrieve of the evaluation result
-     * @param mod_vpl $vpl
-     * @param int $userid
-     * @param int $processid
+     * Request the retrieve of the evaluation result of a running process.
+     * @param mod_vpl $vpl VPL activity object.
+     * @param int $userid User id.
+     * @param int $processid Process id. If not provided backwards compatibility is applied
+     *                       and the last process for this user and VPL activity is used.
      * @throws Exception
-     * @return stdClass
+     * @return stdClass Object with compilation, execution, evaluation, grade and nevaluations as attributes.
      */
     public static function retrieve_result(mod_vpl $vpl, int $userid, $processid = -1) {
-        if ($processid == -1) { // To keep previous behaviour.
+        if ($processid == -1) { // Backware compatibility => process id not provided.
+            // Get the process id of the last running process for this user and VPL activity.
             $processinfo = vpl_running_processes::get_run($userid, $vpl->get_instance()->id);
-            if ($processinfo == false) { // No process to cancel.
-                throw new Exception(get_string('serverexecutionerror', VPL) . ' No process to cancel');
+            if ($processinfo == false) { // No process found.
+                throw new Exception(get_string('serverexecutionerror', VPL) . ' Process not found');
             } else {
                 $processid = $processinfo->id;
             }
+        } else {
+            // Security checks.
+            $vplid = $vpl->get_instance()->id;
+            $processinfo = vpl_running_processes::get_by_id($vplid, $userid, $processid);
+            if ($processinfo == false) { // No process found.
+                throw new Exception(get_string('serverexecutionerror', VPL) . ' Process not found');
+            }
         }
-        $lastsub = $vpl->last_user_submission($userid);
-        if (! $lastsub) {
+        if ($processinfo->submissionid == 0) {
+            throw new Exception(get_string('serverexecutionerror', VPL) . ' Process without submission');
+        }
+        if ($vpl->is_example()) {
             $submission = new mod_vpl_example_CE($vpl);
         } else {
-            $submission = new mod_vpl_submission_CE($vpl, $lastsub);
+            $submission = new mod_vpl_submission_CE($vpl, $processinfo->submissionid);
         }
         return $submission->retrieveresult($processid);
     }
@@ -303,7 +314,7 @@ class mod_vpl_edit {
      * @return string The message of not canceled or empty string
      */
     public static function cancel($vpl, $userid, int $processid) {
-        $example = $vpl->get_instance()->example;
+        $example = $vpl->is_example();
         $lastsub = $vpl->last_user_submission($userid);
         try {
             if ($example || ! $lastsub) {
@@ -413,6 +424,8 @@ DIRECTRUNCODE;
         $process->adminticket = $jailresponse['adminticket'];
         $process->server = $server;
         $process->type = 4;
+        $process->submissionid = 0;
+        $process->time_limit = time() + $data->maxtime;
         $response->processid = vpl_running_processes::set($process);
         return $response;
     }

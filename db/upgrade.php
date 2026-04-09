@@ -557,6 +557,43 @@ function xmldb_vpl_upgrade_2025052313() {
 }
 
 /**
+ * Upgrades VPL to 4.5 version
+ *
+ * @return void
+ */
+function xmldb_vpl_upgrade_2026040813() {
+    global $DB;
+    $dbman = $DB->get_manager();
+
+    // Updating vpl table.
+    $table = new xmldb_table('vpl');
+    // Rename 'example' field to 'mode' field in vpl table.
+    $field = new xmldb_field('example', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'debugscript');
+    if ($dbman->field_exists($table, $field)) {
+        $dbman->rename_field($table, $field, 'mode');
+    }
+
+    // Updating vpl_running_processes table.
+    $table = new xmldb_table('vpl_running_processes');
+    // Add field 'time_limit' and 'submissionid'.
+    $field = new xmldb_field('time_limit', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'start_time');
+    xmldb_vpl_addfield($dbman, $table, $field);
+    $field = new xmldb_field('submissionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'adminticket');
+    xmldb_vpl_addfield($dbman, $table, $field);
+    // Add index 'idx_time_limit'.
+    $index = new xmldb_index('idx_time_limit', XMLDB_INDEX_NOTUNIQUE, ['time_limit']);
+    if (!$dbman->index_exists($table, $index)) {
+        $dbman->add_index($table, $index);
+    }
+
+    // Remove old VPL user preferences.
+    $oldpreferences = ['vpl_editor_fontsize', 'vpl_acetheme', 'vpl_terminaltheme'];
+    foreach ($oldpreferences as $name) {
+        $DB->delete_records('user_preferences', ['name' => $name]);
+    }
+}
+
+/**
  * Upgrades VPL DB and data to the new version
  *
  * @param int $oldversion Current version
@@ -617,6 +654,11 @@ function xmldb_vpl_upgrade($oldversion = 0) {
     if ($oldversion < $vpl43) {
         xmldb_vpl_upgrade_2025052313();
         upgrade_mod_savepoint(true, $vpl43, 'vpl');
+    }
+    $vpl45 = 2026040813;
+    if ($oldversion < $vpl45) {
+        xmldb_vpl_upgrade_2026040813();
+        upgrade_mod_savepoint(true, $vpl45, 'vpl');
     }
     return true;
 }
