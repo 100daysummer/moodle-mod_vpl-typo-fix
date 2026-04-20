@@ -87,7 +87,8 @@ class mod_vpl_generator extends testing_module_generator {
                 $record->{$name} = $value;
             }
         }
-
-        return parent::create_instance($record, (array)$options);
+        $instance = parent::create_instance($record, (array)$options);
+        \mod_vpl::reset_db_cache();
+        return $instance;
     }
 }

@@ -46,7 +46,7 @@ if ($subid) {
     $pageparms['submissionid'] = $subid;
 }
 $vpl->prepare_page('forms/edit.php', $pageparms);
-if (! $vpl->is_visible() || ! $vpl->is_submit_able()) {
+if (! $vpl->is_visible() || ! $vpl->is_submit_able() && ! $vpl->is_example()) {
     vpl_redirect('?id=' . $id, get_string('notavailable'), 'error');
 }
 if (! $userid || $userid == $USER->id) { // Edit own submission.

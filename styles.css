@@ -1,0 +1,5 @@
+div.vpl_student_picture_in_menu {
+    position: absolute;
+    right: 50px;
+    z-index: 50;
+}

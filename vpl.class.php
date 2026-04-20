@@ -639,7 +639,7 @@ class mod_vpl {
      */
     public function restrictions_check() {
         // If students readonly mode, do no check.
-        if ($this->is_mode(\mod_vpl\util\activity_mode::STUDENTSREADONLY)) {
+        if ($this->is_mode(activity_mode::STUDENTSREADONLY)) {
             return;
         }
         $this->network_check();
@@ -1092,7 +1092,7 @@ class mod_vpl {
         $ret = $ret && !$this->mode_prevents_viewing($userid);
         // Grader and manager always view.
         $ret = $ret || $this->is_teacher($userid);
-        $ret = $ret || $this->is_mode(\mod_vpl\util\activity_mode::STUDENTSREADONLY);
+        $ret = $ret || $this->is_mode(activity_mode::STUDENTSREADONLY);
         return $ret;
     }
 
@@ -1612,192 +1612,8 @@ class mod_vpl {
      *
      */
     public function print_view_tabs($path) {
-        if (! $this->is_visible()) {
-            return;
-        }
-        // TODO refactor using functions.
-        global $USER, $DB, $PAGE;
         $active = basename($path);
-        $cmid = $this->cm->id;
-        $userid = optional_param('userid', null, PARAM_INT);
-        $copy = optional_param('privatecopy', false, PARAM_INT);
-        $viewer = $this->has_capability(VPL_VIEW_CAPABILITY);
-        $submiter = $this->has_capability(VPL_SUBMIT_CAPABILITY);
-        $similarity = $this->has_capability(VPL_SIMILARITY_CAPABILITY);
-        $grader = $this->has_capability(VPL_GRADE_CAPABILITY);
-        $manager = $this->has_capability(VPL_MANAGE_CAPABILITY);
-        $example = $this->is_example();
-        if (! $userid || ! $grader || $copy) {
-            $userid = $USER->id;
-        }
-        $level2 = $grader || $manager || $similarity;
-
-        $maintabs = [];
-        $tabs = [];
-        $href = vpl_mod_href('view.php', 'id', $cmid, 'userid', $userid);
-        $viewtab = vpl_create_tabobject('view.php', $href, 'description');
-        if ($level2) {
-            if ($viewer) {
-                $maintabs[] = $viewtab;
-            }
-            $href = vpl_mod_href('views/submissionslist.php', 'id', $cmid);
-            $maintabs[] = vpl_create_tabobject('submissionslist.php', $href, 'submissionslist');
-            // Similarity.
-            if ($similarity) {
-                if ($active == 'listwatermark.php' || $active == 'similarity_form.php' || $active == 'listsimilarity.php') {
-                    $tabname = $active;
-                } else {
-                    $tabname = 'similarity';
-                }
-                $href = vpl_mod_href('similarity/similarity_form.php', 'id', $cmid);
-                $maintabs[] = vpl_create_tabobject($tabname, $href, 'similarity');
-            }
-            // Test.
-            if ($grader || $manager) {
-                if (
-                    $active == 'submission.php' || $active == 'edit.php'
-                        || $active == 'submissionview.php' || $active == 'gradesubmission.php'
-                        || $active == 'previoussubmissionslist.php'
-                ) {
-                            $tabname = $active;
-                } else {
-                    $tabname = 'test';
-                }
-                $href = vpl_mod_href('forms/submissionview.php', 'id', $cmid, 'userid', $userid);
-                if ($userid == $USER->id) {
-                    $maintabs[] = vpl_create_tabobject($tabname, $href, 'test');
-                } else {
-                    $user = self::get_db_record('user', $userid);
-                    $strname = $this->is_group_activity() ? 'group' : 'user';
-                    $text = get_string($strname) . ' ' . $this->fullname($user, false);
-                    $icon = vpl_get_awesome_icon($strname);
-                    $url = $PAGE->url->out(false, [ 'userid' => $USER->id ]);
-                    // Add button to return to own activity.
-                    // This is a simili-link because it is located inside an <a> tag, and we cannot put an <a> tag within another.
-                    $buttonexit = html_writer::tag('span', vpl_get_awesome_icon('exitrole'), [
-                            'class' => 'btn-link',
-                            'title' => get_string('returntoownactivity', VPL),
-                            'onclick' => 'event.preventDefault(); window.location.href=\'' . $url . '\';',
-                    ]);
-                    $maintabs[] = new tabobject($tabname, $href, "$icon $text $buttonexit", $text);
-                }
-            }
-        }
-        switch ($active) {
-            case 'view.php':
-                if ($level2) {
-                    // TODO replace by $OUTPUT->tabtree.
-                    print_tabs(
-                        [
-                                    $maintabs,
-                                    $tabs,
-                        ],
-                        $active
-                    );
-                    return;
-                }
-                // No break.
-            case 'submission.php':
-            case 'edit.php':
-            case 'submissionview.php':
-            case 'gradesubmission.php':
-            case 'previoussubmissionslist.php':
-                require_once('vpl_submission.class.php');
-                $subinstance = $this->last_user_submission($userid);
-                if ($viewer && ! $level2) {
-                    $tabs[] = $viewtab;
-                }
-                if (
-                    $manager || ($grader && $USER->id == $userid)
-                    || (! $grader && $submiter && $this->is_submit_able()
-                    && ! $this->instance->restrictededitor && ! $example)
-                ) {
-                    $href = vpl_mod_href('forms/submission.php', 'id', $cmid, 'userid', $userid);
-                    $tabs[] = vpl_create_tabobject('submission.php', $href, 'submission');
-                }
-                if (
-                    $manager || ($grader && $USER->id == $userid)
-                    || (! $grader && $submiter && $this->is_submit_able())
-                ) {
-                    $href = vpl_mod_href('forms/edit.php', 'id', $cmid, 'userid', $userid);
-                    $stredit = 'edit';
-                    if ($example && $this->instance->run) {
-                        $stredit = 'run';
-                    }
-                    $tabs[] = vpl_create_tabobject('edit.php', $href, $stredit);
-                }
-                if (! $example) {
-                    $href = vpl_mod_href('forms/submissionview.php', 'id', $cmid, 'userid', $userid);
-                    $tabs[] = vpl_create_tabobject('submissionview.php', $href, 'submissionview');
-                    if (
-                        $grader && $this->get_grade() != 0 && $subinstance
-                        && ($subinstance->dategraded == 0
-                            || $subinstance->grader == $USER->id
-                            || $subinstance->grader == 0
-                            || $this->has_capability(VPL_EDITOTHERSGRADES_CAPABILITY))
-                    ) {
-                        $href = vpl_mod_href('forms/gradesubmission.php', 'id', $cmid, 'userid', $userid);
-                        $text = get_string(vpl_get_gradenoun_str());
-                        $tabs[] = vpl_create_tabobject('gradesubmission.php', $href, vpl_get_gradenoun_str(), 'core');
-                    }
-                    if ($subinstance && ($grader || $similarity)) {
-                        $href = vpl_mod_href('views/previoussubmissionslist.php', 'id', $cmid, 'userid', $userid);
-                        $tabs[] = vpl_create_tabobject('previoussubmissionslist.php', $href, 'previoussubmissionslist');
-                    }
-                }
-                // Show user picture if this activity require password.
-                if (! isset($user) && $this->instance->password > '') {
-                    $user = self::get_db_record('user', $userid);
-                }
-                if (isset($user)) {
-                    echo '<div style="position:absolute; right:50px; z-index:50;">';
-                    echo $this->user_picture($user);
-                    echo '</div>';
-                }
-                if ($level2) {
-                    print_tabs(
-                        [
-                                    $maintabs,
-                                    $tabs,
-                        ],
-                        $active
-                    );
-                    return;
-                } else {
-                    print_tabs([
-                            $tabs,
-                    ], $active);
-                    return;
-                }
-
-                break;
-            case 'submissionslist.php':
-                print_tabs([
-                        $maintabs,
-                ], $active);
-                return;
-            case 'listwatermark.php':
-            case 'similarity_form.php':
-            case 'listsimilarity.php':
-                if ($similarity) {
-                    $href = vpl_mod_href('similarity/similarity_form.php', 'id', $cmid);
-                    $tabs[] = vpl_create_tabobject('similarity_form.php', $href, 'similarity');
-                    if ($active == 'listsimilarity.php') {
-                        $tabs[] = vpl_create_tabobject('listsimilarity.php', '', 'listsimilarity');
-                    }
-                    $plugincfg = get_config('mod_vpl');
-                    $watermark = isset($plugincfg->use_watermarks) && $plugincfg->use_watermarks;
-                    if ($watermark) {
-                        $href = vpl_mod_href('similarity/listwatermark.php', 'id', $cmid);
-                        $tabs[] = vpl_create_tabobject('listwatermark.php', $href, 'listwatermarks');
-                    }
-                }
-                print_tabs([
-                        $maintabs,
-                        $tabs,
-                ], $active);
-                break;
-        }
+        \mod_vpl\views\activity_menu::print_menu($this, $active);
     }
 
     /**
@@ -2726,7 +2542,7 @@ class mod_vpl {
      * @return bool
      */
     public function is_mode($mode) {
-        return $this->instance->mode == $mode;
+        return (int)$this->instance->mode == (int)$mode;
     }
 
     /**
@@ -2743,7 +2559,7 @@ class mod_vpl {
      */
     public function is_vpl_question_mode() {
         $is = $this->is_mode(activity_mode::VPLQUESTION);
-        $is = $is || ($this->instance->mode == activity_mode::VPLQUESTIONNOSTUDENTS);
+        $is = $is || $this->is_mode(activity_mode::VPLQUESTIONNOSTUDENTS);
         return $is;
     }
 
@@ -2775,7 +2591,7 @@ class mod_vpl {
         if ($this->is_teacher($userid)) {
             return false;
         }
-        return activity_mode::mode_prevents_viewing($this->instance->mode);
+        return activity_mode::mode_prevents_viewing((int)$this->instance->mode);
     }
     /**
      * Return if the activity mode prevent modification of the activity for the user.
@@ -2790,6 +2606,6 @@ class mod_vpl {
         if ($this->is_teacher($userid)) {
             return false;
         }
-        return activity_mode::mode_prevents_modification($this->instance->mode);
+        return activity_mode::mode_prevents_modification((int)$this->instance->mode);
     }
 }

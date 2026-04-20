@@ -65,7 +65,7 @@ final class userpreferences_test extends base_fixture {
             'terminalTheme' => 'light',
             'terminalFontSize' => 12,
         ];
-        // terminalFontSize is default (12), so it will be stripped.
+        // The terminalFontSize default is (12), so it will be stripped.
         $expected = clone $newprefs;
         unset($expected->terminalFontSize);
         $prefs = userpreferences::update(json_encode($newprefs));
@@ -125,7 +125,7 @@ final class userpreferences_test extends base_fixture {
             'terminalTheme' => 'dark',
             'terminalFontSize' => 14,
         ];
-        // editorShowInvisibles is default (false), so it will be stripped.
+        // The editorShowInvisibles default is (false), so it will be stripped.
         $expectedupdated = (object)[
             'editorTheme' => 'light',
             'editorFontSize' => 18,
