@@ -919,23 +919,6 @@ function vpl_get_awesome_icon($str, $classes = '') {
     return '';
 }
 
-
-/**
- * Create a new tabobject for navigation
- *
- * @param String $id
- * @param string|moodle_url $href
- * @param string $str to be i18n
- * @param string $comp component
- * @return tabobject
- * @codeCoverageIgnore
- */
-function vpl_create_tabobject($id, $href, $str, $comp = 'mod_vpl') {
-    $stri18n = get_string($str, $comp);
-    $strdescription = vpl_get_awesome_icon($str) . $stri18n;
-    return new tabobject($id, $href, $strdescription, $stri18n);
-}
-
 /**
  * Get version string.
  *
