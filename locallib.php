@@ -233,25 +233,40 @@ function vpl_abs_href() {
 }
 
 /**
- * generate URL to page with params
+ * Generate URL to page with params.
  *
- * param $page string page from wwwroot/mod/vpl/
- * param string $parm1 name of the first parameter
- * param string $value1 value of the first parameter
- * param string $parm2 name of the second parameter
- * param string $value2 value of the second parameter
- * etc.
+ * @param string $page Page path from wwwroot/mod/vpl/
+ * @param mixed ...$args Either pairs of (string $param, string $value) or single array of params
+ *                        Pairs: vpl_mod_href('page', 'param1', 'value1', 'param2', 'value2')
+ *                        Array: vpl_mod_href('page', ['param1' => 'value1', 'param2' => 'value2'])
+ * @return string URL with parameters
  * @codeCoverageIgnore
  */
 function vpl_mod_href() {
     global $CFG;
-    $parms = func_get_args();
-    $l = count($parms);
-    $href = $CFG->wwwroot . '/mod/vpl/' . $parms[0];
-    for ($p = 1; $p < $l - 1; $p += 2) {
-        $href .= ($p > 1 ? '&amp;' : '?') . urlencode($parms[$p]) . '=' . urlencode($parms[$p + 1]);
+    $funcparms = func_get_args();
+    $l = count($funcparms);
+    $href = $CFG->wwwroot . '/mod/vpl/' . $funcparms[0];
+    if ($l == 1) {
+        return $href;
     }
-    return $href;
+    if ($l == 2 && is_array($funcparms[1])) {
+        $querystring = '';
+        foreach($funcparms[1] as $parm => $value) {
+            $querystring .= $querystring !== '' ? '&amp;' : '?';
+            $querystring .= urlencode($parm) . '=' . urlencode($value);
+        }
+        return $href . $querystring;
+    } else {
+        if ($l % 2 == 0) {
+            throw new InvalidArgumentException('Invalid number of arguments for vpl_mod_href');
+        }
+        for ($p = 1; $p < $l; $p += 2) {
+            $href .= ($p > 1 ? '&amp;' : '?');
+            $href .= urlencode($funcparms[$p]) . '=' . urlencode($funcparms[$p + 1]);
+        }
+        return $href;
+    }
 }
 
 /**
