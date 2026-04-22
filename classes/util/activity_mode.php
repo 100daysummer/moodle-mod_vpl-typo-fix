@@ -77,8 +77,6 @@ class activity_mode {
     public const NO_GRADE = [
         self::EXAMPLE,
         self::BASEDON,
-        self::VPLQUESTION,
-        self::VPLQUESTIONNOSTUDENTS,
     ];
 
     /** @var array List of activity modes that control if student can view the activity */
@@ -120,5 +118,41 @@ class activity_mode {
      */
     public static function mode_prevents_modification($mode) {
         return in_array($mode, self::PREVENT_MODIFICATION_MODES, true);
+    }
+
+    /**
+     * Updates a vpl instance fields to the mode set as field values.
+     * This is used to set the fields according to the mode when creating or updating an instance.
+     *
+     * @param Object $instance from the form in mod_form
+     */
+    public static function update_vpl_instance($instance) {
+        switch ($instance->mode) {
+            case self::EXAMPLE:
+                $instance->grade = 0;
+                break;
+            case self::BASEDON:
+                $instance->grade = 0;
+                $instance->visible = 0;
+                break;
+            case self::NOSTUDENTS:
+                $instance->visiblegrade = 0;
+                $instance->visible = 0;
+                break;
+            case self::STUDENTSREADONLY:
+                $instance->visible = 1;
+                $instance->visiblegrade = 1;
+                break;
+            case self::VPLQUESTIONNOSTUDENTS:
+                $instance->visible = 0;
+                // No break here because it is the same as VPLQUESTION for the rest of fields.
+            case self::VPLQUESTION:
+                $instance->startdate = 0;
+                $instance->duedate = 0;
+                $instance->maxfiles = 1000;
+                $instance->run = 1;
+                $instance->evaluate = 1;
+                break;
+        }
     }
 }

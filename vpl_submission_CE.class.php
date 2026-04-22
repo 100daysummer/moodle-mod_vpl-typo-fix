@@ -627,6 +627,10 @@ class mod_vpl_submission_CE extends mod_vpl_submission {
             $filename = vpl_get_scripts_dir() . '/default_evaluate_textingui.sh';
             $data->files['default_evaluate_textingui.sh'] = file_get_contents($filename);
         }
+        if ($vpl->is_vpl_question_mode()) {
+            $filename = vpl_get_scripts_dir() . '/pre_vpl_run_vpl_question.sh';
+            $data->files['pre_vpl_run.sh'] = file_get_contents($filename);
+        }
         return $data;
     }
 

@@ -307,7 +307,7 @@ function vpl_add_instance($instance) {
     global $CFG, $DB;
     require_once($CFG->dirroot . '/calendar/lib.php');
     vpl_truncate_vpl($instance);
-    vpl_update_mode($instance);
+    \mod_vpl\util\activity_mode::update_vpl_instance($instance);
     $id = $DB->insert_record(VPL, $instance);
     // Add event.
     if ($instance->duedate) {
@@ -321,49 +321,16 @@ function vpl_add_instance($instance) {
         $completionexpected = $instance->completionexpected;
         \core_completion\api::update_completion_date_event($cmid, 'vpl', $instance, $completionexpected);
     }
+    $vpl = new mod_vpl(null, $id);
+    if ($vpl->is_vpl_question_mode()) {
+        $originalfilename = vpl_get_scripts_dir() . '/pre_vpl_run_vpl_question.sh';
+        $data = file_get_contents($originalfilename);
+        $fgm = $vpl->get_execution_fgm();
+        $fgm->addfile('pre_vpl_run.sh', $data);
+    }
     return $id;
 }
 
-/**
- * Updates a vpl instance fields to the mode set as field values.
- * This is used to set the fields according to the mode when creating or updating an instance.
- *
- * @param Object $instance from the form in mod_form
- */
-function vpl_update_mode($instance) {
-    switch ($instance->mode) {
-        case \mod_vpl\util\activity_mode::EXAMPLE:
-            $instance->grade = 0;
-            break;
-        case \mod_vpl\util\activity_mode::BASEDON:
-            $instance->grade = 0;
-            $instance->visible = 0;
-            break;
-        case \mod_vpl\util\activity_mode::NOSTUDENTS:
-            $instance->visiblegrade = 0;
-            $instance->visible = 0;
-            break;
-        case \mod_vpl\util\activity_mode::STUDENTSREADONLY:
-            $instance->visible = 1;
-            $instance->visiblegrade = 1;
-            break;
-        case \mod_vpl\util\activity_mode::VPLQUESTION:
-            $instance->duedate = 0;
-            $instance->maxfiles = 1000;
-            $instance->run = 1;
-            $instance->evaluate = 1;
-            $instance->grade = 0;
-            break;
-        case \mod_vpl\util\activity_mode::VPLQUESTIONNOSTUDENTS:
-            $instance->visible = 0;
-            $instance->duedate = 0;
-            $instance->maxfiles = 1000;
-            $instance->run = 1;
-            $instance->evaluate = 1;
-            $instance->grade = 0;
-            break;
-    }
-}
 
 /**
  * Updates a vpl instance event.
@@ -405,7 +372,7 @@ function vpl_update_instance_event($instance): void {
 function vpl_update_instance($instance) {
     global $DB;
     vpl_truncate_vpl($instance);
-    vpl_update_mode($instance);
+    \mod_vpl\util\activity_mode::update_vpl_instance($instance);
     $instance->id = $instance->instance;
     // Apply mode changes.
     vpl_update_instance_event($instance);
@@ -416,6 +383,13 @@ function vpl_update_instance($instance) {
     vpl_grade_item_update($instance);
     $completionexpected = (!empty($instance->completionexpected)) ? $instance->completionexpected : null;
     \core_completion\api::update_completion_date_event($cm->id, 'vpl', $instance, $completionexpected);
+    $vpl = new mod_vpl(null, $instance->id);
+    if ($vpl->is_vpl_question_mode()) {
+        $originalfilename = vpl_get_scripts_dir() . '/pre_vpl_run_vpl_question.sh';
+        $data = file_get_contents($originalfilename);
+        $fgm = $vpl->get_execution_fgm();
+        $fgm->addfile('pre_vpl_run.sh', $data);
+    }
     return $DB->update_record(VPL, $instance);
 }
 
