@@ -356,6 +356,18 @@ var VPLIDE = function(rootId, options) {
         this.getClipboard = function() {
             return localClipboard;
         };
+        if (restrictedEdit) {
+            const allowedRegion = rootObj[0];
+            const freeRegion = tabs[0];
+            document.addEventListener('copy', function() {
+                const selection = window.getSelection();
+                // Check if the selection is inside IDE but outside editor.
+                if (allowedRegion.contains(selection.anchorNode) &&
+                    ! freeRegion.contains(selection.anchorNode)) {
+                    self.setClipboard(selection.toString());
+                }
+            });
+        }
         this.getTabPos = function(fileId) {
             for (var i = 0; i < openFiles.length; i++) {
                 if (openFiles[i].getId() == fileId) {
