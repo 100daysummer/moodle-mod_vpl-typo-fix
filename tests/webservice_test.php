@@ -585,7 +585,7 @@ final class webservice_test extends base_fixture {
         $parms = ['name' => 'Closed', 'duedate' => 1000];
         $closed = $this->create_instance($parms);
 
-        $parms = ['name' => 'Example', 'mode' => 1];
+        $parms = ['name' => 'Example', 'activity_mode' => 1];
         $example = $this->create_instance($parms);
 
         $parms = ['name' => 'Nocopy', 'restrictededitor' => 1];
@@ -763,7 +763,7 @@ final class webservice_test extends base_fixture {
             $ok = $e;
         }
         // The info if example.
-        $changes = ['evaluate' => 1, 'mode' => 1];
+        $changes = ['evaluate' => 1, 'activity_mode' => 1];
         $this->change_activity($instance, $this->editingteachers[0], $this->students[0], $changes);
         try {
             mod_vpl_webservice::evaluate($cid, '');
@@ -772,7 +772,7 @@ final class webservice_test extends base_fixture {
             $ok = $e;
         }
         // The info if closed.
-        $changes = ['duedate' => 1, 'mode' => 0];
+        $changes = ['duedate' => 1, 'activity_mode' => 0];
         $this->change_activity($instance, $this->editingteachers[0], $this->students[0], $changes);
         try {
             mod_vpl_webservice::evaluate($cid, '');
@@ -896,7 +896,7 @@ final class webservice_test extends base_fixture {
             $ok = $e;
         }
         // The info if example.
-        $changes = ['evaluate' => 1, 'mode' => 1];
+        $changes = ['evaluate' => 1, 'activity_mode' => 1];
         $this->change_activity($instance, $this->editingteachers[0], $this->students[0], $changes);
         try {
             mod_vpl_webservice::get_result($cid, '');
@@ -905,7 +905,7 @@ final class webservice_test extends base_fixture {
             $ok = $e;
         }
         // The info if closed.
-        $changes = ['duedate' => 1, 'mode' => 0];
+        $changes = ['duedate' => 1, 'activity_mode' => 0];
         $this->change_activity($instance, $this->editingteachers[0], $this->students[0], $changes);
         try {
             mod_vpl_webservice::get_result($cid, '');

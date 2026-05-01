@@ -286,7 +286,7 @@ class base_fixture extends \advanced_testcase {
                 'grade' => 15,
                 'visiblegrade' => false,
                 'usevariations' => false,
-                'mode' => 0,
+                'activity_mode' => 0,
                 'worktype' => 0,
         ];
 

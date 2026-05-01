@@ -30,7 +30,7 @@
         <FIELD NAME="automaticgrading" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Use automatic evaluation results as final grade and comments"/>
         <FIELD NAME="maxexetime" TYPE="int" LENGTH="6" NOTNULL="false" SEQUENCE="false" COMMENT="Maximum time in seconds to run, debug or evaluate the program"/>
         <FIELD NAME="restrictededitor" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Submission by means of restricted Code Editor that disable external paste."/>
-        <FIELD NAME="mode" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Activity mode: normal, example, nostudents, basedon, studentsreadonly, vplquestion."/>
+        <FIELD NAME="activity_mode" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Activity mode: normal, example, nostudents, basedon, studentsreadonly, vplquestion."/>
         <FIELD NAME="maxexememory" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Maximum memory in bytes allocable to run, debug or evaluate"/>
         <FIELD NAME="maxexefilesize" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Maximum size in bytes for every file created running, debugging or evaluating"/>
         <FIELD NAME="maxexeprocesses" TYPE="int" LENGTH="6" NOTNULL="false" SEQUENCE="false" COMMENT="Maximum number of processes can be running simultaneously"/>

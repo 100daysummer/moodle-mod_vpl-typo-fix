@@ -62,7 +62,7 @@ class mod_vpl_generator extends testing_module_generator {
             'automaticgrading' => 0,
             'maxexetime' => 0,
             'restrictededitor' => 0,
-            'mode' => 0,
+            'activity_mode' => 0,
             'maxexememory' => 0,
             'maxexefilesize' => 0,
             'maxexeprocesses' => 0,

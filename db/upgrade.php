@@ -561,16 +561,20 @@ function xmldb_vpl_upgrade_2025052313() {
  *
  * @return void
  */
-function xmldb_vpl_upgrade_2026040813() {
+function xmldb_vpl_upgrade_2026042413() {
     global $DB;
     $dbman = $DB->get_manager();
 
     // Updating vpl table.
     $table = new xmldb_table('vpl');
-    // Rename 'example' field to 'mode' field in vpl table.
+    // Rename 'example' field to 'activity_mode' field in vpl table.
     $field = new xmldb_field('example', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'debugscript');
     if ($dbman->field_exists($table, $field)) {
-        $dbman->rename_field($table, $field, 'mode');
+        $dbman->rename_field($table, $field, 'activity_mode');
+    }
+    $field = new xmldb_field('mode', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'debugscript');
+    if ($dbman->field_exists($table, $field)) {
+        $dbman->rename_field($table, $field, 'activity_mode');
     }
 
     // Updating vpl_running_processes table.
@@ -655,9 +659,9 @@ function xmldb_vpl_upgrade($oldversion = 0) {
         xmldb_vpl_upgrade_2025052313();
         upgrade_mod_savepoint(true, $vpl43, 'vpl');
     }
-    $vpl45 = 2026040813;
+    $vpl45 = 2026042413;
     if ($oldversion < $vpl45) {
-        xmldb_vpl_upgrade_2026040813();
+        xmldb_vpl_upgrade_2026042413();
         upgrade_mod_savepoint(true, $vpl45, 'vpl');
     }
     return true;
