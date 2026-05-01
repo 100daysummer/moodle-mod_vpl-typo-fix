@@ -148,7 +148,7 @@ class mod_vpl_webservice extends external_api {
      * @param int $id The coursemodule id.
      * @param string $password The password for using the VPL activity.
      * @return array with 'name', 'shortdescription', 'intro', 'introformat', 'reqpassword',
-     * 'example', 'mode', 'restrictededitor', 'maxfiles' and 'reqfiles' keys.
+     * 'example', 'activity_mode', 'restrictededitor', 'maxfiles' and 'reqfiles' keys.
      * 'example' is keep for compatibility, it will be removed in future versions.
      * @throws Exception if not available or not allowed.
      */
@@ -171,8 +171,8 @@ class mod_vpl_webservice extends external_api {
                 'intro' => self::rewrite_pluginfile_for_external($vpl->get_fulldescription(), context_module::instance($id)->id),
                 'introformat' => (int) FORMAT_HTML,
                 'reqpassword' => ($instance->password > '' ? 1 : 0),
-                'example' => ((int) $instance->mode) == 1 ? 1 : 0, // Keep for compatibility, it will be removed in future versions.
-                'mode' => (int) $instance->mode,
+                'example' => ((int) $instance->activity_mode) == 1 ? 1 : 0, // Keep for compatibility.
+                'activity_mode' => (int) $instance->activity_mode,
                 'restrictededitor' => (int) $instance->restrictededitor,
                 'maxfiles' => (int) $instance->maxfiles,
                 'reqfiles' => [],
@@ -197,7 +197,7 @@ class mod_vpl_webservice extends external_api {
                 'introformat' => new external_value(PARAM_INT, 'Description format', VALUE_REQUIRED),
                 'reqpassword' => new external_value(PARAM_INT, 'Activity requiere password', VALUE_REQUIRED),
                 'example' => new external_value(PARAM_INT, 'Activity is an example', VALUE_REQUIRED),
-                'mode' => new external_value(PARAM_INT, 'Activity mode', VALUE_REQUIRED),
+                'activity_mode' => new external_value(PARAM_INT, 'Activity mode', VALUE_REQUIRED),
                 'restrictededitor' => new external_value(PARAM_INT, 'Activity edition is restricted', VALUE_REQUIRED),
                 'maxfiles' => new external_value(PARAM_INT, 'Maximum number of file acepted', VALUE_REQUIRED),
                 'reqfiles' => new external_multiple_structure(new external_single_structure([
