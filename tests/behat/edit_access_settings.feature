@@ -71,11 +71,13 @@ Feature: Create and change VPL activity access settings
     When I log in as "student1"
     And I am on "Course 1" course homepage
     And I click on "VPL with SEB" "link" in the "region-main" "region"
-    Then I should see "Using SEB browser"
+    Then I should see "Using SEB browser is required"
+    And I should see "It looks like you are not using SEB browser"
 
   @javascript
   Scenario: An editing teacher creates a VPL activity that requiere SEB key => student access
     When I log in as "student1"
     And I am on "Course 1" course homepage
     And I click on "VPL with SEB key" "link" in the "region-main" "region"
-    Then I should see "Using SEB browser"
+    Then I should see "Using SEB browser is required"
+    And I should see "It looks like you are not using SEB browser"
