@@ -78,7 +78,7 @@ Feature: In a VPL activity get the list of VPL activities in the course
       | id_duedate_day | 1 |
       | id_duedate_month | 1 |
       | id_duedate_year | 2050 |
-      | id_mode | Example |
+      | id_activity_mode | 1 |
       | id_grade_modgrade_type | None |
     And I press "Save and return to course"
     And I click on "VPL activity five" "link" in the "region-main" "region"
@@ -89,7 +89,7 @@ Feature: In a VPL activity get the list of VPL activities in the course
       | id_duedate_day | 1 |
       | id_duedate_month | 1 |
       | id_duedate_year | 2010 |
-      | id_mode | Normal |
+      | id_activity_mode | Normal |
       | id_grade_modgrade_type | Point |
       | id_grade_modgrade_point | 10 |
     And I press "Save and return to course"
@@ -101,7 +101,7 @@ Feature: In a VPL activity get the list of VPL activities in the course
       | id_startdate_day | 1 |
       | id_startdate_month | 1 |
       | id_startdate_year | 2010 |
-      | id_mode | Example |
+      | id_activity_mode | 1 |
       | id_grade_modgrade_type | None |
     And I press "Save and display"
     And I log out
@@ -227,11 +227,41 @@ Feature: In a VPL activity get the list of VPL activities in the course
     And I should see "VPL activity five"
     And I should not see "VPL activity six"
     And I should not see " is deprecated"
-    And I select "Examples" from the "Filter" singleselect
+
+  @javascript
+  Scenario: A teacher filter by activity mode
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I click on "VPL activity one" "link" in the "region-main" "region"
+    And I navigate to "Virtual programming labs" in current page administration
+    Then I should see "VPL activity one"
+    And I should see "VPL activity two"
+    And I should see "VPL activity three"
+    And I should see "VPL activity four"
+    And I should see "VPL activity five"
+    And I should see "VPL activity six"
+    And I should not see " is deprecated"
+    And I select "Normal" from the "Activity mode" singleselect
+    Then I should see "VPL activity one"
+    And I should see "VPL activity two"
+    And I should see "VPL activity three"
+    And I should not see "VPL activity four"
+    And I should see "VPL activity five"
+    And I should not see "VPL activity six"
+    And I should not see " is deprecated"
+    And I select "Example" from the "Activity mode" singleselect
     Then I should not see "VPL activity one"
     And I should not see "VPL activity two"
     And I should not see "VPL activity three"
     And I should see "VPL activity four"
     And I should not see "VPL activity five"
+    And I should see "VPL activity six"
+    And I should not see " is deprecated"
+    And I select "All" from the "Activity mode" singleselect
+    Then I should see "VPL activity one"
+    And I should see "VPL activity two"
+    And I should see "VPL activity three"
+    And I should see "VPL activity four"
+    And I should see "VPL activity five"
     And I should see "VPL activity six"
     And I should not see " is deprecated"

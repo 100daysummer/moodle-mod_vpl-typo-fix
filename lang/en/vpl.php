@@ -30,6 +30,27 @@ $string['acceptcertificates'] = 'Accept self signed certificates';
 $string['acceptcertificates_description'] = 'If the execution servers are not using self signed certificates uncheck this option';
 $string['acceptcertificatesnote'] = "<p><strong>Warning:</strong> Connection to execution server failed due to certificate issues.</p>
 <p>Your browser does not trust the execution server's certificate.</p>";
+$string['activity_mode'] = 'Activity mode';
+$string['activity_mode_help'] = 'Change the access rules and behavior of the activity. The modes are:
+<ul>
+<li><b>Normal</b>: No changes to the default behavior.</li>
+<li><b>No students</b>: This mode prevents students from accessing the activity.</li>
+<li><b>Students read-only</b>: This mode <b>grants</b> students access the activity in readonly mode.</li>
+<li><b>Based on</b>: The activity is a template to be inherited by other activities plus "No students" mode.</li>
+<li><b>VPL question</b>: The activity is adapted for the VPL question type, prevents students from accessing the activity.</li>
+<li><b>Example</b>: The students can run and debug requested files but readonly.</li>
+</ul>';
+$string['activity_mode_basedon'] = 'Based on';
+$string['activity_mode_basedon_help'] = 'This mode indicates that the activity is to be used as a template for other activities to inherit from.<br>It also prevents students from accessing the activity.';
+$string['activity_mode_no_students'] = 'No students';
+$string['activity_mode_no_students_help'] = 'This mode prevents students from accessing the activity.<br>Regardless of other settings, students will not be able to access it.';
+$string['activity_mode_normal'] = 'Normal';
+$string['activity_mode_normal_help'] = 'This is the default mode, no changes to the default behavior.<br>';
+$string['activity_mode_students_readonly'] = 'Students read-only';
+$string['activity_mode_students_readonly_help'] = 'This mode grants students access to the activity in read-only mode.<br>Regardless of other settings, students can view the activity and its content, but they cannot edit or submit code.';
+$string['activity_mode_vplquestion'] = 'VPL question';
+$string['activity_mode_vplquestion_help'] = 'This mode is used to adapt the activity for the VPL question type.<br>It prevents students from accessing the activity.<br>';
+
 $string['addfile'] = 'Add file';
 $string['addoverride'] = 'Add an override';
 $string['advanced'] = 'Advanced';
@@ -249,7 +270,8 @@ $string['inheritvalue'] = 'Inherit ({$a})';
 $string['inputoutput'] = 'Input/Output';
 $string['instanceselection'] = 'VPL selection';
 $string['intermediate'] = 'Intermediate';
-$string['isexample'] = 'This activity acts as example';
+$string['isexample'] = 'Example';
+$string['isexample_help'] = 'This activity acts as an example, allowing students to run and debug the example files, but not to submit.';
 $string['jail_servers'] = 'Execution servers list';
 $string['jail_servers_config'] = 'Execution servers config';
 $string['jail_servers_description'] = 'Write a line for each server';
@@ -328,23 +350,6 @@ The VPL Jail servers in the following list
 $string['message::subject_bad_jailservers'] = 'Important Report of the VPL Plugin in Moodle on the \'{$a}\' Server';
 $string['messageprovider:bad_jailservers'] = 'Report VPL Jail Servers';
 $string['minsimlevel'] = 'Minimum similarity level to show';
-$string['mode'] = 'Activity mode';
-$string['mode_help'] = 'Change the access rules and behavior of the activity. The modes are:
-<ul>
-<li><b>Normal</b>: No changes to the default behavior.</li>
-<li><b>No students</b>: This mode prevents students from accessing the activity.</li>
-<li><b>Students readonly</b>: This mode <b>grants</b> students access the activity in readonly mode.</li>
-<li><b>Based on</b>: The activity is a template for be inherited by others activities plus "No students" mode.</li>
-<li><b>VPL question</b>: The activity is adapted for the VPL question type, students can has readonly access.</li>
-<li><b>VPL question no students</b>: "VPL question" plus "No students".</li>
-<li><b>Example</b>: The students can run and debug requested files but readonly.</li>
-</ul>';
-$string['mode_basedon'] = 'Based on';
-$string['mode_no_students'] = 'No students';
-$string['mode_normal'] = 'Normal';
-$string['mode_students_readonly'] = 'Students readonly';
-$string['mode_vplquestion'] = 'VPL question';
-$string['mode_vplquestion_no_students'] = 'VPL question no students';
 $string['moduleconfigtitle'] = 'VPL Module Config';
 $string['modulename'] = 'Virtual programming lab';
 $string['modulename_help'] = '<p>VPL is an activity module for Moodle that manages programming assignments and whose salient features are:
@@ -477,7 +482,9 @@ $string['requestedfiles_help'] = '<p>Here you set names and its initial content 
 <p>If you don\'t set names for whole number of files, the unnamed files are optional and can have any name.</p>
 <p>You also can add contents to the requested files, so these contents will be available the first time that they will be opened with the editor, if no previous submission exists.</p>';
 $string['requirednet'] = 'Require network address';
-$string['requirednet_help'] = 'VPL access may be restricted to particular subnets on the LAN or Internet by specifying a comma-separated list of partial or full IP address numbers. This can be useful to ensure that only people in a certain location can access the VPL.';
+$string['requirednet_help'] = 'VPL access may restrict students access from particular subnets on the LAN or Internet by specifying a comma-separated list of partial or full IP address numbers. This can be useful to ensure that only students in a certain location can access the VPL.';
+$string['requirednet_bad'] = 'Your IP address {$a} <b>does not allow</b> students to <b>access</b>';
+$string['requirednet_pass'] = 'Your IP address {$a} <b>allows</b> students to <b>access</b>';
 $string['requiredpassword'] = 'A password is required';
 $string['reset'] = 'Reset VPL activities';
 $string['resetfiles'] = 'Reset files';
@@ -525,9 +532,13 @@ $string['scanother'] = 'Scan similarities in added sources';
 $string['scanzipfile'] = 'Zip file';
 $string['search:activity'] = 'Virtual Programming Lab - activity information (name and description)';
 $string['sebkeys'] = 'SEB exam Key/s';
-$string['sebkeys_help'] = 'SEB exam key(s) (max 3) obtained from .seb file<br>It is more reliable than only browser check.<br>https://safeexambrowser.org';
-$string['sebrequired'] = 'SEB browser required';
-$string['sebrequired_help'] = 'Using SEB browser properly configured is required';
+$string['sebkeys_help'] = 'SEB exam or config key(s) (max 3) obtained from .seb file<br>It is more reliable than only browser check.<br>https://safeexambrowser.org';
+$string['sebkeys_bad'] = 'Your SEB browser is <b>not using</b> the expected configuration';
+$string['sebkeys_pass'] = 'Your SEB browser is <b>using</b> the expected configuration';
+$string['sebrequired'] = 'Using SEB browser is required';
+$string['sebrequired_help'] = 'Students must access the activity using SEB browser with the proper configuration';
+$string['sebrequired_bad'] = 'It looks like you are <b>not using</b> SEB browser';
+$string['sebrequired_pass'] = 'It looks like you are <b>using</b> SEB browser';
 $string['select_all'] = 'Select all';
 $string['selectbreakpoint'] = 'Select breakpoint';
 $string['server'] = 'Server';

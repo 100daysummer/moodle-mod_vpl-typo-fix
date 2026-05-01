@@ -24,10 +24,13 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+
+use mod_vpl\util\activity_modes;
+
 global $CFG;
 
-require_once(dirname(__FILE__) . '/locallib.php');
-require_once(dirname(__FILE__) . '/list_util.class.php');
+require_once(__DIR__ . '/locallib.php');
+require_once(__DIR__ . '/list_util.class.php');
 require_once($CFG->dirroot . '/course/lib.php');
 
 /**
@@ -50,7 +53,12 @@ function vpl_grade_item_update($instance, $grades = null) {
     if (isset($instance->cmidnumber)) {
         $params['idnumber'] = $instance->cmidnumber;
     }
-    if ($instance->grade == 0 || $instance->mode == \mod_vpl\util\activity_mode::EXAMPLE) {
+    // Delete grade if no grade set or activity mode is example or question.
+    $delete = $instance->grade == 0;
+    $delete = $delete || $instance->activity_mode == activity_modes::EXAMPLE;
+    $delete = $delete || $instance->activity_mode == activity_modes::VPLQUESTION;
+    if ($delete) {
+        // Delete grade item if exists.
         $params['gradetype'] = GRADE_TYPE_NONE;
         $params['deleted'] = true;
     } else if ($instance->grade > 0) {
@@ -296,6 +304,21 @@ function mod_vpl_core_calendar_get_event_action_string(string $eventtype): strin
     }
 }
 
+/**
+ * Adapt VPL instance for VPL question mode.
+ *
+ * @param object $instance VPL instance
+ * @return void
+ */
+function vpl_adapt_for_vpl_question_mode($instance) {
+    if ($instance->activity_mode == activity_modes::VPLQUESTION) {
+        $vpl = new mod_vpl(null, $instance->id);
+        $originalfilename = vpl_get_scripts_dir() . '/pre_vpl_run_vpl_question.sh';
+        $data = file_get_contents($originalfilename);
+        $fgm = $vpl->get_execution_fgm();
+        $fgm->addfile('pre_vpl_run.sh', $data);
+    }
+}
 
 /**
  * Adds a new vpl instance and return the id
@@ -307,7 +330,7 @@ function vpl_add_instance($instance) {
     global $CFG, $DB;
     require_once($CFG->dirroot . '/calendar/lib.php');
     vpl_truncate_vpl($instance);
-    \mod_vpl\util\activity_mode::update_vpl_instance($instance);
+    activity_modes::update_vpl_instance($instance);
     $id = $DB->insert_record(VPL, $instance);
     // Add event.
     if ($instance->duedate) {
@@ -321,13 +344,7 @@ function vpl_add_instance($instance) {
         $completionexpected = $instance->completionexpected;
         \core_completion\api::update_completion_date_event($cmid, 'vpl', $instance, $completionexpected);
     }
-    $vpl = new mod_vpl(null, $id);
-    if ($vpl->is_vpl_question_mode()) {
-        $originalfilename = vpl_get_scripts_dir() . '/pre_vpl_run_vpl_question.sh';
-        $data = file_get_contents($originalfilename);
-        $fgm = $vpl->get_execution_fgm();
-        $fgm->addfile('pre_vpl_run.sh', $data);
-    }
+    vpl_adapt_for_vpl_question_mode($instance);
     return $id;
 }
 
@@ -372,7 +389,7 @@ function vpl_update_instance_event($instance): void {
 function vpl_update_instance($instance) {
     global $DB;
     vpl_truncate_vpl($instance);
-    \mod_vpl\util\activity_mode::update_vpl_instance($instance);
+    activity_modes::update_vpl_instance($instance);
     $instance->id = $instance->instance;
     // Apply mode changes.
     vpl_update_instance_event($instance);
@@ -383,13 +400,7 @@ function vpl_update_instance($instance) {
     vpl_grade_item_update($instance);
     $completionexpected = (!empty($instance->completionexpected)) ? $instance->completionexpected : null;
     \core_completion\api::update_completion_date_event($cm->id, 'vpl', $instance, $completionexpected);
-    $vpl = new mod_vpl(null, $instance->id);
-    if ($vpl->is_vpl_question_mode()) {
-        $originalfilename = vpl_get_scripts_dir() . '/pre_vpl_run_vpl_question.sh';
-        $data = file_get_contents($originalfilename);
-        $fgm = $vpl->get_execution_fgm();
-        $fgm->addfile('pre_vpl_run.sh', $data);
-    }
+    vpl_adapt_for_vpl_question_mode($instance);
     return $DB->update_record(VPL, $instance);
 }
 
@@ -713,6 +724,7 @@ function mod_vpl_get_fontawesome_icon_map() {
             'mod_vpl:delete' => 'fa-trash',
             'mod_vpl:editthis' => 'fa-edit',
             'mod_vpl:exitrole' => 'fa-close',
+            'mod_vpl:activity_mode' => 'fa-cogs',
     ];
 }
 

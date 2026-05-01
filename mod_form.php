@@ -15,6 +15,9 @@
 // along with VPL for Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 defined('MOODLE_INTERNAL') || die();
+
+use mod_vpl\util\activity_modes;
+
 require_once(dirname(__FILE__) . '/../../course/moodleform_mod.php');
 require_once(dirname(__FILE__) . '/lib.php');
 require_once(dirname(__FILE__) . '/vpl.class.php');
@@ -29,23 +32,22 @@ require_once(dirname(__FILE__) . '/vpl.class.php');
  */
 class mod_vpl_mod_form extends moodleform_mod {
     /**
-     * Get array for select mode
+     * Get array for select activitymode
      * @return array
      */
     protected function get_modes(): array {
         $order = [
-            \mod_vpl\util\activity_mode::NORMAL,
-            \mod_vpl\util\activity_mode::NOSTUDENTS,
-            \mod_vpl\util\activity_mode::STUDENTSREADONLY,
-            \mod_vpl\util\activity_mode::BASEDON,
-            \mod_vpl\util\activity_mode::VPLQUESTIONNOSTUDENTS,
-            \mod_vpl\util\activity_mode::VPLQUESTION,
-            \mod_vpl\util\activity_mode::EXAMPLE,
+            activity_modes::NORMAL,
+            activity_modes::NOSTUDENTS,
+            activity_modes::STUDENTSREADONLY,
+            activity_modes::BASEDON,
+            activity_modes::VPLQUESTION,
+            activity_modes::EXAMPLE,
         ];
         $ret = [];
-        foreach ($order as $mode) {
-            $in18str = mod_vpl\util\activity_mode::string_name($mode);
-            $ret[$mode] = get_string($in18str, VPL);
+        foreach ($order as $activitymode) {
+            $in18str = activity_modes::get_i18n_key($activitymode);
+            $ret[$activitymode] = get_string($in18str, VPL);
         }
         return $ret;
     }
@@ -92,15 +94,15 @@ class mod_vpl_mod_form extends moodleform_mod {
                 0 => get_string('individualwork', VPL),
                 1 => get_string('groupwork', VPL),
         ]);
-        $mform->addElement('select', 'mode', get_string('mode', VPL), $this->get_modes());
-        $mform->setDefault('mode', \mod_vpl\util\activity_mode::NORMAL);
-        $mform->addHelpButton('mode', 'mode', VPL);
-        foreach (\mod_vpl\util\activity_mode::CONTROL_VIEW as $mode) {
-            $mform->hideIf('visible', 'mode', 'eq', $mode);
-            $mform->hideIf('visiblegrade', 'mode', 'eq', $mode);
+        $mform->addElement('select', 'activity_mode', get_string('activity_mode', VPL), $this->get_modes());
+        $mform->setDefault('activity_mode', activity_modes::NORMAL);
+        $mform->addHelpButton('activity_mode', 'activity_mode', VPL);
+        foreach (activity_modes::CONTROL_VIEW as $activitymode) {
+            $mform->hideIf('visible', 'activity_mode', 'eq', $activitymode);
+            $mform->hideIf('visiblegrade', 'activity_mode', 'eq', $activitymode);
         }
-        foreach (\mod_vpl\util\activity_mode::NO_GRADE as $mode) {
-            $mform->hideIf('grade', 'mode', 'eq', $mode);
+        foreach (activity_modes::NO_GRADE as $activitymode) {
+            $mform->hideIf('grade', 'activity_mode', 'eq', $activitymode);
         }
         $mform->addElement('selectyesno', 'restrictededitor', get_string('restrictededitor', VPL));
         $mform->setDefault('restrictededitor', false);

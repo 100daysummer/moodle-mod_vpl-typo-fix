@@ -2,7 +2,7 @@
 Feature: In an VPL activity, editing teacher change activity modes
   In order to modify activity behaviour
   As an editing teacher
-  I need to change modes and check if the behaviour of activities change for students
+  I need to change activity mode and check if the behaviour of activities change for students
 
   Background:
     Given the following "courses" exist:
@@ -44,7 +44,7 @@ Feature: In an VPL activity, editing teacher change activity modes
     And I click on "VPL simple" "link" in the "region-main" "region"
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
-      | id_mode | Normal |
+      | id_activity_mode | Normal |
     And I press "Save and display"
     Then I should see "VPL simple"
     And I log out
@@ -64,22 +64,35 @@ Feature: In an VPL activity, editing teacher change activity modes
     And I click on "VPL simple" "link" in the "region-main" "region"
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
-      | id_mode | No students |
+      | id_activity_mode | No students |
     And I press "Save and display"
     Then I should see "VPL simple"
     And I log out
     When I log in as "student1"
     And I am on "Course 1" course homepage
     Then I should not see "VPL simple"
+    And I log out
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I turn editing mode on
+    And I open "VPL simple" actions menu
+    And I choose "Show" in the open action menu
+    And I turn editing mode off
+    And I log out
+    When I log in as "student1"
+    And I am on "Course 1" course homepage
+    Then I should see "VPL simple"
+    When I click on "VPL simple" "link" in the "region-main" "region"
+    Then I should see "Not available"
 
   @javascript
-  Scenario: Students readonly mode - students can view but not modify
+  Scenario: Students read-only mode - students can view but not modify
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I click on "VPL simple" "link" in the "region-main" "region"
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
-      | id_mode | Students readonly |
+      | id_activity_mode | Students read-only |
     And I press "Save and display"
     Then I should see "VPL simple"
     And I log out
@@ -98,13 +111,26 @@ Feature: In an VPL activity, editing teacher change activity modes
     And I click on "VPL simple" "link" in the "region-main" "region"
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
-      | id_mode | Based on |
+      | id_activity_mode | Based on |
     And I press "Save and display"
     Then I should see "VPL simple"
     And I log out
     When I log in as "student1"
     And I am on "Course 1" course homepage
     Then I should not see "VPL simple"
+    And I log out
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I turn editing mode on
+    And I open "VPL simple" actions menu
+    And I choose "Show" in the open action menu
+    And I turn editing mode off
+    And I log out
+    When I log in as "student1"
+    And I am on "Course 1" course homepage
+    Then I should see "VPL simple"
+    When I click on "VPL simple" "link" in the "region-main" "region"
+    Then I should see "Not available"
 
   @javascript
   Scenario: Example mode - students can view the activity as example
@@ -113,7 +139,7 @@ Feature: In an VPL activity, editing teacher change activity modes
     And I click on "VPL simple" "link" in the "region-main" "region"
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
-      | id_mode | This activity acts as example |
+      | id_activity_mode | This activity acts as example |
     And I press "Save and display"
     Then I should see "VPL simple"
     And I log out
@@ -125,36 +151,32 @@ Feature: In an VPL activity, editing teacher change activity modes
     And I should see "Edit"
 
   @javascript
-  Scenario: VPL question mode - students can view the activity in readonly
+  Scenario: VPL question mode - students cannot access the activity
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I click on "VPL simple" "link" in the "region-main" "region"
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
-      | id_mode | VPL question |
-    And I press "Save and display"
-    Then I should see "VPL simple"
-    And I log out
-    When I log in as "student1"
-    And I am on "Course 1" course homepage
-    Then I should see "VPL simple"
-    When I click on "VPL simple" "link" in the "region-main" "region"
-    Then I should see "Full description simple"
-
-  @javascript
-  Scenario: VPL question no students mode - students cannot access the activity
-    Given I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I click on "VPL simple" "link" in the "region-main" "region"
-    And I navigate to "Settings" in current page administration
-    And I set the following fields to these values:
-      | id_mode | VPL question no students |
+      | id_activity_mode | VPL question |
     And I press "Save and display"
     Then I should see "VPL simple"
     And I log out
     When I log in as "student1"
     And I am on "Course 1" course homepage
     Then I should not see "VPL simple"
+    And I log out
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I turn editing mode on
+    And I open "VPL simple" actions menu
+    And I choose "Show" in the open action menu
+    And I turn editing mode off
+    And I log out
+    When I log in as "student1"
+    And I am on "Course 1" course homepage
+    Then I should see "VPL simple"
+    When I click on "VPL simple" "link" in the "region-main" "region"
+    Then I should see "Not available"
 
   @javascript
   Scenario: Teacher can always access activities in any mode
@@ -163,16 +185,16 @@ Feature: In an VPL activity, editing teacher change activity modes
     And I click on "VPL simple" "link" in the "region-main" "region"
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
-      | id_mode | No students |
+      | id_activity_mode | No students |
     And I press "Save and display"
     Then I should see "VPL simple"
     When I navigate to "Settings" in current page administration
     And I set the following fields to these values:
-      | id_mode | Based on |
+      | id_activity_mode | Based on |
     And I press "Save and display"
     Then I should see "VPL simple"
     When I navigate to "Settings" in current page administration
     And I set the following fields to these values:
-      | id_mode | VPL question no students |
+      | id_activity_mode | VPL question |
     And I press "Save and display"
     Then I should see "VPL simple"

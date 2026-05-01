@@ -31,7 +31,7 @@ namespace mod_vpl\util;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author Juan Carlos Rodríguez-del-Pino <jc.rodriguezdelpino@ulpgc.es>
  */
-class activity_mode {
+class activity_modes {
     /** @var int Normal activity mode */
     public const NORMAL = 0;
     /** @var int Example activity mode */
@@ -44,23 +44,20 @@ class activity_mode {
     public const STUDENTSREADONLY = 4;
     /** @var int VPL question activity mode */
     public const VPLQUESTION = 5;
-    /** @var int VPL question no students access activity mode */
-    public const VPLQUESTIONNOSTUDENTS = 6;
     /** @var array Map of activity modes to their string names for internationalization */
     private const STRINGS = [
-        self::NORMAL => 'mode_normal',
+        self::NORMAL => 'activity_mode_normal',
         self::EXAMPLE => 'isexample',
-        self::NOSTUDENTS => 'mode_no_students',
-        self::BASEDON => 'mode_basedon',
-        self::STUDENTSREADONLY => 'mode_students_readonly',
-        self::VPLQUESTION => 'mode_vplquestion',
-        self::VPLQUESTIONNOSTUDENTS => 'mode_vplquestion_no_students',
+        self::NOSTUDENTS => 'activity_mode_no_students',
+        self::BASEDON => 'activity_mode_basedon',
+        self::STUDENTSREADONLY => 'activity_mode_students_readonly',
+        self::VPLQUESTION => 'activity_mode_vplquestion',
     ];
     /** @var array List of activity modes that prevent students from viewing the activity */
     private const PREVENT_SHOW_MODES = [
         self::NOSTUDENTS,
         self::BASEDON,
-        self::VPLQUESTIONNOSTUDENTS,
+        self::VPLQUESTION,
     ];
 
     /** @var array List of activity modes that prevent students from modifying the activity */
@@ -70,7 +67,6 @@ class activity_mode {
         self::BASEDON,
         self::STUDENTSREADONLY,
         self::VPLQUESTION,
-        self::VPLQUESTIONNOSTUDENTS,
     ];
 
     /** @var array List of activity modes that prevent students from receiving a grade */
@@ -84,7 +80,7 @@ class activity_mode {
         self::BASEDON,
         self::NOSTUDENTS,
         self::STUDENTSREADONLY,
-        self::VPLQUESTIONNOSTUDENTS,
+        self::VPLQUESTION,
     ];
 
     /**
@@ -93,7 +89,7 @@ class activity_mode {
      * @param int $mode activity mode
      * @return string string name for internationalization
      */
-    public static function string_name($mode) {
+    public static function get_i18n_key($mode) {
         if (isset(self::STRINGS[$mode])) {
             return self::STRINGS[$mode];
         } else {
@@ -127,7 +123,7 @@ class activity_mode {
      * @param Object $instance from the form in mod_form
      */
     public static function update_vpl_instance($instance) {
-        switch ($instance->mode) {
+        switch ($instance->activity_mode) {
             case self::EXAMPLE:
                 $instance->grade = 0;
                 break;
@@ -143,16 +139,32 @@ class activity_mode {
                 $instance->visible = 1;
                 $instance->visiblegrade = 1;
                 break;
-            case self::VPLQUESTIONNOSTUDENTS:
-                $instance->visible = 0;
-                // No break here because it is the same as VPLQUESTION for the rest of fields.
             case self::VPLQUESTION:
                 $instance->startdate = 0;
                 $instance->duedate = 0;
                 $instance->maxfiles = 1000;
                 $instance->run = 1;
                 $instance->evaluate = 1;
+                $instance->visible = 0;
                 break;
         }
+    }
+
+    /**
+     * Check if the caller was vplquestion.
+     *
+     * @return bool
+     */
+    public static function called_from_vplquestion() {
+        $vplquestionpath = '/question/type/vplquestion/';
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $caller = $trace[1];
+        if (isset($caller['file'])) {
+            $callerpath = str_replace('\\', '/', $caller['file']);
+            if (strpos($callerpath, $vplquestionpath) !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 }
