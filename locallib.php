@@ -252,7 +252,7 @@ function vpl_mod_href() {
     }
     if ($l == 2 && is_array($funcparms[1])) {
         $querystring = '';
-        foreach($funcparms[1] as $parm => $value) {
+        foreach ($funcparms[1] as $parm => $value) {
             $querystring .= $querystring !== '' ? '&amp;' : '?';
             $querystring .= urlencode($parm) . '=' . urlencode($value);
         }

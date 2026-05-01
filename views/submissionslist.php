@@ -408,7 +408,7 @@ if (! $downloading) {
     $CFG->debugdisplay = 0;
 }
 
-// Find out current groups mode.
+// Find out current group mode.
 $groupmode = groups_get_activity_groupmode($cm);
 if (! $groupmode) {
     $groupmode = groups_get_course_groupmode($vpl->get_course());
