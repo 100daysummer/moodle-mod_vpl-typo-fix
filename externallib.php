@@ -25,10 +25,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once(dirname(__FILE__) . '/../../lib/externallib.php');
-require_once(dirname(__FILE__) . '/locallib.php');
-require_once(dirname(__FILE__) . '/forms/edit.class.php');
-require_once(dirname(__FILE__) . '/vpl_submission.class.php');
+require_once(__DIR__ . '/../../lib/externallib.php');
+require_once(__DIR__ . '/locallib.php');
+require_once(__DIR__ . '/forms/edit.class.php');
+require_once(__DIR__ . '/vpl_submission.class.php');
 
 /**
  * Class that provide the Web service API for VPL activities.

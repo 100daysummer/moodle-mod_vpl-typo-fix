@@ -1,4 +1,4 @@
-@mod @mod_vpl
+@mod @mod_vpl @mod_vpl_test_cases
 Feature: In a VPL activity, editing teacher changes test cases
   In order to change test cases
   As an editing teacher
