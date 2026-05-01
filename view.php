@@ -44,12 +44,12 @@ if (! $vpl->is_visible()) {
     vpl_redirect('?id=' . $id, get_string('notavailable'));
     die;
 }
-if (! $vpl->has_capability(VPL_MANAGE_CAPABILITY) && ! $vpl->has_capability(VPL_GRADE_CAPABILITY)) {
-    $vpl->restrictions_check();
-    $userid = $USER->id;
-} else {
+if ($vpl->is_teacher()) {
     $userid = optional_param('userid', $USER->id, PARAM_INT);
+} else {
+    $userid = $USER->id;
 }
+$vpl->restrictions_check();
 
 \mod_vpl\event\vpl_description_viewed::log($vpl);
 
