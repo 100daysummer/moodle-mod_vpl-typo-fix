@@ -32,6 +32,14 @@
 const VPL = 'vpl';
 
 /**
+ * @var string COMPVPL name for VPL component.
+ *
+ * This constant defines the component name for the VPL module,
+ * which is used for capabilities, language strings, and other module-specific settings.
+ */
+const COMPVPL = 'mod_vpl';
+
+/**
  * @var string VPL_SUBMISSIONS Table name for VPL submissions.
  *
  * This table stores the submissions made by users in a VPL instance,
