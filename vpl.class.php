@@ -25,10 +25,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once(dirname(__FILE__) . '/lib.php');
+require_once(__DIR__ . '/lib.php');
+require_once(__DIR__ . '/vpl_submission.class.php');
+
 use mod_vpl\util\file_group;
 use mod_vpl\util\file_group_execution;
-use mod_vpl\util\activity_mode;
+use mod_vpl\util\activity_modes;
 
 /**
  * Class mod_vpl
@@ -79,6 +81,20 @@ class mod_vpl {
      * @var string[]
      */
     protected $errors = [];
+
+    /**
+     * An internal array of messages describing warnings found
+     *
+     * @var string[]
+     */
+    protected $warnings = [];
+
+    /**
+     * $script of the current page, used to set some page options
+     *
+     * @var string
+     */
+    protected $script = '';
 
     /**
      * An internal cache for grade information.
@@ -460,10 +476,14 @@ class mod_vpl {
     }
 
     /**
-     * Get password
+     * Get password to access the activity, taken into account exceptions.
+     * If $userid is provided, get the password for that user, if not get the password for the current user.
+     *
+     * @param int|null $userid optional user id to get the password for, if null get the password for the current user
+     * @return string password
      */
-    protected function get_password() {
-        return trim($this->get_effective_setting('password'));
+    protected function get_password($userid = null) {
+        return trim($this->get_effective_setting('password', $userid));
     }
 
     /**
@@ -480,7 +500,7 @@ class mod_vpl {
      */
     public function pass_password_check($passset = '') {
         $password = $this->get_password();
-        if ($password > '' && ! $this->has_capability(VPL_GRADE_CAPABILITY)) {
+        if ($password > '' && ! $this->is_teacher()) {
             global $SESSION;
             $passwordmd5 = $this->get_password_md5();
             $passvar = 'vpl_password_' . $this->instance->id;
@@ -515,6 +535,9 @@ class mod_vpl {
      */
     protected function password_check() {
         global $SESSION;
+        if ($this->get_password() == '' || $this->is_teacher()) {
+            return;
+        }
         if (! $this->pass_password_check()) {
             if (constant('AJAX_SCRIPT')) {
                 throw new Exception(get_string('requiredpassword', VPL));
@@ -541,7 +564,7 @@ class mod_vpl {
      * @return boolean
      */
     public function pass_network_check() {
-        if ($this->instance->requirednet > '' && ! $this->has_capability(VPL_GRADE_CAPABILITY)) {
+        if ($this->instance->requirednet > '' && ! $this->is_teacher()) {
             return vpl_check_network($this->instance->requirednet);
         }
         return true;
@@ -552,6 +575,9 @@ class mod_vpl {
      * @return void
      */
     protected function network_check() {
+        if ($this->instance->requirednet == '' || $this->is_teacher()) {
+            return;
+        }
         if (! $this->pass_network_check()) {
             $str = get_string('opnotallowfromclient', VPL) . ' ' . getremoteaddr();
             if (constant('AJAX_SCRIPT')) {
@@ -563,14 +589,20 @@ class mod_vpl {
             die();
         }
     }
-
+    /**
+     * Return true if the browser is SEB.
+     * @return bool
+     */
+    protected function is_seb_browser() {
+        return strpos($_SERVER['HTTP_USER_AGENT'], 'SEB') !== false;
+    }
     /**
      * Checks if SEB key is valid
-     * @return void
+     * @return bool
      */
     protected function is_sebkey_valid() {
         global $FULLME;
-        $keys = trim($this->get_instance()->sebkeys);
+        $keys = $this->get_sebkeys();
         if ($keys == '') {
             return true;
         }
@@ -594,16 +626,31 @@ class mod_vpl {
     }
 
     /**
+     * Return SEB keys.
+     * @return string
+     */
+    public function get_sebkeys() {
+        return trim($this->get_instance()->sebkeys);
+    }
+
+    /**
      * Checks SEB restrictions returns true if passed.
      *
      * @return bool
      */
     public function pass_seb_check() {
         $inst = $this->get_instance();
-        $fail = $inst->sebrequired > 0;
-        $fail = $fail && strpos($_SERVER['HTTP_USER_AGENT'], 'SEB') === false;
-        $fail = $fail || ! $this->is_sebkey_valid();
-        return ! $fail;
+        if ($inst->sebrequired > 0) {
+            $passbrowser = $this->is_seb_browser();
+        } else {
+            $passbrowser = true;
+        }
+        if ($this->get_sebkeys() > '') {
+            $passkey = $this->is_sebkey_valid();
+        } else {
+            $passkey = true;
+        }
+        return $passbrowser && $passkey;
     }
 
     /**
@@ -612,8 +659,17 @@ class mod_vpl {
      * @return void
      */
     protected function seb_check() {
-        if (! $this->pass_seb_check() && ! $this->has_capability(VPL_GRADE_CAPABILITY)) {
-            $str = get_string('sebrequired_help', VPL);
+        if (! $this->use_seb() || $this->is_teacher()) {
+            return;
+        }
+        if (! $this->pass_seb_check()) {
+            sleep(5); // Avoid force brute crack.
+            $str = get_string("sebrequired", COMPVPL);
+            if ($this->is_seb_browser()) {
+                $str .= '<br>' . get_string('sebkeys_bad', COMPVPL);
+            } else {
+                $str .= '<br>' . get_string('sebrequired_bad', COMPVPL);
+            }
             if (constant('AJAX_SCRIPT')) {
                 throw new Exception($str);
             }
@@ -626,11 +682,10 @@ class mod_vpl {
 
     /**
      * Return true if is set to use SEB.
-     * @return void
+     * @return bool
      */
     protected function use_seb() {
-        $inst = $this->get_instance();
-        return $inst->sebrequired || $inst->sebkeys > '';
+        return $this->get_instance()->sebrequired || $this->get_sebkeys() > '';
     }
 
     /**
@@ -638,13 +693,14 @@ class mod_vpl {
      * @return void
      */
     public function restrictions_check() {
-        // If students readonly mode, do no check.
-        if ($this->is_mode(activity_mode::STUDENTSREADONLY)) {
+        // If students read-only mode, do no check.
+        if ($this->is_mode(activity_modes::STUDENTSREADONLY)) {
             return;
         }
         $this->network_check();
-        $this->password_check();
         $this->seb_check();
+        $this->password_check();
+        $this->check_first_access();
     }
 
     /**
@@ -666,16 +722,16 @@ class mod_vpl {
         $i = 0;
         foreach ($alldata as $name => $data) {
             if (strlen($data) > $max) {
-                $error .= '"' . s($name) . '" ' . get_string('maxfilesizeexceeded', VPL) . "<br>";
+                $error .= '"' . s($name) . '" ' . get_string('maxfilesizeexceeded', VPL) . "<br>\n";
             }
             if (! vpl_is_valid_path_name($name)) {
-                $error .= '"' . s($name) . '" ' . get_string('incorrect_file_name', VPL) . "<br>";
+                $error .= '"' . s($name) . '" ' . get_string('incorrect_file_name', VPL) . "<br>\n";
             }
             if ($i < $lr && $list[$i] != $name) {
                 $a = new stdClass();
                 $a->expected = $list[$i];
                 $a->found = $name;
-                $error .= s(get_string('unexpected_file_name', VPL, $a)) . "<br>";
+                $error .= s(get_string('unexpected_file_name', VPL, $a)) . "<br>\n";
             }
             $i++;
         }
@@ -1092,7 +1148,7 @@ class mod_vpl {
         $ret = $ret && !$this->mode_prevents_viewing($userid);
         // Grader and manager always view.
         $ret = $ret || $this->is_teacher($userid);
-        $ret = $ret || $this->is_mode(activity_mode::STUDENTSREADONLY);
+        $ret = $ret || $this->is_mode(activity_modes::STUDENTSREADONLY);
         return $ret;
     }
 
@@ -1112,6 +1168,7 @@ class mod_vpl {
         $ret = $ret && !$this->mode_prevents_modification($userid);
         // Manager or grader can always submit.
         $ret = $ret || $this->is_teacher($userid);
+        $ret = $ret || ($this->is_vpl_question_mode() && activity_modes::called_from_vplquestion());
         return $ret;
     }
 
@@ -1373,14 +1430,32 @@ class mod_vpl {
         global $CFG, $USER;
         if (! isset($this->gradeinfo)) {
             $this->gradeinfo = false;
-            if ($this->get_instance()->grade != 0) { // If 0 then NO GRADE.
-                $userid = ($this->has_capability(VPL_GRADE_CAPABILITY) || $this->has_capability(
-                    VPL_MANAGE_CAPABILITY
-                )) ? null : $USER->id;
-                require_once($CFG->libdir . '/gradelib.php');
-                $gradinginfo = grade_get_grades($this->get_course()->id, 'mod', 'vpl', $this->get_instance()->id, $userid);
-                foreach ($gradinginfo->items as $gi) {
-                    $this->gradeinfo = $gi;
+            if ($this->get_grade() != 0) { // If 0 then NO GRADE.
+                if ($this->is_vpl_question_mode()) {
+                    // Fake grade item for question mode.
+                    // Grade is stored in question attempt and gradebook is not used.
+                    $fakegradeitem = new stdClass();
+                    $fakegradeitem->courseid = $this->get_course()->id;
+                    $fakegradeitem->itemtype = 'mod';
+                    $fakegradeitem->itemmodule = 'vpl';
+                    $fakegradeitem->iteminstance = $this->get_instance()->id;
+                    $fakegradeitem->grademin = 0;
+                    $fakegradeitem->grademax = $this->get_grade();
+                    $fakegradeitem->gradepass = 0;
+                    $fakegradeitem->hidden = true;
+                    $fakegradeitem->locked = false;
+                    $fakegradeitem->scaleid = 0;
+                    $fakegradeitem->grades = null;
+                    $fakegradeitem->outcomes = null;
+
+                    $this->gradeinfo = $fakegradeitem;
+                } else {
+                    $userid = $this->is_teacher() ? null : $USER->id;
+                    require_once($CFG->libdir . '/gradelib.php');
+                    $gradinginfo = grade_get_grades($this->get_course()->id, 'mod', 'vpl', $this->get_instance()->id, $userid);
+                    foreach ($gradinginfo->items as $gi) {
+                        $this->gradeinfo = $gi;
+                    }
                 }
             }
         }
@@ -1477,23 +1552,24 @@ class mod_vpl {
     /**
      * Prepare page initialy
      *
-     * @param string $url the url to set, if false then no url is set
+     * @param string $script the url to set, if false then no url is set
      * @param array $parms parameters to add to the url
      */
-    public function prepare_page($url = false, $parms = []) {
+    public function prepare_page($script = false, $parms = []) {
         global $PAGE, $CFG;
+        $this->script = $script;
         // Next line resolve problem of classic theme not showing setting menu.
         require_login($this->get_course(), false, $this->get_course_module());
-        $action = basename($url, '.php');
-        if ($url) {
-            $PAGE->set_url(new moodle_url('/mod/vpl/' . $url, $parms));
+        $action = basename($script, '.php');
+        if ($script) {
+            $PAGE->set_url(new moodle_url('/mod/vpl/' . $script, $parms));
             $PAGE->set_pagetype('mod-vpl-' . $action);
         }
         $PAGE->set_pagelayout(self::get_pagelayout($action));
         if ($CFG->version >= 2022041900) { // Checks is running on Moodle 4.
             $PAGE->activityheader->set_description('');
-            $PAGE->activityheader->set_hidecompletion($url != 'view.php');
-            if ($url == 'view.php') {
+            $PAGE->activityheader->set_hidecompletion($script != 'view.php');
+            if ($script == 'view.php') {
                 $PAGE->activityheader->set_title('');
             }
         }
@@ -1516,80 +1592,80 @@ class mod_vpl {
     }
 
     /**
+     * Set warnings to show in header
+     */
+    public function set_warnings() {
+        if ($this->script == 'view.php') {
+            if (! $this->is_mode(activity_modes::NORMAL) && $this->is_teacher()) {
+                $strmode = activity_modes::get_i18n_key($this->instance->activity_mode);
+                $warningmessage = '<b>' . get_string('activity_mode', VPL) . ': </b>';
+                $warningmessage .= get_string($strmode, VPL) . "<br>\n";
+                $warningmessage .= get_string($strmode . '_help', VPL);
+                $this->warnings[] = $warningmessage;
+            }
+        }
+    }
+
+    /**
+     * Show array of notifications
+     *
+     * @param array $notifications Array of messages to show
+     * @param string $type notification type: 'error', 'warning' or 'info'
+     * @return void
+     */
+    public function show_notifications($notifications, $type) {
+        foreach ($notifications as $message) {
+            vpl_notice($message, $type);
+        }
+    }
+
+    /**
      * print header
      *
      * @param string $info title and last nav option
+     * @param bool $setheading whether to set the page heading
      */
-    public function print_header($info = '') {
+    public function print_header($info = '', $setheading = true) {
         global $PAGE, $OUTPUT;
         if (self::$headerisout) {
             return;
         }
-        $tittle = $this->get_printable_name();
-        if ($info) {
-            $tittle .= ' ' . $info;
-        }
-        if (! $this->is_visible()) {
+        $tittle = trim($this->get_printable_name() . ' ' . $info);
+        $notavaliable = ! $this->is_visible();
+        if ($notavaliable) {
             $tittle = get_string('notavailable');
-            if (isset($this->errors)) {
-                $this->errors[] = $tittle;
-            } else {
-                $this->errors = [ $tittle ];
-            }
+            $this->errors[] = $tittle;
+            $setheading = false;
         }
         $PAGE->set_title($this->get_course()->fullname . ' ' . $tittle);
-        $PAGE->set_heading($this->get_course()->fullname);
-        if ($this->use_seb() && ! $this->has_capability(VPL_GRADE_CAPABILITY)) {
+        if ($setheading) {
+            $PAGE->set_heading($this->get_course()->fullname);
+        }
+        if ($this->use_seb() && ! $this->is_teacher()) {
+            $PAGE->set_heading($this->get_course()->fullname . ' - ' . $tittle);
             $PAGE->set_popup_notification_allowed(false);
             $PAGE->set_pagelayout('secure');
         }
         echo $OUTPUT->header();
+        $this->set_warnings();
         self::$headerisout = true;
-        foreach ($this->errors as $errormessage) {
-            vpl_notice($errormessage, 'error');
-        }
-        if (! $this->is_visible()) {
+        $this->show_notifications($this->errors, 'error');
+        $this->show_notifications($this->warnings, 'warning');
+        if ($notavaliable) {
             $this->print_footer_simple();
             die();
         }
     }
+
     /**
      * Print header with simple title
      *
      * @param string $info title and last nav option
      */
     public function print_header_simple($info = '') {
-        global $OUTPUT, $PAGE;
-        if (self::$headerisout) {
-            return;
-        }
-        $tittle = $this->get_printable_name();
-        if ($info) {
-            $tittle .= ' ' . $info;
-        }
-        if (! $this->is_visible()) {
-            $tittle = get_string('notavailable');
-            if (isset($this->errors)) {
-                $this->errors[] = $tittle;
-            } else {
-                $this->errors = [ $tittle ];
-            }
-        }
-        $PAGE->set_title($this->get_course()->fullname . ' ' . $tittle);
-        if ($this->use_seb() && ! $this->has_capability(VPL_GRADE_CAPABILITY)) {
-            $PAGE->set_popup_notification_allowed(false);
-            $PAGE->set_pagelayout('secure');
-        }
-        echo $OUTPUT->header();
-        self::$headerisout = true;
-        foreach ($this->errors as $errormessage) {
-            vpl_notice($errormessage, 'error');
-        }
-        if (! $this->is_visible()) {
-            $this->print_footer_simple();
-            die();
-        }
+        $this->print_header($info, false);
     }
+
     /**
      * Print heading action with help
      *
@@ -1663,7 +1739,7 @@ class mod_vpl {
         $html = vpl_get_awesome_icon($str);
         $html .= $this->str_setting($str, $value, $raw, $comp);
         if ($newline) {
-            $html .= '<br>';
+            $html .= "<br>\n";
         } else {
             $html .= '. ';
         }
@@ -1717,7 +1793,7 @@ class mod_vpl {
         $isgrader = $this->has_capability(VPL_GRADE_CAPABILITY);
         if ($isgrader) {
             echo vpl_get_awesome_icon('submissions');
-            echo $this->str_submissions_status($nstudents, $nsubmissions, $ngraded) . '<br>';
+            echo $this->str_submissions_status($nstudents, $nsubmissions, $ngraded) . "<br>\n";
         }
     }
 
@@ -1738,6 +1814,10 @@ class mod_vpl {
         global $CFG, $USER;
         $html = '';
         $isgrader = $this->has_capability(VPL_GRADE_CAPABILITY);
+        if ($isgrader && !$this->is_mode(activity_modes::NORMAL)) {
+            $strmode = activity_modes::get_i18n_key($this->instance->activity_mode);
+            $html .= $this->str_setting_with_icon('activity_mode', get_string($strmode, VPL), false, true);
+        }
         $filegroup = $this->get_required_fgm();
         $files = $filegroup->getfilelist();
         if (count($files)) {
@@ -1778,9 +1858,6 @@ class mod_vpl {
         }
         $stryes = get_string('yes');
         $strno = get_string('no');
-        if ($this->is_example()) {
-            $html .= $this->str_setting_with_icon('isexample', $stryes);
-        }
         $strgradessettings = get_string('gradessettings', 'core_grades');
         if ($isgrader) {
             require_once($CFG->libdir . '/gradelib.php');
@@ -1815,17 +1892,54 @@ class mod_vpl {
                 $html .= "<br>\n";
             }
             if (trim($instance->requirednet) > '') {
-                $html .= $this->str_setting_with_icon('requirednet', s($instance->requirednet));
+                $info = s($instance->requirednet);
+                if ($this->script == 'view.php') {
+                    if (vpl_check_network($instance->requirednet)) {
+                        $text = get_string('requirednet_pass', COMPVPL, getremoteaddr());
+                        $type = 'success';
+                    } else {
+                        $text = get_string('requirednet_bad', COMPVPL, getremoteaddr());
+                        $type = 'warning';
+                    }
+                    $info .= " <span class='alert-$type'>$text</span>";
+                }
+                $html .= $this->str_setting_with_icon('requirednet', $info);
             }
             if ($instance->sebrequired > 0) {
-                $html .= $this->str_setting_with_icon('sebrequired', $stryes);
+                $info = $stryes;
+                if ($this->script == 'view.php') {
+                    if ($this->is_seb_browser()) {
+                        $text = get_string('sebrequired_pass', COMPVPL, getremoteaddr());
+                        $type = 'success';
+                    } else {
+                        $text = get_string('sebrequired_bad', COMPVPL, getremoteaddr());
+                        $type = 'warning';
+                    }
+                    $info .= " <span class='alert-$type'>$text</span>";
+                }
+                $html .= $this->str_setting_with_icon('sebrequired', $info);
             }
-            if (trim($instance->sebkeys) > '') {
-                $html .= $this->str_setting_with_icon('sebkeys', $stryes, false, false);
+            if ($this->get_sebkeys() > '') {
+                $info = $stryes;
                 $infohs = new mod_vpl\util\hide_show();
-                $html .= $infohs->generate();
-                $html .= $infohs->content_in_tag('div', nl2br(s($instance->sebkeys)));
-                $html .= "<br>\n";
+                $info .= $infohs->generate();
+                $info .= $infohs->content_in_tag('div', nl2br(s($this->get_sebkeys())));
+                if ($this->script == 'view.php') {
+                    if ($this->is_sebkey_valid()) {
+                        $text = get_string('sebkeys_pass', COMPVPL);
+                        $type = 'success';
+                    } else {
+                        if ($this->is_seb_browser()) {
+                            $text = get_string('sebkeys_bad', COMPVPL);
+                            $type = 'warning';
+                        } else {
+                            $text = get_string('sebrequired_bad', COMPVPL);
+                            $type = 'warning';
+                        }
+                    }
+                    $info .= " <span class='alert-$type'>$text</span>";
+                }
+                $html .= $this->str_setting_with_icon('sebkeys', $info);
             }
             if ($instance->restrictededitor) {
                 $html .= $this->str_setting_with_icon('restrictededitor', $stryes);
@@ -1922,11 +2036,8 @@ class mod_vpl {
             if ($instance->maxexeprocesses) {
                 $html .= $this->str_setting_with_icon('maxexeprocesses', null, false, false);
             }
-            $overridesummary = $this->get_overriden_summary();
-            if ($overridesummary) {
-                $html .= '<br>';
-                $html .= $overridesummary;
-            }
+            $html .= "<br>\n";
+            $html .= $this->get_overriden_summary();
         }
         return $html;
     }
@@ -1969,6 +2080,7 @@ class mod_vpl {
             $url = new moodle_url('/mod/vpl/forms/overrides.php', ['id' => $vplcmid]);
             $html .= vpl_get_awesome_icon('overrides');
             $html .= html_writer::link($url, $overridesummary);
+            $html .= "<br>\n";
         }
         return $html;
     }
@@ -2008,7 +2120,7 @@ class mod_vpl {
                     $html .= $this->overriden_icon();
                 }
             }
-            $html .= '<br>';
+            $html .= "<br>\n";
         }
         return $html;
     }
@@ -2064,20 +2176,20 @@ class mod_vpl {
         $variations = $DB->get_records(VPL_VARIATIONS, ['vpl' => $this->instance->id]);
         if (count($variations) > 0) {
             $div = new mod_vpl\util\hide_show();
-            $html .= '<br>';
+            $html .= "<br>\n";
             $html .= vpl_get_awesome_icon('variations');
-            $html .= ' <b>' . get_string('variations', VPL) . $div->generate() . '</b><br>';
+            $html .= ' <b>' . get_string('variations', VPL) . $div->generate() . "</b><br>\n";
             $html .= $div->begin('div');
             if (! $this->instance->usevariations) {
-                $html .= '<b>' . get_string('variations_unused', VPL) . '</b><br>';
+                $html .= '<b>' . get_string('variations_unused', VPL) . "</b><br>\n";
             }
             if ($this->instance->variationtitle) {
-                $html .= '<b>' . get_string('variationtitle', VPL) . ': ' . s($this->instance->variationtitle) . '</b><br>';
+                $html .= '<b>' . get_string('variationtitle', VPL) . ': ' . s($this->instance->variationtitle) . "</b><br>\n";
             }
             $number = 1;
             foreach ($variations as $variation) {
                 $html .= '<b>' . get_string('variation_n', VPL, $number) . '</b>: ';
-                $html .= s($variation->identification) . '<br>';
+                $html .= s($variation->identification) . "<br>\n";
                 $html .= $OUTPUT->box($variation->description);
                 $number++;
             }
@@ -2166,7 +2278,7 @@ class mod_vpl {
             $variation = $this->get_variation($userid);
             if ($variation !== false) { // Variations defined.
                 if ($this->instance->variationtitle > '') {
-                    $html .= '<b>' . format_text($this->instance->variationtitle, FORMAT_HTML) . '</b><br>';
+                    $html .= '<b>' . format_text($this->instance->variationtitle, FORMAT_HTML) . "</b><br>\n";
                 }
                 $html .= $OUTPUT->box($variation->description);
             }
@@ -2417,6 +2529,36 @@ class mod_vpl {
     }
 
     /**
+     * Check first activity access if has password or using SEB.
+     * Must be used after checks passed.
+     * If fist time access save an empty submission for register the access.
+     * @return void
+     **/
+    public function check_first_access() {
+        global $USER, $DB, $SESSION;
+        $sessvarname = 'vpl_first_access_checked';
+        // If teacher or already checked ignore.
+        if ($this->is_teacher() || ($SESSION->$sessvarname ?? false) == $this->instance->id) {
+            return;
+        }
+        // Needed if password or SEB is required.
+        $needcheck = $this->instance->password > '';
+        $needcheck = $needcheck || $this->use_seb();
+        if ($needcheck) {
+            $lastsubmission = $this->last_user_submission($USER->id);
+            if ($lastsubmission) {
+                $SESSION->$sessvarname = $this->instance->id;
+            } else {
+                $error = '';
+                $files = [];
+                if ($this->add_submission($USER->id, $files, '', $error) != false) {
+                    $SESSION->$sessvarname = $this->instance->id;
+                }
+            }
+        }
+    }
+
+    /**
      * Update calendar events for duedate overrides.
      * @param stdClass $override The override being created / updated / deleted.
      *          It should contain joint data from vpl_overrides and vpl_assigned_overrides tables.
@@ -2542,7 +2684,7 @@ class mod_vpl {
      * @return bool
      */
     public function is_mode($mode) {
-        return (int)$this->instance->mode == (int)$mode;
+        return (int)$this->instance->activity_mode == (int)$mode;
     }
 
     /**
@@ -2550,7 +2692,7 @@ class mod_vpl {
      * @return bool
      */
     public function is_example() {
-        return $this->is_mode(activity_mode::EXAMPLE);
+        return $this->is_mode(activity_modes::EXAMPLE);
     }
 
     /**
@@ -2558,9 +2700,7 @@ class mod_vpl {
      * @return bool
      */
     public function is_vpl_question_mode() {
-        $is = $this->is_mode(activity_mode::VPLQUESTION);
-        $is = $is || $this->is_mode(activity_mode::VPLQUESTIONNOSTUDENTS);
-        return $is;
+        return $this->is_mode(activity_modes::VPLQUESTION);
     }
 
     /**
@@ -2591,7 +2731,7 @@ class mod_vpl {
         if ($this->is_teacher($userid)) {
             return false;
         }
-        return activity_mode::mode_prevents_viewing((int)$this->instance->mode);
+        return activity_modes::mode_prevents_viewing((int)$this->instance->activity_mode);
     }
     /**
      * Return if the activity mode prevent modification of the activity for the user.
@@ -2606,6 +2746,6 @@ class mod_vpl {
         if ($this->is_teacher($userid)) {
             return false;
         }
-        return activity_mode::mode_prevents_modification((int)$this->instance->mode);
+        return activity_modes::mode_prevents_modification((int)$this->instance->activity_mode);
     }
 }
