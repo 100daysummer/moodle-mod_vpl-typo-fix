@@ -22,15 +22,19 @@ use core\plugininfo\base;
  * VPL evaluator type subplugin info class.
  *
  * @package   mod_vpl
- * @copyright 2024 Juan Calos Rodriguez del Pino {@jc.rodriguezdelpino@ulpgc.es}
+ * @copyright 2024 Juan Carlos Rodríguez del Pino {@jc.rodriguezdelpino@ulpgc.es}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class vplevaluator extends base {
     /**
      * The plugin type.
-     * @var string
      */
     public const PLUGIN_TYPE = 'vplevaluator';
+
+    /**
+     * The default plugin evaluator.
+     */
+    public const DEFAULT_EVALUATOR = 'biotes';
 
     /**
      * Returns if the plugin type supports disabling.
@@ -41,12 +45,14 @@ class vplevaluator extends base {
     }
 
     /**
-     * Returns full pass to lib file.
+     * Returns the full path to the lib file.
      * @param string $name of the plugin.
-     * @return string
+     * @return string full path to the lib file.
      */
     public static function get_lib_path(string $name): string {
         global $CFG;
+        // Sanitize name to prevent directory traversal.
+        $name = preg_replace('/[^a-z0-9_]/', '', $name);
         return "{$CFG->dirroot}/mod/vpl/evaluator/{$name}/lib.php";
     }
 
@@ -66,7 +72,7 @@ class vplevaluator extends base {
             }
             $filename = self::get_lib_path($plugin);
             if (!$plugininfo->is_enabled() || !file_exists($filename)) {
-                // Plugin disable or disk missing.
+                // Plugin disabled or missing from disk.
                 continue;
             }
             $enabledplugins[$plugin] = $plugin;
@@ -95,8 +101,6 @@ class vplevaluator extends base {
      * @return bool
      */
     public function is_uninstall_allowed(): bool {
-        // It is correct to uninstall a plugin in use?
-        // Do not allow to uninstall the biotest plugin.
         return false;
     }
 
@@ -113,10 +117,16 @@ class vplevaluator extends base {
      * @param string $name of plugin of type vplevaluator.
      * @param \mod_vpl|null $vpl instance of the vpl activity or null.
      * @param object|null $evaluationdata data used in evaluation or null.
-     * @return \mod_vpl\plugininfo\vplevaluator_base
+     * @return vplevaluator_base
      * @throws \moodle_exception if the plugin is not found.
      */
-    public static function get_evaluator($name, $vpl = null, $evaluationdata = null): \mod_vpl\plugininfo\vplevaluator_base {
+    public static function get_evaluator(
+        string $name,
+        ?\mod_vpl $vpl = null,
+        ?object $evaluationdata = null
+    ): vplevaluator_base {
+        // Sanitize name to prevent directory traversal.
+        $name = preg_replace('/[^a-z0-9_]/', '', $name);
         $pluginfullname = self::PLUGIN_TYPE . "_{$name}";
         $classname = "\\mod_vpl\\evaluator\\{$name}";
         if (!class_exists($classname)) {
@@ -144,7 +154,7 @@ class vplevaluator extends base {
      * @param string $evaluatorname name of the evaluator name '' for effective evaluator from $vpl.
      * @return string HTML formatted string
      */
-    public static function get_printable_evaluator_help($vpl, $evaluatorname = ''): string {
+    public static function get_printable_evaluator_help(\mod_vpl $vpl, string $evaluatorname = ''): string {
         global $OUTPUT;
         if (empty($evaluatorname)) {
             $evaluatorname = $vpl->get_effective_setting('evaluator');
@@ -154,21 +164,24 @@ class vplevaluator extends base {
         }
         try {
             $evaluator = self::get_evaluator($evaluatorname, $vpl);
-            return $evaluator->get_printable_help($vpl);
         } catch (\Exception $e) {
-            return $OUTPUT->notification(get_string('error:invalidevaluator', VPL, $evaluatorname), 'notifyproblem');
+            return $OUTPUT->notification(get_string('error:invalidevaluator', VPL, $evaluatorname), 'error');
         }
-        return '';
+        return $evaluator->get_printable_help($vpl);
     }
 
     /**
-     * Get printable evaluator plugin information.
+     * Get link to printable evaluator plugin information.
      * @param \mod_vpl $vpl instance of the vpl activity.
      * @param string $evaluatorname name of the evaluator name '' for effective evaluator from $vpl.
      * @param bool $ifhelp if true return '' if no help available
      * @return string HTML formatted string
      */
-    public static function get_printable_evaluator_help_link($vpl, $evaluatorname = '', $ifhelp = false): string {
+    public static function get_printable_evaluator_help_link(
+        \mod_vpl $vpl,
+        string $evaluatorname = '',
+        bool $ifhelp = false
+    ): string {
         global $OUTPUT;
         if (empty($evaluatorname)) {
             $evaluatorname = $vpl->get_effective_setting('evaluator');
@@ -177,18 +190,17 @@ class vplevaluator extends base {
         if (empty($evaluatorname)) {
             $customized = $vpl->get_customized_scripts();
             if (!$customized['evaluate']) {
-                $evaluatorname = 'biotes';
+                $evaluatorname = self::DEFAULT_EVALUATOR;
             }
         }
         if (empty($evaluatorname) || !$vpl->has_capability(VPL_MANAGE_CAPABILITY)) {
             return '';
         }
         try {
-            $evaluator = self::get_evaluator($evaluatorname);
-            return $evaluator->get_printable_help_link($vpl, $ifhelp);
+            $evaluator = self::get_evaluator($evaluatorname, $vpl);
         } catch (\Exception $e) {
-            return $OUTPUT->notification(get_string('error:invalidevaluator', VPL, $evaluatorname), 'notifyproblem');
+            return $OUTPUT->notification(get_string('error:invalidevaluator', VPL, $evaluatorname), 'error');
         }
-        return '';
+        return $evaluator->get_printable_help_link($vpl, $ifhelp);
     }
 }
