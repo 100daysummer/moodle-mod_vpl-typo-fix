@@ -128,7 +128,7 @@ function vpl_call_print($fun, $res) {
         $opt = JSON_PRETTY_PRINT | JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_SLASHES;
         echo s(json_encode($res, $opt));
     }
-    echo '</pre>';
+    echo "</pre>\n";
 }
 
 require_login();

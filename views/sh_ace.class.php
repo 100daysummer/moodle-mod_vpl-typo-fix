@@ -87,18 +87,18 @@ class vpl_sh_ace extends vpl_sh_base {
             $theme = 'chrome';
         }
         if ($title) {
-            echo "<h4 id='$tid'>" . s($filename) . '</h4>';
+            echo "<h4 id='$tid'>" . s($filename) . "</h4>\n";
         }
         if ($filedata > '') {
             $code = '<pre ';
             $code .= " id='code$tid' style='display:none' >";
             $code .= htmlentities($filedata, ENT_NOQUOTES);
-            $code .= '</pre>';
+            $code .= "</pre>\n";
             echo $code;
             $code = '<h4 ';
             $code .= " id='code{$tid}load' style='text-align:center'>";
             $code .= vpl_get_awesome_icon('loading') . get_string('loading', VPL);
-            $code .= '</h4>';
+            $code .= "</h4>\n";
             echo $code;
             $parms = [$tid, $filename, $theme, $showln, $nl];
             vpl_sh_factory::syntaxhighlight_file($parms);

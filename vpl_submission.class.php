@@ -1215,7 +1215,7 @@ class mod_vpl_submission {
             if (strlen($casetoshow) > 0 && ! (strlen($clean) > 0 && $clean[0] == '>')) {
                 $comment .= '<pre>';
                 $comment .= s($casetoshow);
-                $comment .= '</pre>';
+                $comment .= "</pre>\n";
                 $casetoshow = '';
             }
             // Is title line.
@@ -1268,7 +1268,7 @@ class mod_vpl_submission {
         if (strlen($casetoshow) > 0) {
             $comment .= '<pre>';
             $comment .= s($casetoshow);
-            $comment .= '</pre>';
+            $comment .= "</pre>\n";
         }
         $html .= $this->get_last_comment($title, $comment, $dropdown);
         return $html;
@@ -1414,7 +1414,7 @@ class mod_vpl_submission {
         if ($response['compilation']) {
             $compilation = $this->result_to_html($response['compilation'], $dropdown);
             if (strlen($compilation)) {
-                $compilation = '<b>' . get_string('compilation', VPL) . '</b><br><pre>' . $compilation . '</pre>';
+                $compilation = '<b>' . get_string('compilation', VPL) . "</b><br>\n<pre>" . $compilation . "</pre>\n";
             }
         }
         if ($response['executed'] > 0) {
@@ -1433,7 +1433,7 @@ class mod_vpl_submission {
             if (strlen($rawexecution) > 0 && (strlen($execution) + strlen($proposedgrade) == 0)) {
                 $execution .= "<br>\n";
                 $execution .= '<b>' . get_string('execution', VPL) . "</b><br>\n";
-                $execution .= '<pre>' . s($rawexecution) . '</pre>';
+                $execution .= '<pre>' . s($rawexecution) . "</pre>\n";
             } else if (
                 $returnrawexecution && strlen($rawexecution) > 0
                        && ($this->vpl->has_capability(VPL_MANAGE_CAPABILITY))

@@ -39,7 +39,7 @@ class vpl_sh_text_nsh extends vpl_sh_base {
      * @param string $data content of the file to show
      */
     public function print_file($name, $data) {
-        echo "<h4>" . s($name) . '</h4>';
+        echo "<h4>" . s($name) . "</h4>\n";
         echo '<pre class="vpl_sh vpl_g">';
         $lines = preg_split("/\r\n|\n|\r/", $data);
         $nl = 1;
@@ -48,6 +48,6 @@ class vpl_sh_text_nsh extends vpl_sh_base {
             echo s($line) . '<br>';
             $nl++;
         }
-        echo '</pre>';
+        echo "</pre>\n";
     }
 }
