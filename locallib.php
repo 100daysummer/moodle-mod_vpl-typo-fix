@@ -213,15 +213,12 @@ function vpl_get_lang() {
 /**
  * generate URL to page with params
  *
- * param $page string page from wwwroot
- * param string $parm1 name of the first parameter
- * param string $value1 value of the first parameter
- * param string $parm2 name of the second parameter
- * param string $value2 value of the second parameter
- * etc.
+ * @param string $page Page path from wwwroot
+ * @param mixed ...$args pairs of (string $param, string $value)
+ * @return string URL with parameters
  * @codeCoverageIgnore
  */
-function vpl_abs_href() {
+function vpl_abs_href(string $page, ...$args): string {
     global $CFG;
     $parms = func_get_args();
     $l = count($parms);
