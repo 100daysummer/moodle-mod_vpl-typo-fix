@@ -1595,13 +1595,21 @@ class mod_vpl {
      * Set warnings to show in header
      */
     public function set_warnings() {
-        if ($this->script == 'view.php') {
-            if (! $this->is_mode(activity_modes::NORMAL) && $this->is_teacher()) {
+        if ($this->script == 'view.php' && $this->is_teacher()) {
+            if (! $this->is_mode(activity_modes::NORMAL)) {
                 $strmode = activity_modes::get_i18n_key($this->instance->activity_mode);
                 $warningmessage = '<b>' . get_string('activity_mode', VPL) . ': </b>';
                 $warningmessage .= get_string($strmode, VPL) . "<br>\n";
                 $warningmessage .= get_string($strmode . '_help', VPL);
                 $this->warnings[] = $warningmessage;
+                $instance = $this->get_instance();
+                if ($this->is_example() && $instance->run == 0 && $instance->debug == 0) {
+                    $warningmessage = '<b>' . get_string('notice') . ': </b><br>';
+                    $strno = get_string('no');
+                    $warningmessage .= $this->str_setting_with_icon('run', $strno, false, false);
+                    $warningmessage .= ' ' . $this->str_setting_with_icon('debug', $strno, false, false);
+                    $this->warnings[] = $warningmessage;
+                }
             }
         }
     }
