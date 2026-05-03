@@ -139,16 +139,20 @@ Feature: In an VPL activity, editing teacher change activity modes
     And I click on "VPL simple" "link" in the "region-main" "region"
     And I navigate to "Settings" in current page administration
     And I set the following fields to these values:
-      | id_activity_mode | This activity acts as example |
+      | id_activity_mode | Example |
     And I press "Save and display"
-    Then I should see "VPL simple"
+    And I navigate to "Execution options" in current page administration
+    And I set the following fields to these values:
+      | id_run | 1 |
+      | id_debug | 1 |
+    And I press "Save options"
     And I log out
     When I log in as "student1"
     And I am on "Course 1" course homepage
     Then I should see "VPL simple"
     When I click on "VPL simple" "link" in the "region-main" "region"
     Then I should see "Full description simple"
-    And I should see "Edit"
+    And I should see "Run"
 
   @javascript
   Scenario: VPL question mode - students cannot access the activity
