@@ -738,9 +738,9 @@ VPLUI.updateIDEStatus = function(status) {
         } else {
             var action = status.action;
             var actionHtml = "<a href='" + action.href + "'";
-            actionHtml += action.title? " title='" + VPLUtil.sanitizeText(action.title) + "'": "";
-            actionHtml += action.target? " target='" + VPLUtil.sanitizeText(action.target) + "'": "";
-            actionHtml += action.rel? " rel='" + VPLUtil.sanitizeText(action.rel) + "'": "";
+            actionHtml += action.title ? " title='" + VPLUtil.sanitizeText(action.title) + "'" : "";
+            actionHtml += action.target ? " target='" + VPLUtil.sanitizeText(action.target) + "'" : "";
+            actionHtml += action.rel ? " rel='" + VPLUtil.sanitizeText(action.rel) + "'" : "";
             actionHtml += ">";
             actionHtml += VPLUI.genIcon(action.icon);
             actionHtml += VPLUtil.sanitizeText(action.text);

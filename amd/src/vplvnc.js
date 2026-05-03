@@ -193,11 +193,13 @@ export class VPLVNCClient {
                     canvas.hide();
                 }
             },
-            resizeStop: function (event, ui) {
+            resizeStop: function(event, ui) {
                 VNCDialog.find('img').remove();
                 canvas.show();
                 self.setCanvasSize(ui.size.width, ui.size.height);
-                VPLUtil.longDelay('vncresize', function() {self.displayResize();});
+                VPLUtil.longDelay('vncresize', function() {
+                    self.displayResize();
+                });
             }
         });
         // Remove padding to avoid scroll bars.
@@ -307,7 +309,9 @@ export class VPLVNCClient {
             switch (newstate) {
                 case "connected":
                     lastState = 'connected';
-                    VPLUtil.longDelay('vncresize', function() {self.displayResize();});
+                    VPLUtil.longDelay('vncresize', function() {
+                        self.displayResize();
+                    });
                     self.setMessage('');
                     self.setTitle(str('connected'));
                     break;

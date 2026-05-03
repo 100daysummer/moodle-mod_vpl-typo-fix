@@ -363,7 +363,7 @@ var VPLIDE = function(rootId, options) {
                 const selection = window.getSelection();
                 // Check if the selection is inside IDE but outside editor.
                 if (allowedRegion.contains(selection.anchorNode) &&
-                    ! freeRegion.contains(selection.anchorNode)) {
+                    !freeRegion.contains(selection.anchorNode)) {
                     self.setClipboard(selection.toString());
                 }
             });
@@ -1603,7 +1603,7 @@ var VPLIDE = function(rootId, options) {
     var populateSelect = function(select, options, selected) {
         select.empty();
         options.forEach(function(opt) {
-            select.append($('<option>', { value: opt.value, text: opt.label }));
+            select.append($('<option>', {value: opt.value, text: opt.label}));
         });
         select.val(selected);
     };
@@ -1628,31 +1628,31 @@ var VPLIDE = function(rootId, options) {
                         return { value: t.name, label: t.caption };
                     });
                 }
-            } catch(e) { /* ace/ext/themelist not loaded yet */ }
+            } catch (e) { /* Ace/ext/themelist not loaded yet */ }
         }
         if (aceThemeOptions.length === 0) {
             // Fallback static list.
             aceThemeOptions = [
-                'ambiance','chaos','chrome','clouds','clouds_midnight','cobalt',
-                'crimson_editor','dawn','dracula','dreamweaver','eclipse','github',
-                'gob','gruvbox','idle_fingers','iplastic','katzenmilch','kr_theme',
-                'kuroir','merbivore','merbivore_soft','mono_industrial','monokai',
-                'pastel_on_dark','solarized_dark','solarized_light','sqlserver',
-                'terminal','textmate','tomorrow','tomorrow_night','tomorrow_night_blue',
-                'tomorrow_night_bright','tomorrow_night_eighties','twilight',
-                'vibrant_ink','xcode'
+                'ambiance', 'chaos', 'chrome', 'clouds', 'clouds_midnight', 'cobalt',
+                'crimson_editor', 'dawn', 'dracula', 'dreamweaver', 'eclipse', 'github',
+                'gob', 'gruvbox', 'idle_fingers', 'iplastic', 'katzenmilch', 'kr_theme',
+                'kuroir', 'merbivore', 'merbivore_soft', 'mono_industrial', 'monokai',
+                'pastel_on_dark', 'solarized_dark', 'solarized_light', 'sqlserver',
+                'terminal', 'textmate', 'tomorrow', 'tomorrow_night', 'tomorrow_night_blue',
+                'tomorrow_night_bright', 'tomorrow_night_eighties', 'twilight',
+                'vibrant_ink', 'xcode'
             ].map(function(v) {
                 var name = v.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-                return {value: v, label: name };
+                return {value: v, label: name};
             });
         }
         populateSelect(prefEditorThemeSelect, aceThemeOptions, prefSnapshot.editorTheme);
         const keybindingOptions = [
-            { value: 'Ace', label: 'Ace' },
-            { value: 'vim', label: 'Vim' },
-            { value: 'emacs', label: 'Emacs' },
-            { value: 'sublime', label: 'Sublime' },
-            { value: 'vscode', label: 'VS Code' },
+            {value: 'Ace', label: 'Ace'},
+            {value: 'vim', label: 'Vim'},
+            {value: 'emacs', label: 'Emacs'},
+            {value: 'sublime', label: 'Sublime'},
+            {value: 'vscode', label: 'VS Code'},
         ];
         populateSelect(prefEditorKeybindingSelect, keybindingOptions, prefSnapshot.editorKeyBinding);
         prefEditorFontsizeSlider.slider('value', prefSnapshot.editorFontSize);
@@ -1661,7 +1661,9 @@ var VPLIDE = function(rootId, options) {
         prefEditorLiveautocompletionCheck.prop('checked', prefSnapshot.editorLiveAutocompletion);
         // Populate terminal themes from terminal instance.
         var terminalThemes = terminal.getThemeNames ? terminal.getThemeNames() : [];
-        var termThemeOptions = terminalThemes.map(function(t) { return { value: t, label: t }; });
+        var termThemeOptions = terminalThemes.map(function(t) {
+            return {value: t, label: t};
+        });
         populateSelect(prefTerminalThemeSelect, termThemeOptions, prefSnapshot.terminalTheme);
         prefTerminalFontsizeSlider.slider('value', prefSnapshot.terminalFontSize);
         prefTerminalFontsizeValue.text(prefSnapshot.terminalFontSize);

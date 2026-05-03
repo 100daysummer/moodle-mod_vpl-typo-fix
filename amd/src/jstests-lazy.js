@@ -67,7 +67,7 @@ function assert(b, message) {
         if (typeof message == 'string') {
             result.push("Error: " + message + " testing " + testing + ' must be true but is ' + b);
         } else {
-            result.push("Error: assert failed testing " + testing+ ' must be true but is ' + b);
+            result.push("Error: assert failed testing " + testing + ' must be true but is ' + b);
         }
     }
 }

@@ -101,7 +101,8 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
             if (terminal) {
                 terminal.write(text);
             }
-        });
+            return;
+        }).catch(function() {});
         return text;
     };
 
@@ -109,46 +110,48 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
         onCloseAction = onClose;
         if ("WebSocket" in window) {
             initReady.then(function() {
-            terminal.reset();
-            self.show();
-            if (ws) {
-                ws.close();
-            }
-            clipboardData = '';
-            self.startBlinking();
-            self.setMessage('');
-            self.setTitle(str('connecting'));
-            ws = new WebSocket(server);
-            ws.writeBuffer = '';
-            ws.writeIt = function() {
-                terminal.write(ws.writeBuffer);
-                receiveClipboard(ws.writeBuffer);
-                ws.writeBuffer = '';
-            };
-            ws.onmessage = function(event) {
-                if (ws.writeBuffer.length > 0) {
-                    ws.writeBuffer += event.data;
-                } else {
-                    ws.writeBuffer = event.data;
-                    setTimeout(ws.writeIt, 35);
+                terminal.reset();
+                self.show();
+                if (ws) {
+                    ws.close();
                 }
-            };
-            ws.onopen = function() {
+                clipboardData = '';
+                self.startBlinking();
                 self.setMessage('');
-                self.setTitle(str('connected'));
-            };
-            ws.onclose = function() {
-                self.setTitle(str('connection_closed'));
-                terminal.blur();
-                self.stopBlinking();
-                onClose();
-                ws.stopOutput = true;
-            };
-            }); // initReady.then
+                self.setTitle(str('connecting'));
+                ws = new WebSocket(server);
+                ws.writeBuffer = '';
+                ws.writeIt = function() {
+                    terminal.write(ws.writeBuffer);
+                    receiveClipboard(ws.writeBuffer);
+                    ws.writeBuffer = '';
+                };
+                ws.onmessage = function(event) {
+                    if (ws.writeBuffer.length > 0) {
+                        ws.writeBuffer += event.data;
+                    } else {
+                        ws.writeBuffer = event.data;
+                        setTimeout(ws.writeIt, 35);
+                    }
+                };
+                ws.onopen = function() {
+                    self.setMessage('');
+                    self.setTitle(str('connected'));
+                };
+                ws.onclose = function() {
+                    self.setTitle(str('connection_closed'));
+                    terminal.blur();
+                    self.stopBlinking();
+                    onClose();
+                    ws.stopOutput = true;
+                };
+                return;
+            }).catch(function() {}); // InitReady.then
         } else {
             initReady.then(function() {
                 terminal.write('WebSocket not available: Upgrade your browser');
-            });
+                return;
+            }).catch(function() {});
         }
     };
     this.writeLocal = function(text) {
@@ -225,7 +228,8 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
             }
         };
         ws.readyState = ws.OPEN;
-        }); // initReady.then
+        return;
+        }).catch(function() {}); // InitReady.then
     };
     this.isOpen = function() {
         return tdialog.dialog("isOpen");

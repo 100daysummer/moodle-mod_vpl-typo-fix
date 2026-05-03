@@ -183,7 +183,7 @@ VPLUtil.String2ArrayBuffer = function(data) {
     VPLUtil.isBlockly = function(fileName) {
         return regBlk.test(VPLUtil.fileExtension(fileName));
     };
-    var regInvalidFileName = /[\cA-\cZ]|[:-@]|[{-~]|\\|\[|\]|[\/^`´]|^-|^ | $|\.\./;
+    var regInvalidFileName = /[\cA-\cZ]|[:-@]|[{-~]|\\|\[|\]|[/^`´]|^-|^ | $|\.\./;
     VPLUtil.validFileName = function(fileName) {
         if (fileName.length < 1) {
             return false;
