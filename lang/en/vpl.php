@@ -31,6 +31,8 @@ $string['acceptcertificates_description'] = 'If the execution servers are not us
 $string['acceptcertificatesnote'] = "<p><strong>Warning:</strong> Connection to execution server failed due to certificate issues.</p>
 <p>Your browser does not trust the execution server's certificate.</p>";
 $string['activity_mode'] = 'Activity mode';
+$string['activity_mode_basedon'] = 'Based on';
+$string['activity_mode_basedon_help'] = 'This mode indicates that the activity is to be used as a template for other activities to inherit from.<br>It also prevents students from accessing the activity.';
 $string['activity_mode_help'] = 'Change the access rules and behavior of the activity. The modes are:
 <ul>
 <li><b>Normal</b>: No changes to the default behavior.</li>
@@ -40,8 +42,6 @@ $string['activity_mode_help'] = 'Change the access rules and behavior of the act
 <li><b>VPL question</b>: The activity is adapted for the VPL question type, prevents students from accessing the activity.</li>
 <li><b>Example</b>: The students can run and debug requested files but readonly.</li>
 </ul>';
-$string['activity_mode_basedon'] = 'Based on';
-$string['activity_mode_basedon_help'] = 'This mode indicates that the activity is to be used as a template for other activities to inherit from.<br>It also prevents students from accessing the activity.';
 $string['activity_mode_no_students'] = 'No students';
 $string['activity_mode_no_students_help'] = 'This mode prevents students from accessing the activity.<br>Regardless of other settings, students will not be able to access it.';
 $string['activity_mode_normal'] = 'Normal';
@@ -203,7 +203,6 @@ $string['executionoptions_help'] = '<p>Various execution options are set in this
 <li><b>Automatic grading</b>: if the evaluation result includes grading codes, they are used to set the grade automatically.</li>
 </ul>';
 $string['file'] = 'File';
-$string['fontsize'] = 'Font size';
 $string['fileNotChanged'] = 'File has not changed';
 $string['file_name'] = 'File name';
 $string['fileadded'] = "The '{\$a}' file has been added";
@@ -225,6 +224,7 @@ $string['finalreduction_help'] = '<b>FR [NE/FE R]</b><br>
 <b>R</b> Grade reduction by evaluation. If it is a percent, it is applied over previous result.<br>';
 $string['find'] = "Find";
 $string['find_replace'] = 'Find/Replace';
+$string['fontsize'] = 'Font size';
 $string['freeevaluations'] = 'Free evaluations';
 $string['freeevaluations_help'] = 'Number of automatic evaluations that do not reduce final score';
 $string['fromthisvpl'] = 'From this VPL ({$a})';
@@ -280,15 +280,15 @@ $string['keepcurrentfile'] = 'Keep current file';
 $string['keepfiles'] = 'Files to keep when running';
 $string['keepfiles_help'] = '<p>Due to security issues, the files added as &quot;Execution files&quot; are deleted before running the file vpl_execution.</p>
 If any of those files is needed during the execution (for example, to be used as test data), it must be marked here.';
-$string['keyboard'] = 'Keyboard';
 $string['keybinding'] = 'Key binding';
-$string['liveautocompletion'] = 'Live autocompletion';
+$string['keyboard'] = 'Keyboard';
 $string['lasterror'] = 'Last error info';
 $string['lasterrordate'] = 'Last error date';
 $string['listofcomments'] = 'List of comments';
 $string['lists'] = 'Lists';
 $string['listsimilarity'] = 'List of similarities found';
 $string['listwatermarks'] = 'Watermarks list';
+$string['liveautocompletion'] = 'Live autocompletion';
 $string['load'] = 'Load';
 $string['loading'] = 'Loading';
 $string['local_jail_servers'] = 'Local execution servers';
@@ -409,8 +409,8 @@ $string['pause'] = 'Pause';
 $string['pluginadministration'] = 'VPL administration';
 $string['pluginname'] = 'Virtual programming lab';
 $string['pluginnotfound'] = 'VPL subplugin not found or incorrectly defined: {$a}';
-$string['previoussubmissionslist'] = 'Previous submissions list';
 $string['preferences'] = 'Preferences';
+$string['previoussubmissionslist'] = 'Previous submissions list';
 $string['print'] = 'Print';
 $string['privacy:metadata:vpl'] = 'Information of the activity';
 $string['privacy:metadata:vpl:course'] = 'Course id';
@@ -482,8 +482,8 @@ $string['requestedfiles_help'] = '<p>Here you set names and its initial content 
 <p>If you don\'t set names for whole number of files, the unnamed files are optional and can have any name.</p>
 <p>You also can add contents to the requested files, so these contents will be available the first time that they will be opened with the editor, if no previous submission exists.</p>';
 $string['requirednet'] = 'Require network address';
-$string['requirednet_help'] = 'VPL access may restrict students access from particular subnets on the LAN or Internet by specifying a comma-separated list of partial or full IP address numbers. This can be useful to ensure that only students in a certain location can access the VPL.';
 $string['requirednet_bad'] = 'Your IP address {$a} <b>does not allow</b> students to <b>access</b>';
+$string['requirednet_help'] = 'VPL access may restrict students access from particular subnets on the LAN or Internet by specifying a comma-separated list of partial or full IP address numbers. This can be useful to ensure that only students in a certain location can access the VPL.';
 $string['requirednet_pass'] = 'Your IP address {$a} <b>allows</b> students to <b>access</b>';
 $string['requiredpassword'] = 'A password is required';
 $string['reset'] = 'Reset VPL activities';
@@ -532,12 +532,12 @@ $string['scanother'] = 'Scan similarities in added sources';
 $string['scanzipfile'] = 'Zip file';
 $string['search:activity'] = 'Virtual Programming Lab - activity information (name and description)';
 $string['sebkeys'] = 'SEB exam Key/s';
-$string['sebkeys_help'] = 'SEB exam or config key(s) (max 3) obtained from .seb file<br>It is more reliable than only browser check.<br>https://safeexambrowser.org';
 $string['sebkeys_bad'] = 'Your SEB browser is <b>not using</b> the expected configuration';
+$string['sebkeys_help'] = 'SEB exam or config key(s) (max 3) obtained from .seb file<br>It is more reliable than only browser check.<br>https://safeexambrowser.org';
 $string['sebkeys_pass'] = 'Your SEB browser is <b>using</b> the expected configuration';
 $string['sebrequired'] = 'Using SEB browser is required';
-$string['sebrequired_help'] = 'Students must access the activity using SEB browser with the proper configuration';
 $string['sebrequired_bad'] = 'It looks like you are <b>not using</b> SEB browser';
+$string['sebrequired_help'] = 'Students must access the activity using SEB browser with the proper configuration';
 $string['sebrequired_pass'] = 'It looks like you are <b>using</b> SEB browser';
 $string['select_all'] = 'Select all';
 $string['selectbreakpoint'] = 'Select breakpoint';
@@ -546,8 +546,8 @@ $string['serverexecutionerror'] = 'Server execution error';
 $string['setbyexecutionoptions'] = 'set by execution options';
 $string['shortcuts'] = 'Keyboard shortcuts';
 $string['shortdescription'] = 'Short description';
-$string['showparentfiles'] = 'Show parent files';
 $string['showinvisibles'] = 'Show invisibles';
+$string['showparentfiles'] = 'Show parent files';
 $string['shrightpanel'] = 'Show/hide right panel';
 $string['similarity'] = 'Similarity';
 $string['similarto'] = 'Similar to';
@@ -595,9 +595,9 @@ $string['submittedonp'] = 'Submitted on {$a}';
 $string['subplugintype_vplevaluator'] = 'VPL submissions evaluator';
 $string['subplugintype_vplevaluator_plural'] = 'VPL submissions evaluators';
 $string['sureresetfiles'] = 'Do you want to lose all your work and reset the files to their original state?';
-$string['test'] = 'Test activity';
 $string['terminal'] = 'Terminal';
 $string['terminaltheme'] = 'Terminal theme';
+$string['test'] = 'Test activity';
 $string['testcases'] = 'Tests configuration';
 $string['testcases_help'] = '<p>Here you configure the evaluator used for this activity.</p>';
 $string['text'] = 'Text';
