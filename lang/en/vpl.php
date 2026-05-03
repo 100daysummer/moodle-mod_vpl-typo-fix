@@ -26,10 +26,11 @@
 
 $string['VPL_COMPILATIONFAILED'] = 'The compilation or preparation of execution has failed';
 $string['about'] = 'About';
-$string['acceptcertificates'] = 'Accept self signed certificates';
-$string['acceptcertificates_description'] = 'If the execution servers are not using self signed certificates uncheck this option';
-$string['acceptcertificatesnote'] = "<p><strong>Warning:</strong> Connection to execution server failed due to certificate issues.</p>
-<p>Your browser does not trust the execution server's certificate.</p>";
+$string['acceptcertificates'] = 'Ignore execution server certificate errors';
+$string['acceptcertificates_description'] = 'Checking this option will allow encrypted connections to execution servers even if
+their certificate is not trusted.
+For security reasons, this is not recommended for production environments,
+but it can be useful for testing and development purposes.';
 $string['activity_mode'] = 'Activity mode';
 $string['activity_mode_basedon'] = 'Based on';
 $string['activity_mode_basedon_help'] = 'This mode indicates that the activity is to be used as a template for other activities to inherit from.<br>It also prevents students from accessing the activity.';
@@ -182,6 +183,14 @@ $string['evaluator'] = 'Evaluator';
 $string['evaluator_help'] = 'Select here the evaluator framework to use in this activity.<br>Use default for original BIOTES evaluator.<br>Use GIOTES for the new evaluator framework compatible with the default.<br>Custom script indicates that the default script has been customized.<br>';
 $string['examples'] = 'Examples';
 $string['execution'] = 'Execution';
+$string['execution_connection_failed'] = 'Connection to execution server failed';
+$string['execution_connection_failed_help'] = '<p><strong>Warning:</strong> Your browser could not connect directly to the execution server.</p>
+<p>Click the server link(s) below to diagnose the problem:</p>
+<ul>
+<li>If you see a certificate warning, the execution server certificate is not trusted by your browser. At your own risk, you can accept the certificate and retry your action.</li>
+<li>If the page does not load, the connection from your browser to the execution server may be blocked by a firewall or network configuration.</li>
+</ul>
+<p>Contact your server or network administrator to ensure the execution server has a trusted certificate and is reachable from client browsers.</p>';
 $string['executionfiles'] = 'Execution files';
 $string['executionfiles_help'] = '<p>Here you set the files that are needed to prepare the execution,
 debug or assessment of a submission. This includes scripting files, program test files and data files.</p>

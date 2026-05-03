@@ -310,8 +310,8 @@ HTML;
     public static function i18n() {
         $vplwords = [
                 'about',
-                'acceptcertificates',
-                'acceptcertificatesnote',
+                'execution_connection_failed',
+                'execution_connection_failed_help',
                 'binaryfile',
                 'browserupdate',
                 'changesNotSaved',

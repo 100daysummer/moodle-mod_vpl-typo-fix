@@ -541,7 +541,7 @@ VPLUI.clickServer = function(e) {
 VPLUI.acceptCertificates = function(servers, getLastAction) {
     if (servers.length > 0) {
         // Generate links dialog.
-        var html = VPLUtil.str('acceptcertificatesnote');
+        var html = VPLUtil.str('execution_connection_failed_help');
         html += '<ol>';
         for (var i = 0; i < servers.length; i++) {
             var n = i + 1;
@@ -557,7 +557,7 @@ VPLUI.acceptCertificates = function(servers, getLastAction) {
                 }
             },
             icon: 'unlocked',
-            title: VPLUtil.str('acceptcertificates')
+            title: VPLUtil.str('execution_connection_failed')
         });
         $(m).find('a').on('click keypress', VPLUI.clickServer);
     } else {
