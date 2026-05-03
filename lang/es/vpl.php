@@ -26,10 +26,30 @@
 
 $string['VPL_COMPILATIONFAILED'] = 'La compilación o preparación de la ejecución ha fallado';
 $string['about'] = 'Acerca de';
-$string['acceptcertificates'] = 'Aceptar certificados auto firmados';
-$string['acceptcertificates_description'] = 'Si sus servidores de ejecución NO están usando certificados auto firmados desmarque';
-$string['acceptcertificatesnote'] = "<p><strong>Advertencia:</strong> La conexión con el servidor de ejecución falló debido a problemas con el certificado.</p>
-<p>Su navegador no confía en el certificado del servidor de ejecución.</p>";
+$string['acceptcertificates'] = 'Ignorar errores de certificado del servidor de ejecución';
+$string['acceptcertificates_description'] = 'Marcar esta opción permitirá conexiones cifradas con servidores de ejecución incluso si
+su certificado no es de confianza.
+Por razones de seguridad, esto no se recomienda en entornos de producción,
+pero puede ser útil para pruebas y desarrollo.';
+$string['activity_mode'] = 'Modo de actividad';
+$string['activity_mode_basedon'] = 'Basado en';
+$string['activity_mode_basedon_help'] = 'Este modo indica que la actividad se usará como plantilla para que otras actividades hereden de ella.<br>También impide que los estudiantes accedan a la actividad.';
+$string['activity_mode_help'] = 'Cambia las reglas de acceso y el comportamiento de la actividad. Los modos son:
+<ul>
+<li><b>Normal</b>: Sin cambios en el comportamiento predeterminado.</li>
+<li><b>Sin estudiantes</b>: Este modo impide que los estudiantes accedan a la actividad.</li>
+<li><b>Estudiantes solo lectura</b>: Este modo <b>concede</b> acceso a los estudiantes en modo de solo lectura.</li>
+<li><b>Basado en</b>: La actividad es una plantilla para que otras actividades la hereden, más el modo "Sin estudiantes".</li>
+<li><b>Pregunta VPL</b>: La actividad se adapta para ser usada en el tipo de pregunta VPL e impide que los estudiantes accedan a ella.</li>
+<li><b>Ejemplo</b>: Los estudiantes pueden ejecutar y depurar los ficheros suministrados pero en modo de solo lectura.</li></ul>';
+$string['activity_mode_no_students'] = 'Sin estudiantes';
+$string['activity_mode_no_students_help'] = 'Este modo impide que los estudiantes accedan a la actividad.<br>Independientemente de otros ajustes, los estudiantes no podrán acceder a ella.';
+$string['activity_mode_normal'] = 'Normal';
+$string['activity_mode_normal_help'] = 'Este es el modo predeterminado, sin cambios en el comportamiento por defecto.<br>';
+$string['activity_mode_students_readonly'] = 'Estudiantes solo lectura';
+$string['activity_mode_students_readonly_help'] = 'Este modo concede acceso a los estudiantes a la actividad en modo de solo lectura.<br>Independientemente de otros ajustes, los estudiantes pueden ver la actividad y su contenido, pero no pueden editar ni entregar código.';
+$string['activity_mode_vplquestion'] = 'Pregunta VPL';
+$string['activity_mode_vplquestion_help'] = 'Este modo se usa para adaptar la actividad al tipo de pregunta VPL.<br>Impide que los estudiantes accedan a la actividad.<br>';
 $string['addfile'] = 'Añadir fichero';
 $string['addoverride'] = 'Añadir una excepción';
 $string['advanced'] = 'Avanzado';
@@ -160,6 +180,14 @@ $string['evaluator'] = 'Evaluador';
 $string['evaluator_help'] = 'Seleccione aquí el evaluador a utilizar en esta actividad.<br>Use el predeterminado para el evaluador BIOTES original.<br>Use GIOTES para el nuevo evaluador compatible con el predeterminado.<br>Script personalizado indica que el script predeterminado ha sido personalizado.<br>';
 $string['examples'] = 'Ejemplos';
 $string['execution'] = 'Ejecución';
+$string['execution_connection_failed'] = 'Error de conexión con el servidor de ejecución';
+$string['execution_connection_failed_help'] = '<p><strong>Advertencia:</strong> Su navegador no pudo conectarse directamente al servidor de ejecución.</p>
+<p>Haga clic en el/los enlace(s) del servidor a continuación para diagnosticar el problema:</p>
+<ul>
+<li>Si ve una advertencia de certificado, el certificado del servidor de ejecución no es de confianza para su navegador. Bajo su propia responsabilidad, puede aceptar el certificado y reintentar la acción.</li>
+<li>Si la página no carga, la conexión desde su navegador al servidor de ejecución puede estar bloqueada por un cortafuegos o configuración de red.</li>
+</ul>
+<p>Contacte con el administrador de su servidor o red para asegurarse de que el servidor de ejecución tiene un certificado de confianza y es accesible vía red.</p>';
 $string['executionfiles'] = 'Ficheros para la ejecución';
 $string['executionfiles_help'] = '<p>Aquí se establecen los ficheros necesarios para la ejecución, depurado o evaluación de una entrega.
 Esto incluye ficheros script, programas de prueba y ficheros de datos.</p>
@@ -250,6 +278,7 @@ $string['inputoutput'] = 'Entrada/salida';
 $string['instanceselection'] = 'Selección de VPL';
 $string['intermediate'] = 'Intermedio';
 $string['isexample'] = 'Esta actividad actúa como ejemplo';
+$string['isexample_help'] = 'Esta actividad actúa como ejemplo, permitiendo a los estudiantes ejecutar y depurar los ficheros de ejemplo, pero no entregarlos.';
 $string['jail_servers'] = "Lista de servidores de ejecución";
 $string['jail_servers_config'] = "Configuración de servidores de ejecución";
 $string['jail_servers_description'] = "Escriba un servidor en cada línea";
@@ -455,6 +484,8 @@ $string['requestedfiles_help'] = '<p>Aquí se fijan nombres y contenido inicial 
 <p>Además, se pueden establecer contenidos para los ficheros requeridos, de forma que dichos contenidos estarán disponibles la primera vez que el fichero se abra usando el editor, si no se ha realizado una entrega previa.</p>';
 $string['requirednet'] = 'Entregas restringidas a la red';
 $string['requirednet_help'] = 'El acceso a VPL puede restringirse a subredes particulares en la LAN o Internet especificando una lista separada por comas de direcciones IP completas o parciales. Esto puede ser útil para asegurar que solo personas en una cierta ubicación pueden acceder al VPL.';
+$string['requirednet_bad'] = 'Su dirección IP {$a} <b>no permite</b> que los estudiantes <b>accedan</b>';
+$string['requirednet_pass'] = 'Su dirección IP {$a} <b>permite</b> que los estudiantes <b>accedan</b>';
 $string['requiredpassword'] = 'Se necesita una clave';
 $string['reset'] = 'Reinicia las actividades VPL';
 $string['resetfiles'] = 'Reestablecer ficheros';
@@ -504,8 +535,12 @@ $string['scanzipfile'] = 'Fichero zip';
 $string['search:activity'] = 'Virtual Programming Lab - información de la actividad (nombre y descripción)';
 $string['sebkeys'] = 'Clave(s) de examen SEB';
 $string['sebkeys_help'] = 'Las claves de examen SEB se obtienen de los ficheros .seb<br>Este mecanismo es más seguro que sólo comprobar el navegador.<br>https://safeexambrowser.org';
+$string['sebkeys_bad'] = 'Su navegador SEB <b>no está usando</b> la configuración esperada';
+$string['sebkeys_pass'] = 'Su navegador SEB <b>sí está usando</b> la configuración esperada';
 $string['sebrequired'] = 'Se requiere navegador SEB';
 $string['sebrequired_help'] = 'Se requiere el navegador SEB apropiadamente configurado.';
+$string['sebrequired_bad'] = 'Parece que <b>no está usando</b> el navegador SEB';
+$string['sebrequired_pass'] = 'Parece que <b>sí está usando</b> el navegador SEB';
 $string['select_all'] = 'Seleccionar todo';
 $string['selectbreakpoint'] = 'Selecciona punto de parada';
 $string['server'] = 'Servidor';
