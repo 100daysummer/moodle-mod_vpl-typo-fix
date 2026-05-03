@@ -483,8 +483,8 @@ $string['requestedfiles_help'] = '<p>Aquí se fijan nombres y contenido inicial 
 <p>Si no se fijan nombres para el número máximo de ficheros establecido en la definición básica de la actividad, los ficheros para los que no se han establecido nombres son opcionales y pueden tener cualquier nombre.</p>
 <p>Además, se pueden establecer contenidos para los ficheros requeridos, de forma que dichos contenidos estarán disponibles la primera vez que el fichero se abra usando el editor, si no se ha realizado una entrega previa.</p>';
 $string['requirednet'] = 'Entregas restringidas a la red';
-$string['requirednet_help'] = 'El acceso a VPL puede restringirse a subredes particulares en la LAN o Internet especificando una lista separada por comas de direcciones IP completas o parciales. Esto puede ser útil para asegurar que solo personas en una cierta ubicación pueden acceder al VPL.';
 $string['requirednet_bad'] = 'Su dirección IP {$a} <b>no permite</b> que los estudiantes <b>accedan</b>';
+$string['requirednet_help'] = 'El acceso a VPL puede restringirse a subredes particulares en la LAN o Internet especificando una lista separada por comas de direcciones IP completas o parciales. Esto puede ser útil para asegurar que solo personas en una cierta ubicación pueden acceder al VPL.';
 $string['requirednet_pass'] = 'Su dirección IP {$a} <b>permite</b> que los estudiantes <b>accedan</b>';
 $string['requiredpassword'] = 'Se necesita una clave';
 $string['reset'] = 'Reinicia las actividades VPL';
@@ -534,12 +534,12 @@ $string['scanother'] = 'Buscar similitudes en otras fuentes';
 $string['scanzipfile'] = 'Fichero zip';
 $string['search:activity'] = 'Virtual Programming Lab - información de la actividad (nombre y descripción)';
 $string['sebkeys'] = 'Clave(s) de examen SEB';
-$string['sebkeys_help'] = 'Las claves de examen SEB se obtienen de los ficheros .seb<br>Este mecanismo es más seguro que sólo comprobar el navegador.<br>https://safeexambrowser.org';
 $string['sebkeys_bad'] = 'Su navegador SEB <b>no está usando</b> la configuración esperada';
+$string['sebkeys_help'] = 'Las claves de examen SEB se obtienen de los ficheros .seb<br>Este mecanismo es más seguro que sólo comprobar el navegador.<br>https://safeexambrowser.org';
 $string['sebkeys_pass'] = 'Su navegador SEB <b>sí está usando</b> la configuración esperada';
 $string['sebrequired'] = 'Se requiere navegador SEB';
-$string['sebrequired_help'] = 'Se requiere el navegador SEB apropiadamente configurado.';
 $string['sebrequired_bad'] = 'Parece que <b>no está usando</b> el navegador SEB';
+$string['sebrequired_help'] = 'Se requiere el navegador SEB apropiadamente configurado.';
 $string['sebrequired_pass'] = 'Parece que <b>sí está usando</b> el navegador SEB';
 $string['select_all'] = 'Seleccionar todo';
 $string['selectbreakpoint'] = 'Selecciona punto de parada';
