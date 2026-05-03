@@ -217,8 +217,8 @@ class activity_menu {
             // IDE access for edit, save, run, debug, and evaluate submission.
             $href = \vpl_mod_href('forms/edit.php', $parmsuser);
             $stredit = 'edit';
-            if ($example && $instance->run) {
-                $stredit = 'run';
+            if ($example && ($instance->run || $instance->debug)) {
+                $stredit = $instance->run ? 'run' : 'debug';
             }
             $tabs[] = self::create_tab('edit.php', $href, $stredit);
             $href = \vpl_mod_href('forms/submissionview.php', $parmsuser);
@@ -268,8 +268,8 @@ class activity_menu {
         if ($submitable || $example) {
             $href = \vpl_mod_href('forms/edit.php', $parms);
             $stredit = 'edit';
-            if ($example && $instance->run) {
-                $stredit = 'run';
+            if ($example && ($instance->run || $instance->debug)) {
+                $stredit = $instance->run ? 'run' : 'debug';
             }
             $tabs[] = self::create_tab('edit.php', $href, $stredit);
         }
