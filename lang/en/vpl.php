@@ -28,8 +28,12 @@ $string['VPL_COMPILATIONFAILED'] = 'The compilation or preparation of execution 
 $string['about'] = 'About';
 $string['acceptcertificates'] = 'Accept self signed certificates';
 $string['acceptcertificates_description'] = 'If the execution servers are not using self signed certificates uncheck this option';
-$string['acceptcertificatesnote'] = "<p><strong>Warning:</strong> Connection to execution server failed due to certificate issues.</p>
-<p>Your browser does not trust the execution server's certificate.</p>";
+$string['acceptcertificatesnote'] = '<p><strong>Warning:</strong> Your browser could not connect directly to the execution server.</p>
+<p>Click the server link(s) below to diagnose the problem:</p>
+<ul>
+<li>If you see a certificate warning, accept it and retry your action.</li>
+<li>If the page does not load, the connection from your browser to the execution server may be blocked by a firewall or network configuration. Contact your server or network administrator to ensure the execution server is reachable from client browsers.</li>
+</ul>';
 $string['addfile'] = 'Add file';
 $string['addoverride'] = 'Add an override';
 $string['advanced'] = 'Advanced';
