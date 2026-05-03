@@ -1625,7 +1625,7 @@ var VPLIDE = function(rootId, options) {
                 var themeList = ace.require('ace/ext/themelist');
                 if (themeList && themeList.themes) {
                     aceThemeOptions = themeList.themes.map(function(t) {
-                        return { value: t.name, label: t.caption };
+                        return {value: t.name, label: t.caption};
                     });
                 }
             } catch (e) { /* Ace/ext/themelist not loaded yet */ }

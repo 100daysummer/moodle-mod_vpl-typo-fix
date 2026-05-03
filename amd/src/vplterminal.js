@@ -102,7 +102,7 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
                 terminal.write(text);
             }
             return;
-        }).catch(function() {});
+        }).catch(VPLUtil.doNothing);
         return text;
     };
 
@@ -146,12 +146,12 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
                     ws.stopOutput = true;
                 };
                 return;
-            }).catch(function() {}); // InitReady.then
+            }).catch(VPLUtil.doNothing); // InitReady.then
         } else {
             initReady.then(function() {
                 terminal.write('WebSocket not available: Upgrade your browser');
                 return;
-            }).catch(function() {});
+            }).catch(VPLUtil.doNothing);
         }
     };
     this.writeLocal = function(text) {
@@ -179,57 +179,57 @@ export const VPLTerminal = function(dialogId, terminalId, str) {
     this.connectLocal = function(onClose, onData) {
         onCloseAction = onClose;
         initReady.then(function() {
-        terminal.reset();
-        self.show();
-        if (ws) {
-            ws.close();
-        }
-        clipboardData = '';
-        self.setMessage('');
-        self.setTitle(str('running'));
-        self.startBlinking();
-        ws = {};
-        ws.onData = onData;
-        ws.writeBuffer = '';
-        ws.readBuffer = '';
-        ws.OPEN = 1;
-        ws.CLOSED = 2;
-        ws.close = function() {
-            ws.readyState = ws.CLOSED;
-            self.stopBlinking();
-        };
-        ws.onmessage = function(event) {
-            ws.writeBuffer = event.data;
-            ws.writeIt();
-        };
-        ws.writeIt = function() {
+            terminal.reset();
+            self.show();
             if (ws) {
-                terminal.write(ws.writeBuffer);
-                receiveClipboard(ws.writeBuffer);
-                ws.writeBuffer = '';
+                ws.close();
             }
-        };
-        ws.send = function(text) {
-            // Process backspace.
-            if (text == '\u007f') {
-                if (ws.readBuffer.length > 0) {
-                    self.writeLocal('\b \b');
-                    ws.readBuffer = ws.readBuffer.substring(0, ws.readBuffer.length - 1);
+            clipboardData = '';
+            self.setMessage('');
+            self.setTitle(str('running'));
+            self.startBlinking();
+            ws = {};
+            ws.onData = onData;
+            ws.writeBuffer = '';
+            ws.readBuffer = '';
+            ws.OPEN = 1;
+            ws.CLOSED = 2;
+            ws.close = function() {
+                ws.readyState = ws.CLOSED;
+                self.stopBlinking();
+            };
+            ws.onmessage = function(event) {
+                ws.writeBuffer = event.data;
+                ws.writeIt();
+            };
+            ws.writeIt = function() {
+                if (ws) {
+                    terminal.write(ws.writeBuffer);
+                    receiveClipboard(ws.writeBuffer);
+                    ws.writeBuffer = '';
                 }
-            } else {
-                self.writeLocal(text);
-                ws.readBuffer += text;
-            }
-            var pos = ws.readBuffer.indexOf("\r");
-            if (pos != -1) {
-                var data = ws.readBuffer.substring(0, pos);
-                ws.readBuffer = ws.readBuffer.substring(pos + 1);
-                ws.onData(data);
-            }
-        };
-        ws.readyState = ws.OPEN;
-        return;
-        }).catch(function() {}); // InitReady.then
+            };
+            ws.send = function(text) {
+                // Process backspace.
+                if (text == '\u007f') {
+                    if (ws.readBuffer.length > 0) {
+                        self.writeLocal('\b \b');
+                        ws.readBuffer = ws.readBuffer.substring(0, ws.readBuffer.length - 1);
+                    }
+                } else {
+                    self.writeLocal(text);
+                    ws.readBuffer += text;
+                }
+                var pos = ws.readBuffer.indexOf("\r");
+                if (pos != -1) {
+                    var data = ws.readBuffer.substring(0, pos);
+                    ws.readBuffer = ws.readBuffer.substring(pos + 1);
+                    ws.onData(data);
+                }
+            };
+            ws.readyState = ws.OPEN;
+            return;
+        }).catch(VPLUtil.doNothing); //
     };
     this.isOpen = function() {
         return tdialog.dialog("isOpen");
