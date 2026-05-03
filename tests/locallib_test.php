@@ -77,7 +77,7 @@ final class locallib_test extends \advanced_testcase {
      * @param string $text The text to write to the file.
      * @return void
      */
-    public function internal_test_vpl_fopen($path, $text = 'Example text') {
+    public function internal_test_vpl_fopen(string $path, string $text = 'Example text'): void {
         global $CFG;
         $testdir = $CFG->dataroot . '/temp/vpl_test/tmp';
         $fpath = $testdir . $path;
@@ -486,7 +486,7 @@ final class locallib_test extends \advanced_testcase {
      *
      * @covers ::vpl_filter_groups_by_initials
      */
-    public function test_vpl_filter_groups_by_initials() {
+    public function test_vpl_filter_groups_by_initials(): void {
         $g1 = (object)['id' => 1, 'name' => 'Alpha'];
         $g2 = (object)['id' => 2, 'name' => 'Beta'];
         $g3 = (object)['id' => 3, 'name' => 'Gamma'];
@@ -520,7 +520,7 @@ final class locallib_test extends \advanced_testcase {
      *
      * @covers ::vpl_filter_users_by_initials
      */
-    public function test_vpl_filter_users_by_initials() {
+    public function test_vpl_filter_users_by_initials(): void {
         $u1 = (object)['id' => 1, 'firstname' => 'Adam', 'lastname' => 'Smith'];
         $u2 = (object)['id' => 2, 'firstname' => 'Bob', 'lastname' => 'Jones'];
         $u3 = (object)['id' => 3, 'firstname' => 'Charlie', 'lastname' => 'Brown'];
