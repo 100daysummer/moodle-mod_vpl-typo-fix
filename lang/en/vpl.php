@@ -40,7 +40,7 @@ $string['activity_mode_help'] = 'Change the access rules and behavior of the act
 <li><b>No students</b>: This mode prevents students from accessing the activity.</li>
 <li><b>Students read-only</b>: This mode <b>grants</b> students access the activity in readonly mode.</li>
 <li><b>Based on</b>: The activity is a template to be inherited by other activities plus "No students" mode.</li>
-<li><b>VPL question</b>: The activity is adapted for the VPL question type, prevents students from accessing the activity.</li>
+<li><b>VPL question</b>: The activity is adapted for use in the VPL question type, prevents students from accessing the activity.</li>
 <li><b>Example</b>: The students can run and debug requested files but readonly.</li>
 </ul>';
 $string['activity_mode_no_students'] = 'No students';
@@ -50,7 +50,7 @@ $string['activity_mode_normal_help'] = 'This is the default mode, no changes to 
 $string['activity_mode_students_readonly'] = 'Students read-only';
 $string['activity_mode_students_readonly_help'] = 'This mode grants students access to the activity in read-only mode.<br>Regardless of other settings, students can view the activity and its content, but they cannot edit or submit code.';
 $string['activity_mode_vplquestion'] = 'VPL question';
-$string['activity_mode_vplquestion_help'] = 'This mode is used to adapt the activity for the VPL question type.<br>It prevents students from accessing the activity.<br>';
+$string['activity_mode_vplquestion_help'] = 'This mode is used to adapt the activity for use in the VPL question type.<br>It prevents students from accessing the activity.<br>';
 
 $string['addfile'] = 'Add file';
 $string['addoverride'] = 'Add an override';
@@ -190,7 +190,7 @@ $string['execution_connection_failed_help'] = '<p><strong>Warning:</strong> Your
 <li>If you see a certificate warning, the execution server certificate is not trusted by your browser. At your own risk, you can accept the certificate and retry your action.</li>
 <li>If the page does not load, the connection from your browser to the execution server may be blocked by a firewall or network configuration.</li>
 </ul>
-<p>Contact your server or network administrator to ensure the execution server has a trusted certificate and is reachable from client browsers.</p>';
+<p>Contact your server or network administrator to ensure that the execution server is reachable and has a trusted certificate.</p>';
 $string['executionfiles'] = 'Execution files';
 $string['executionfiles_help'] = '<p>Here you set the files that are needed to prepare the execution,
 debug or assessment of a submission. This includes scripting files, program test files and data files.</p>
