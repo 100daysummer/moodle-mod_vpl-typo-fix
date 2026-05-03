@@ -242,7 +242,7 @@ function vpl_abs_href() {
  * @return string URL with parameters
  * @codeCoverageIgnore
  */
-function vpl_mod_href() {
+function vpl_mod_href(string $page, ...$args): string {
     global $CFG;
     $funcparms = func_get_args();
     $l = count($funcparms);
