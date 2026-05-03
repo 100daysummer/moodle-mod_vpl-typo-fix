@@ -38,7 +38,9 @@ require_once($CFG->dirroot . '/mod/vpl/locallib.php');
  * Unit tests for activity modes.
  *
  * @group mod_vpl
+ * @group mod_vpl_util
  * @group mod_vpl_util_activity_modes
+ * @covers \mod_vpl\util\activity_modes
  */
 final class util_activity_modes_test extends \advanced_testcase {
     /** @var \stdClass Course used in tests. */
@@ -134,6 +136,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test activity_modes::get_i18n_key returns valid strings.
+     * @covers \mod_vpl\util\activity_modes::get_i18n_key
      */
     public function test_get_i18n_key(): void {
         $modes = [
@@ -150,6 +153,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test activity_modes::get_i18n_key throws exception for invalid mode.
+     * @covers \mod_vpl\util\activity_modes::get_i18n_key
      */
     public function test_get_i18n_key_invalid(): void {
         $this->expectException(\InvalidArgumentException::class);
@@ -158,6 +162,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test vpl_update_mode sets grade to 0 for EXAMPLE mode.
+     * @covers \mod_vpl\util\activity_modes::update_vpl_instance
      */
     public function test_update_mode_example(): void {
         $instance = (object)['activity_mode' => activity_modes::EXAMPLE, 'grade' => 10, 'visible' => 1];
@@ -167,6 +172,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test vpl_update_mode sets grade=0, visible=0 for BASEDON mode.
+     * @covers \mod_vpl\util\activity_modes::update_vpl_instance
      */
     public function test_update_mode_basedon(): void {
         $instance = (object)['activity_mode' => activity_modes::BASEDON, 'grade' => 10, 'visible' => 1];
@@ -177,6 +183,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test vpl_update_mode sets visiblegrade=0, visible=0 for NOSTUDENTS mode.
+     * @covers \mod_vpl\util\activity_modes::update_vpl_instance
      */
     public function test_update_mode_nostudents(): void {
         $instance = (object)['activity_mode' => activity_modes::NOSTUDENTS, 'visiblegrade' => 1, 'visible' => 1];
@@ -187,6 +194,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test vpl_update_mode sets visible=1, visiblegrade=1 for STUDENTSREADONLY mode.
+     * @covers \mod_vpl\util\activity_modes::update_vpl_instance
      */
     public function test_update_mode_studentsreadonly(): void {
         $instance = (object)['activity_mode' => activity_modes::STUDENTSREADONLY, 'visible' => 0, 'visiblegrade' => 0];
@@ -197,6 +205,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test update_vpl_instance for VPLQUESTION mode.
+     * @covers \mod_vpl\util\activity_modes::update_vpl_instance
      */
     public function test_update_mode_vplquestion(): void {
         $instance = (object)[
@@ -219,6 +228,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test vpl_update_mode does not modify NORMAL mode instance.
+     * @covers \mod_vpl\util\activity_modes::update_vpl_instance
      */
     public function test_update_mode_normal(): void {
         $instance = (object)['activity_mode' => activity_modes::NORMAL, 'grade' => 10, 'visible' => 1, 'visiblegrade' => 1];
@@ -229,6 +239,8 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test is_mode and is_example on VPL instances.
+     * @covers \mod_vpl\util\activity_modes::is_mode
+     * @covers \mod_vpl\util\activity_modes::is_example
      */
     public function test_is_mode_and_is_example(): void {
         $vplnormal = $this->create_instance(activity_modes::NORMAL);
@@ -242,6 +254,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test is_vpl_question_mode on VPL instances.
+     * @covers \mod_vpl\util\activity_modes::is_vpl_question_mode
      */
     public function test_is_vpl_question_mode(): void {
         $vplq = $this->create_instance(activity_modes::VPLQUESTION);
@@ -253,6 +266,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test mode_prevents_viewing on VPL instance for students vs teachers.
+     * @covers \mod_vpl\util\activity_modes::mode_prevents_viewing
      */
     public function test_instance_mode_prevents_viewing(): void {
         $this->setUser($this->student);
@@ -275,6 +289,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test mode_prevents_modification on VPL instance for students vs teachers.
+     * @covers \mod_vpl\util\activity_modes::mode_prevents_modification
      */
     public function test_instance_mode_prevents_modification(): void {
         $this->setUser($this->student);
@@ -297,6 +312,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test NO_GRADE constant lists correct modes.
+     * @covers \mod_vpl\util\activity_modes::NO_GRADE
      */
     public function test_no_grade_modes(): void {
         $expected = [
@@ -308,6 +324,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test CONTROL_VIEW constant lists correct modes.
+     * @covers \mod_vpl\util\activity_modes::CONTROL_VIEW
      */
     public function test_control_view_modes(): void {
         $expected = [
@@ -321,6 +338,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test is_visible respects mode for students and teachers.
+     * @covers \mod_vpl::is_visible
      */
     public function test_is_visible_by_mode(): void {
         // NORMAL mode: student can see.
@@ -340,6 +358,7 @@ final class util_activity_modes_test extends \advanced_testcase {
 
     /**
      * Test is_submit_able respects mode for students and teachers.
+     * @covers \mod_vpl::is_submit_able
      */
     public function test_is_submit_able_by_mode(): void {
         // NORMAL mode: student can submit.
