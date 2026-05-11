@@ -21,13 +21,14 @@ source vpl_environment.sh
 #functions
 
 function apply_run_mode {
-	case "$VPL_RUN_MODE" in
+	local RUN_MODE="$VPL_RUN_MODE"
+	unset VPL_RUN_MODE
+	case "$RUN_MODE" in
 		2)
 			# Text mode
 			[ -f vpl_execution ] && return
 			if [ -f vpl_wexecution ]; then
-			 	mv vpl_wexecution vpl_execution
-				return
+				mv vpl_wexecution vpl_execution
 			fi
 			;;
 		3)
@@ -35,7 +36,6 @@ function apply_run_mode {
 			[ -f vpl_wexecution ] && return
 			if [ -f vpl_execution ]; then
 				mv vpl_execution vpl_wexecution
-				return
 			fi
 			;;
 		5)
@@ -43,22 +43,19 @@ function apply_run_mode {
 			[ -f vpl_wexecution ] && return
 			if [ -f vpl_execution ] ; then
 				mv vpl_execution vpl_execution_in_gui
-				cat common_script.sh > vpl_wexecution
+				echo "#!/bin/bash" > vpl_wexecution
+				echo "source vpl_environment.sh" >> vpl_wexecution
+				declare -f wait_end >> vpl_wexecution
 				cat <<'END_SCRIPT' >> vpl_wexecution
-
 # Run original vpl_execution script in terminal emulator in GUI mode
 if command -v gnome-terminal &> /dev/null; then
 	gnome-terminal -- bash -c "./vpl_execution_in_gui; echo; read -p 'Press Enter to continue...'"
-	wait
 elif command -v xterm &> /dev/null; then
 	xterm -e bash -c "./vpl_execution_in_gui; echo; read -p 'Press Enter to continue...'"
-	wait
 elif command -v konsole &> /dev/null; then
 	konsole --noclose -e "./vpl_execution_in_gui"
-	wait
 elif command -v xfce4-terminal &> /dev/null; then
 	xfce4-terminal --hold --command="./vpl_execution_in_gui"
-	wait
 else
 	# Run in non-terminal mode
 	echo "No terminal emulator found."
@@ -70,8 +67,10 @@ END_SCRIPT
 				chmod +x vpl_wexecution
 			fi
 			;;
+		*)
+			# Default: do nothing
+			;;
 	esac
-	unset VPL_RUN_MODE
 }
 
 function apply_evaluation_mode {
@@ -89,21 +88,22 @@ function apply_evaluation_mode {
 function wait_end {
 	local PSRESFILE
 	PSRESFILE=.vpl_temp_search_program
-	#wait start until 5s
+	# Wait until program start or until	5s
 	for I in {1..5}
 	do
 		sleep 1s
 		ps -f -u $USER > $PSRESFILE
-		grep $1 $PSRESFILE &> /dev/null
+		grep "$1" $PSRESFILE &> /dev/null
 		if [ "$?" == "0" ] ; then
 			break
 		fi
 	done
+	# Wait until program end
 	while :
 	do
 		sleep 1s
 		ps -f -u $USER > $PSRESFILE
-		grep $1 $PSRESFILE &> /dev/null
+		grep "$1" $PSRESFILE &> /dev/null
 		if [ "$?" != "0" ] ; then
 			rm $PSRESFILE
 			return
@@ -133,7 +133,7 @@ function get_program_version {
 		{
 			echo "$PROGRAM $1 1> $OUTPUTFILE 2>$ERRFILE < /dev/null"
 			echo "[ \"\$?\" == \"0\" ] && cat $ERRFILE >> $OUTPUTFILE"
-			echo "cat $OUTPUTFILE | head -n $nhl"
+			echo "head -n $nhl $OUTPUTFILE"
 		} >> vpl_execution
 	fi
 	chmod +x vpl_execution
@@ -164,7 +164,7 @@ function get_source_files {
         if [ "$ext" == "NOERROR" ]; then
             return 1
         fi
-        echo "To run this type of program you need some file with extension \"$@\""
+        echo "To run this type of program you need some file with extension \"$*\""
         exit 0
     fi
 
@@ -239,12 +239,21 @@ function generate_file_of_files {
 
 # Set FIRST_SOURCE_FILE to the first VPL_SUBFILE# with extension in parameters $@
 function get_first_source_file {
+	local ext_checked=""
+	local noerror=false
 	local ext
+	for ext in "$@"
+	do
+		if [ "$ext" == "NOERROR" ] ; then
+			noerror=true
+			break
+		fi
+		ext_checked="$ext_checked $ext"
+	done
 	local FILENAME
 	local FILEVAR
-	local i
-	for i in {0..100000}
-	do
+    local i=0
+    while true; do
 		FILEVAR="VPL_SUBFILE${i}"
 		FILENAME="${!FILEVAR}"
 		if [ "" == "$FILENAME" ] ; then
@@ -257,22 +266,29 @@ function get_first_source_file {
 		        return 0
 	    	fi
 		done
+		i=$((i+1))
 	done
-	if [ "$ext" == "NOERROR" ] ; then
+	if [ "$noerror" = true ] ; then
 		return 1
 	fi
-	echo "To run this type of program you need some file with extension \"$@\""
+	echo "To run this type of program you need some file with extension:$ext_checked"
 	exit 0;
 }
 
 # Check program existence ($@) and set $PROGRAM and PROGRAMPATH
 function check_program {
 	PROGRAM=
+	local programs_checked=""
 	local check
 	for check in "$@"
 	do
-		local PROPATH=$(command -v "$check")
+		if [ "$check" == "NOERROR" ] ; then
+    		continue
+		fi
+		local PROPATH
+		PROPATH=$(command -v "$check")
 		if [ "$PROPATH" == "" ] ; then
+			programs_checked="$programs_checked $check"
 			continue
 		fi
 		PROGRAM=$check
@@ -282,7 +298,8 @@ function check_program {
 	if [ "$check" == "NOERROR" ] ; then
 		return 1
 	fi
-	echo "The execution server needs to install \"$1\" to run this type of program"
+	echo "The execution server needs to install one of the following programs"
+	echo "to run this type of code:$programs_checked"
 	exit 1;
 }
 
@@ -318,14 +335,12 @@ function compile_scss {
 }
 
 function remove_vpl_executable_files {
-	(
-		rm vpl_environment.sh
-		rm common_script.sh
-		rm .vpl_*
-		rm vpl_execution
-		rm vpl_wexecution
-		rm vpl_execution_in_gui
-	) &> /dev/null
+	rm -f vpl_environment.sh
+	rm -f common_script.sh
+	rm -f .vpl_*
+	rm -f vpl_execution
+	rm -f vpl_wexecution
+	rm -f vpl_execution_in_gui
 }
 #Decode BASE64 files
 get_source_files b64
@@ -336,7 +351,7 @@ do
 	if [ -f "$FILENAME" ] ; then
 		BINARY=$(echo "$FILENAME" | sed -r "s/\.b64$//")
 		if [ ! -f  "$BINARY" ] ; then
-			base64 -i -d "$FILENAME" > "$BINARY"
+			base64 -d < "$FILENAME" > "$BINARY"
 		fi
 	fi
 done
@@ -344,12 +359,18 @@ SOURCE_FILES=""
 if [ -x pre_vpl_run.sh ] ; then
 	#Security Check: pre_vpl_run.sh was submitted by a student?
 	VPL_NS=true
-	for FILENAME in $VPL_SUBFILES
-	do
+    i=0
+    while true; do
+		FILEVAR="VPL_SUBFILE${i}"
+		FILENAME="${!FILEVAR}"
+		if [ "" == "$FILENAME" ] ; then
+			break
+		fi
 		if [ "$FILENAME" == "pre_vpl_run.sh" ] || [ "$FILENAME" == "pre_vpl_run.sh.b64" ] ; then
 			VPL_NS=false
 			break
 		fi
+		i=$((i+1))
 	done
 	if $VPL_NS ; then
 		./pre_vpl_run.sh
