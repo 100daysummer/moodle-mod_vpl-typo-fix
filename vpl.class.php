@@ -1909,7 +1909,7 @@ class mod_vpl {
                         $text = get_string('requirednet_bad', COMPVPL, getremoteaddr());
                         $type = 'warning';
                     }
-                    $info .= " <span class='alert-$type'>$text</span>";
+                    $info .= " <span class='alert alert-$type'>$text</span>";
                 }
                 $html .= $this->str_setting_with_icon('requirednet', $info);
             }
@@ -1923,7 +1923,7 @@ class mod_vpl {
                         $text = get_string('sebrequired_bad', COMPVPL, getremoteaddr());
                         $type = 'warning';
                     }
-                    $info .= " <span class='alert-$type'>$text</span>";
+                    $info .= " <span class='alert alert-$type'>$text</span>";
                 }
                 $html .= $this->str_setting_with_icon('sebrequired', $info);
             }
@@ -1945,7 +1945,7 @@ class mod_vpl {
                             $type = 'warning';
                         }
                     }
-                    $info .= " <span class='alert-$type'>$text</span>";
+                    $info .= " <span class='alert alert-$type'>$text</span>";
                 }
                 $html .= $this->str_setting_with_icon('sebkeys', $info);
             }
