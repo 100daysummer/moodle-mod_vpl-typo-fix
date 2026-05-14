@@ -152,17 +152,25 @@ class activity_modes {
 
     /**
      * Check if the caller was vplquestion.
+     * Max depth of 4.
      *
      * @return bool
      */
     public static function called_from_vplquestion() {
         $vplquestionpath = '/question/type/vplquestion/';
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $caller = $trace[1];
-        if (isset($caller['file'])) {
-            $callerpath = str_replace('\\', '/', $caller['file']);
-            if (strpos($callerpath, $vplquestionpath) !== false) {
-                return true;
+        // Get the debug backtrace, max depth of 4.
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 4);
+        if (count($trace) < 2) {
+            return false;
+        }
+        // Remove the first frame which is this function itself.
+        array_shift($trace);
+        foreach ($trace as $frame) {
+            if (isset($frame['file'])) {
+                $framepath = str_replace('\\', '/', $frame['file']);
+                if (strpos($framepath, $vplquestionpath) !== false) {
+                    return true;
+                }
             }
         }
         return false;
