@@ -572,10 +572,6 @@ function xmldb_vpl_upgrade_2026042413() {
     if ($dbman->field_exists($table, $field)) {
         $dbman->rename_field($table, $field, 'activity_mode');
     }
-    $field = new xmldb_field('mode', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'debugscript');
-    if ($dbman->field_exists($table, $field)) {
-        $dbman->rename_field($table, $field, 'activity_mode');
-    }
 
     // Updating vpl_running_processes table.
     $table = new xmldb_table('vpl_running_processes');
