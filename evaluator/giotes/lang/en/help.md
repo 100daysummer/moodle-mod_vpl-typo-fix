@@ -3,7 +3,7 @@
 **GIOTES** (General Input/Output Test Evaluation System) is an evaluator subplugin for **VPL** designed to replace **BIOTES**, the default evaluator.
 This system allows teachers to automatically assess students’ programs by defining test cases that specify the program’s input and the expected output.
 
-### ❓ What is GIOTES?
+### What is GIOTES?
 
 GIOTES is a general framework for evaluating programming submissions written in almost any language.
 It runs as a VPL evaluator sub-plugin for Moodle ([VPL][1]) and generates reports and grades for that environment.
@@ -30,7 +30,7 @@ It adds:
 
 ---
 
-### ⚡Quick start
+### Quick start
 
 
 ```
@@ -47,14 +47,14 @@ When the student or the teacher use the evaluate action GIOTES will execute the 
 
 ---
 
-## 📝 The language
+## The language
 
 The **GIOTES language** defines how test cases are written, organized, and interpreted.
 It is a lightweight, plain-text format designed to be **human-readable** for teachers and **machine-readable** for the evaluator.
 Using simple `statement = value` rules, you can describe program inputs, expected outputs, time limits, grading rules, and report customization.
 This section explains the **structure**, **statements**, and **placeholders** available in `vpl_evaluate.cases` files, with examples showing how to build reliable and flexible test definitions.
 
-### 📦 General structure of test definitions (`vpl_evaluate.cases`)
+### General structure of test definitions (`vpl_evaluate.cases`)
 
 The `vpl_evaluate.cases` file may contain:
 
@@ -65,7 +65,7 @@ The `vpl_evaluate.cases` file may contain:
 *Format overview*
 
 ```text
-  ├─── 📦 General statements and Defaults  (global scope, optional)
+  ├─── General statements and Defaults  (global scope, optional)
   │    • Set before the first 'case =' block.
   │    • Define default values for all cases.
   │    • Common examples:
@@ -76,22 +76,22 @@ The `vpl_evaluate.cases` file may contain:
   │        └─ Case title format = 🧪 <<<case_title>>> — <<<test_result_mark>>>
   │
   ├─── # Cases sequence  (one or more "case = ..." blocks)
-  ├─── 📝 Example case 1:
+  ├───  Example case 1:
   │     ├─ case = test case 1
   │     ├─ input = 6 3
   │     └─ output = 2
   │
-  ├─── 📝 Example case 2:
+  ├───  Example case 2:
   │     ├─ case = test case 2
   │     ├─ input = 16 4
   │     └─ output = 4
   │
-  ├─── 📝 Example case 3:
+  ├───  Example case 3:
   │     ├─ case = test case 3
   │     ├─ input = 1 0
   │     └─ output = Zero division
   │
-  └─── 📝 Example case N
+  └───  Example case N
         ├─ case = test case N
         ├─ input = -4 2
         └─ output = Negative number
@@ -106,7 +106,7 @@ The `vpl_evaluate.cases` file may contain:
 
 ---
 
-#### ⚙️ Basic statements
+#### Basic statements
 
 * **Case =** one line with the case description (**required**)
 
@@ -143,7 +143,7 @@ There are different output types; the type is **inferred from the value’s form
   Example:
   >`Output = 2 3.00001`
 
-  ✅ *Matches:*
+  *Matches:*
 
   * `Result is 2 and 3`
   * `Result is:`  
@@ -153,7 +153,7 @@ There are different output types; the type is **inferred from the value’s form
   * `2 - 3`
   * `2 3`
 
-  ❌ *Does **not** match:*
+  *Does **not** match:*
 
   * `Result is 1, 2 and 3`
   * `2.0 3`
@@ -167,12 +167,12 @@ There are different output types; the type is **inferred from the value’s form
   Example:  
   > `Output = "All·right"`
 
-  ✅ *Matches:*
+  *Matches:*
 
   * `All·right`  
   * `All·right↵`
 
-  ❌ *Does **not** match:*
+  *Does **not** match:*
   
   * `all·right`
   * `all·right·`
@@ -186,7 +186,7 @@ There are different output types; the type is **inferred from the value’s form
   Example:
   >`Output = All right with 10 points`
 
-  ✅ *Matches:*
+  *Matches:*
 
   * `All right with 10 points.`
   * `My answer is: All right with 10 points.`
@@ -195,7 +195,7 @@ There are different output types; the type is **inferred from the value’s form
   * `  ALL "right" with ===>>>`  
       `  -10- points`
 
-  ❌ *Does **not** match:*
+  *Does **not** match:*
 
   * `All right with 11 points`
   * `All right with 10 point`
@@ -215,7 +215,7 @@ There are different output types; the type is **inferred from the value’s form
   Example:
   >`Output = /^(regex|no +regex|1{3,20})\n?$/i`
 
-  ✅ *Matches:*
+  *Matches:*
 
   * `regeX`
   * `no     regex`
@@ -236,7 +236,7 @@ There are different output types; the type is **inferred from the value’s form
   Example:
   >`Output = * 2 3.00001`
 
-  ✅ *Matches:*
+  *Matches:*
 
   * `Result is 2 and 3`
   * `Result is:`  
@@ -245,7 +245,7 @@ There are different output types; the type is **inferred from the value’s form
       `3`
   * `0 1 2 2 2 3.00001`
 
-  ❌ *Does **not** match:*
+  *Does **not** match:*
 
   * `Result is 2, 3 and 4`
   * `Result is 2, 3`  
@@ -254,7 +254,7 @@ There are different output types; the type is **inferred from the value’s form
 
 ---
 
-#### ➕ Statements to add pass conditions and penalties
+#### Statements to add pass conditions and penalties
 
 * **Grade reduction =** *value* | *percent%* — Overrides the default penalty `grade_range / number_of_cases`. If grade reduction is greater than or equal to double of `grade_range` and the case fails the tests stop. This allows setting cases to stop the test process.
 
@@ -294,7 +294,7 @@ Note: Program exit codes themselves cannot be negative; a negative value here is
 
 ---
 
-#### 🧩 Other control statements
+#### Other control statements
 
 * **Program to run =** *path* — Replaces the executable to test by the program at *path*.
 
@@ -382,7 +382,7 @@ They can also be set **per case** to customize individual cases.
 
 ---
 
-#### 🌍 Global-only statements
+#### Global-only statements
 
 * **Fail mark / Pass mark / Timeout mark / Error mark** —
   These are commonly referenced via the `<<<test_result_mark>>>` placeholder.
@@ -411,11 +411,11 @@ They can also be set **per case** to customize individual cases.
 
 ---
 
-#### 🔖 Placeholders
+#### Placeholders
 
-The placeholders have the format `<<<place_holder_name>>>` 🔖 and may be used in title (**T**), custom test case messages (**M**) and final report (**F**). The next table shows all placeholders, where are available ✅ and you can use it, and a description 📄 of what it expand.
+The placeholders have the format `<<<place_holder_name>>>` 🔖 and may be used in title (**T**), custom test case messages (**M**) and final report (**F**). The next table shows all placeholders, where are available and you can use it, and a description of what it expand.
 
-| 📝Placeholder                 | ✅Avail | 📄Description                          |
+| Placeholder                  | Avail  | Description                           |
 | ------------------------------ |:------:| ---------------------------------------------- |
 | `<<<case_id>>>`                | T M| The 1-based index of the test case.|
 | `<<<case_title>>>`             | T M| The case title set with `case =`.|
@@ -442,9 +442,9 @@ The placeholders have the format `<<<place_holder_name>>>` 🔖 and may be used 
 | `<<<num_tests_timeout>>>`      | F| Number of run cases that timed out. |
 | `<<<num_tests_error>>>`        | F| Number of run cases that ended with unexpected errors. |
 
-✅Avail legend: T = Case title format, M = Custom messages, F = Final report
+Avail legend: T = Case title format, M = Custom messages, F = Final report
 
-#### 🧮 How the grade is calculated
+#### How the grade is calculated
 
 1. `grade_range = VPL_GRADEMAX − VPL_GRADEMIN` (defaults are 10 − 0 = 10).
 2. For each **not passed** case, GIOTES subtracts a penalty from the grade.
@@ -466,14 +466,14 @@ final_grade = minimum_grade + (grade_range - total_penalties)
 
 ---
 
-#### 🌐 Environment variables recognized
+#### Environment variables recognized
 
 * `VPL_GRADEMIN` (default `0`)
 * `VPL_GRADEMAX` (default `10`)
 * `VPL_MAXTIME` — total seconds for **all** cases (default `20`)
 * `VPL_VARIATION` — current variation id (empty by default)
 
-#### 📂 Example `vpl_evaluate.cases`
+#### Example `vpl_evaluate.cases`
 
 ```
 # Global defaults
@@ -520,9 +520,9 @@ Time limit = 0.5
 
 ```
 
-## 📜 License & authorship
+## License & authorship
 
-© Copyright 2025, Juan Carlos Rodríguez-del-Pino [jc.rodriguezdelpino@ulpgc.es](mailto:jc.rodriguezdelpino@ulpgc.es).
+© Copyright 2026, Juan Carlos Rodríguez-del-Pino [jc.rodriguezdelpino@ulpgc.es](mailto:jc.rodriguezdelpino@ulpgc.es).
 
 This documentation is licensed under a 
 [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License](https://creativecommons.org/licenses/by-nc-nd/4.0/).
