@@ -51,7 +51,6 @@ $options['showparentfilesurl'] = (new moodle_url('/mod/vpl/views/concatexecfiles
 $options['minfiles'] = 0;
 $options['maxfiles'] = 1000;
 $options['saved'] = true;
-$options['minfiles'] = $fgp->get_numstaticfiles();
 $options['readOnlyFiles'] = [];
 
 vpl_editor_util::generate_requires($vpl, $options);
