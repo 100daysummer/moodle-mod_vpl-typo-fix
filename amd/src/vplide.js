@@ -2416,16 +2416,18 @@ var VPLIDE = function(rootId, options) {
     fileManager.resetModified();
     VPLUI.requestAction('load', 'loading', options, options.loadajaxurl)
     .done(function(response) {
-        var allOK = true;
-        var files = response.files;
-        var showFileList = false;
-        for (var i = 0; i < files.length; i++) {
-            var file = files[i];
-            var r = fileManager.addFile(file, false, updateMenu, showErrorMessage);
+        let allOK = true;
+        let files = response.files;
+        let showFileList = false;
+        let openFirstFile = false;
+        for (let i = 0; i < files.length; i++) {
+            let file = files[i];
+            let r = fileManager.addFile(file, false, updateMenu, showErrorMessage);
             if (r) {
                 r.resetModified();
                 if (i < minNumberOfFiles || files.length <= 5) {
                     fileManager.open(r);
+                    openFirstFile = true;
                 } else {
                     showFileList = true;
                 }
@@ -2433,7 +2435,6 @@ var VPLIDE = function(rootId, options) {
                 allOK = false;
             }
         }
-        tabs.tabs('option', 'active', 0);
         if (response.compilationexecution) {
             self.setResult(response.compilationexecution, false);
         }
@@ -2466,11 +2467,12 @@ var VPLIDE = function(rootId, options) {
             updateMenu();
             autoResizeTab();
             adjustTabsTitles(true);
-            if (fileManager.length() > 0) {
-                var file = fileManager.getFiles()[0];
+            if (openFirstFile) {
+                let file = fileManager.getFiles()[0];
                 file.open();
                 file.focus();
             }
+            tabs.tabs('option', 'active', 0);
         });
     })
     .fail(showErrorMessage);
