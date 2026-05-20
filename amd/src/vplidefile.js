@@ -40,6 +40,7 @@ export const VPLFile = function(id, name, value, fileManager, vplIdeInstance) {
     var langType = 'text';
     var self = this;
     var binary = VPLUtil.isBinary(name, value);
+    var readOnly = fileManager.isReadOnly(name);
     this.getContent = function() {
         return value;
     };
@@ -184,8 +185,12 @@ export const VPLFile = function(id, name, value, fileManager, vplIdeInstance) {
         );
     };
     this.gotoLine = VPLUtil.doNothing;
-    this.setReadOnly = VPLUtil.doNothing;
-    this.isReadOnly = VPLUtil.returnFalse;
+    this.setReadOnly = function(state) {
+        readOnly = state;
+    };
+    this.isReadOnly = function() {
+        return readOnly;
+    };
     this.focus = function() {
         this.updateStatus();
     };

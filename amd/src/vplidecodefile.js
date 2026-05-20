@@ -31,7 +31,6 @@ export const codeExtension = function() {
     var self = this;
     var editor = null;
     var session = null;
-    var readOnly = self.getFileManager().readOnly;
     var getOldContent = this.getContent;
     this.getContent = function() {
         if (!this.isOpen()) {
@@ -75,14 +74,12 @@ export const codeExtension = function() {
         editor.focus();
         this.updateStatus();
     };
+    var oldSetReadOnly = this.setReadOnly;
     this.setReadOnly = function(s) {
-        readOnly = s;
+        oldSetReadOnly.call(this, s);
         if (this.isOpen()) {
             editor.setReadOnly(s);
         }
-    };
-    this.isReadOnly = function() {
-        return readOnly;
     };
     this.focus = function() {
         if (!this.isOpen()) {
@@ -271,7 +268,7 @@ export const codeExtension = function() {
         }
         editor.$blockScrolling = Infinity;
         editor.gotoLine(1, 0);
-        editor.setReadOnly(readOnly);
+        editor.setReadOnly(this.isReadOnly());
         // Avoid undo of editor initial content.
         session.setUndoManager(new ace.UndoManager());
         this.setOpen(true);

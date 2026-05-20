@@ -1957,23 +1957,19 @@ var VPLIDE = function(rootId, options) {
     function resetFiles() {
         VPLUI.requestAction('resetfiles', '', {}, options.ajaxurl)
         .done(function(response) {
-            var files = response.files;
-            for (var fileName in files) {
-                if (files.hasOwnProperty(fileName)) {
-                    let pos = fileManager.fileNameExists(fileName);
-                    if (pos != -1) {
-                        // File already exists, update content if needed.
-                        let file = fileManager.getFiles()[pos];
-                        let content = files[fileName].contents;
-                        if (file.getContent() != content) {
-                            file.setContent(content);
-                            file.setModified(true);
-                            self.setModified(true);
-                        }
-                    } else {
-                        // New file, add it.
-                        fileManager.addFile(files[fileName], false, VPLUtil.doNothing, showErrorMessage);
+            for (var resetFile of response.files) {
+                let pos = fileManager.fileNameExists(resetFile.name);
+                if (pos != -1) {
+                    // File already exists, update content if needed.
+                    let file = fileManager.getFiles()[pos];
+                    if (file.getContent() != resetFile.contents) {
+                        file.setContent(resetFile.contents);
+                        file.setModified(true);
+                        self.setModified(true);
                     }
+                } else {
+                    // New file, add it.
+                    fileManager.addFile(resetFile, false, VPLUtil.doNothing, showErrorMessage);
                 }
             }
             fileManager.fileListVisibleIfNeeded();
