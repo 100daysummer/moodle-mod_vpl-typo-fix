@@ -1960,7 +1960,20 @@ var VPLIDE = function(rootId, options) {
             var files = response.files;
             for (var fileName in files) {
                 if (files.hasOwnProperty(fileName)) {
-                    fileManager.addFile(files[fileName], true, VPLUtil.doNothing, showErrorMessage);
+                    let pos = fileManager.fileNameExists(fileName);
+                    if (pos != -1) {
+                        // File already exists, update content if needed.
+                        let file = fileManager.getFiles()[pos];
+                        let content = files[fileName].contents;
+                        if (file.getContent() != content) {
+                            file.setContent(content);
+                            file.setModified(true);
+                            self.setModified(true);
+                        }
+                    } else {
+                        // New file, add it.
+                        fileManager.addFile(files[fileName], false, VPLUtil.doNothing, showErrorMessage);
+                    }
                 }
             }
             fileManager.fileListVisibleIfNeeded();
@@ -2435,6 +2448,9 @@ var VPLIDE = function(rootId, options) {
                 allOK = false;
             }
         }
+        if (openFirstFile) {
+            tabs.tabs('option', 'active', 0);
+        }
         if (response.compilationexecution) {
             self.setResult(response.compilationexecution, false);
         }
@@ -2472,7 +2488,6 @@ var VPLIDE = function(rootId, options) {
                 file.open();
                 file.focus();
             }
-            tabs.tabs('option', 'active', 0);
         });
     })
     .fail(showErrorMessage);
