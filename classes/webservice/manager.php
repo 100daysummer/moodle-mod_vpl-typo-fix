@@ -141,7 +141,8 @@ class manager {
             return '';
         }
         // If such a token already exists and is still valid, use it.
-        $contextid = $this->vpl->get_context()->id;
+        $context = $this->vpl->get_context();
+        $contextid = $context->id;
         $tokens = $DB->get_records('external_tokens', [
                 'tokentype' => EXTERNAL_TOKEN_EMBEDDED,
                 'userid' => $userid,
@@ -155,7 +156,16 @@ class manager {
             }
         }
         // No valid token found, generate a new one.
-        return external_generate_token(EXTERNAL_TOKEN_EMBEDDED, self::get_service(), $userid, $contextid, time() + DAYSECS);
+        $type = EXTERNAL_TOKEN_EMBEDDED;
+        $service = self::get_service();
+        $tomorrow = time() + DAYSECS;
+        // Use the new token generation method if available.
+        if (method_exists('\core_external\util', 'generate_token')) {
+            return \core_external\util::generate_token($type, $service, $userid, $context, $tomorrow);
+        } else {
+            // TODO: Remove after VPL end the Moodle 4.1 support.
+            return external_generate_token($type, $service, $userid, $contextid, $tomorrow);
+        }
     }
 
     /**
